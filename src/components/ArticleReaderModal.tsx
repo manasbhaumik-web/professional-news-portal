@@ -1,0 +1,340 @@
+import React, { useState } from 'react';
+import { ArrowLeft, Maximize2, Minimize2, X, Feather, RefreshCw, Sparkles, BookMarked, Share2, ExternalLink, ShieldCheck, Globe } from 'lucide-react';
+import { NewsArticle } from '../types';
+
+interface ArticleReaderModalProps {
+  selectedArticle: NewsArticle;
+  setSelectedArticle: (art: NewsArticle | null) => void;
+  isCleanMode: boolean;
+  setIsCleanMode: (val: boolean) => void;
+  cleanTheme: 'midnight' | 'charcoal' | 'sepia';
+  setCleanTheme: (val: 'midnight' | 'charcoal' | 'sepia') => void;
+  cleanFontSize: 'sm' | 'md' | 'lg' | 'xl';
+  setCleanFontSize: (val: 'sm' | 'md' | 'lg' | 'xl') => void;
+  handleDeepDiveExpand: (title: string) => void;
+  isExpandingDeepDive: boolean;
+  expandedContent: string | null;
+  toggleBookmark: (id: string, e: React.MouseEvent) => void;
+  bookmarks: string[];
+}
+
+export default function ArticleReaderModal({
+  selectedArticle,
+  setSelectedArticle,
+  isCleanMode,
+  setIsCleanMode,
+  cleanTheme,
+  setCleanTheme,
+  cleanFontSize,
+  setCleanFontSize,
+  handleDeepDiveExpand,
+  isExpandingDeepDive,
+  expandedContent,
+  toggleBookmark,
+  bookmarks
+}: ArticleReaderModalProps) {
+  const [showPerspectives, setShowPerspectives] = useState(false);
+
+  const closeReader = () => {
+    setSelectedArticle(null);
+    setIsCleanMode(false);
+  };
+
+  return (
+    <div id="article-reader-root-modal" className="fixed inset-0 bg-portal-bg bg-opacity-95 z-50 flex flex-col overflow-y-auto antialiased">
+      <nav id="reader-sticky-controls" className="sticky top-0 z-50 h-16 bg-portal-surface border-b border-portal-border flex items-center justify-between px-4 sm:px-8 shrink-0">
+        <div className="flex items-center space-x-4">
+          <button
+            onClick={closeReader}
+            className="text-portal-text-muted hover:text-portal-text-main transition-colors p-2 rounded-lg hover:bg-portal-surface-hover flex items-center space-x-1.5 focus:outline-none"
+          >
+            <ArrowLeft size={16} />
+            <span className="hidden sm:inline-block text-xs font-semibold uppercase tracking-wider font-mono">Stream View</span>
+          </button>
+
+          <div className="h-5 w-px bg-portal-border hidden sm:block" />
+
+          <div className="flex items-center space-x-2">
+            <span className="text-[10px] bg-portal-brand/10 text-portal-brand border border-portal-brand px-2 py-0.5 rounded-full uppercase font-mono tracking-tight">
+              {selectedArticle.category}
+            </span>
+            <span className="hidden md:inline-block text-[11px] text-portal-text-muted font-mono">
+              Read stats: {selectedArticle.readTime || '4 min read'}
+            </span>
+          </div>
+        </div>
+
+        <div className="flex items-center space-x-2 sm:space-x-4">
+          <div className="flex items-center space-x-1 border-r border-portal-border pr-3 sm:pr-4">
+            <button
+              onClick={() => setIsCleanMode(!isCleanMode)}
+              className={`px-3 py-1.5 rounded-lg text-xs font-mono font-bold flex items-center space-x-1.5 transition-all ${isCleanMode
+                  ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/30 ring-1 ring-blue-400'
+                  : 'bg-portal-surface border border-portal-border hover:bg-portal-surface-hover text-portal-text-muted'
+                }`}
+            >
+              {isCleanMode ? <Maximize2 size={13} className="animate-pulse" /> : <Minimize2 size={13} />}
+              <span>Clean Mode</span>
+            </button>
+          </div>
+
+          {isCleanMode && (
+            <div className="hidden sm:flex items-center space-x-1">
+              {(['midnight', 'charcoal', 'sepia'] as const).map((th) => (
+                <button
+                  key={th}
+                  onClick={() => setCleanTheme(th)}
+                  className={`h-6 w-6 rounded-full border flex items-center justify-center transition-all ${th === 'midnight' ? 'bg-[#000000] border-zinc-800' :
+                      th === 'charcoal' ? 'bg-[#212121] border-zinc-700' :
+                        'bg-[#faf0e6] border-zinc-300'
+                    } ${cleanTheme === th ? 'ring-2 ring-blue-500 scale-110' : 'opacity-70'}`}
+                >
+                  {cleanTheme === th && <span className={`h-1.5 w-1.5 rounded-full ${th === 'sepia' ? 'bg-[#212121]' : 'bg-[#fafafa]'}`} />}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {isCleanMode && (
+            <div className="flex items-center space-x-1">
+              {(['sm', 'md', 'lg', 'xl'] as const).map((sz) => (
+                <button
+                  key={sz}
+                  onClick={() => setCleanFontSize(sz)}
+                  className={`px-2 py-0.5 text-[9px] rounded font-mono uppercase tracking-tighter ${cleanFontSize === sz ? 'bg-blue-600 text-white' : 'bg-zinc-900 hover:bg-zinc-800 text-zinc-500'
+                    }`}
+                >
+                  {sz}
+                </button>
+              ))}
+            </div>
+          )}
+
+          <button onClick={closeReader} className="text-portal-text-muted hover:text-portal-text-main p-2">
+            <X size={18} />
+          </button>
+        </div>
+      </nav>
+
+      <div className={`flex-1 transition-all duration-300 ${isCleanMode
+          ? cleanTheme === 'midnight' ? 'bg-[#030303] text-zinc-100' :
+            cleanTheme === 'charcoal' ? 'bg-[#18181b] text-neutral-200' :
+              'bg-[#f4ebd0] text-[#2c221e]'
+          : 'bg-portal-bg text-portal-text-main'
+        }`}>
+        <div className={`max-w-4xl mx-auto px-4 sm:px-6 py-10 sm:py-16 ${isCleanMode ? 'pb-32' : 'pb-20'}`}>
+          {isCleanMode && (
+            <div className="mb-8 p-3 rounded-lg bg-blue-500/10 border border-blue-900/30 text-[11px] font-mono select-none flex items-center justify-between text-blue-400">
+              <div className="flex items-center space-x-1.5">
+                <Feather size={12} className="animate-bounce" />
+                <span>Clean Mode Active: distraction-free layout activated. Adjust background backdrops or scalers in header.</span>
+              </div>
+              <button onClick={() => setIsCleanMode(false)} className="underline hover:text-white">Exit</button>
+            </div>
+          )}
+
+          <h1 className={`text-2xl sm:text-4xl lg:text-5xl font-bold tracking-tight font-serif mb-6 leading-tight ${isCleanMode ? 'text-inherit' : 'text-portal-text-main'}`}>
+            {selectedArticle.title}
+          </h1>
+
+          <div className={`flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b pb-6 mb-8 text-xs font-mono ${isCleanMode ? 'border-zinc-800 text-zinc-400' : 'border-portal-border text-portal-text-muted'}`}>
+            <div className="flex items-center space-x-3">
+              <span className={`font-bold uppercase ${isCleanMode ? 'text-white' : 'text-portal-text-main'}`}>{selectedArticle.source}</span>
+              <span>•</span>
+              <span>Reporting Team</span>
+            </div>
+            <div className="flex items-center space-x-3">
+              <span>Filed {selectedArticle.date}</span>
+              <span>•</span>
+              <span>{selectedArticle.readTime || '5 min read'} Focus</span>
+            </div>
+          </div>
+
+          {/* Fact Check & Bias Radar Block */}
+          <div className={`mb-8 flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center p-4 rounded-xl border ${isCleanMode ? 'bg-zinc-900 border-zinc-800' : 'bg-emerald-50/50 border-emerald-500/20 shadow-sm'}`}>
+            <div className="flex items-center gap-4">
+              <div className={`flex items-center justify-center w-12 h-12 rounded-full border-4 ${isCleanMode ? 'border-cyan-900 text-cyan-400' : 'border-emerald-500/30 text-emerald-600'} relative`}>
+                <span className="text-sm font-black font-mono">94</span>
+                <svg className="absolute inset-0 w-full h-full" viewBox="0 0 36 36">
+                  <path className={`${isCleanMode ? 'text-cyan-400' : 'text-emerald-500'}`} strokeDasharray="94, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" strokeWidth="3" />
+                </svg>
+              </div>
+              <div>
+                <div className={`flex items-center gap-1.5 font-bold uppercase tracking-widest text-[10px] ${isCleanMode ? 'text-cyan-400' : 'text-emerald-600'}`}>
+                  <ShieldCheck size={14} /> <span>Trust Score</span>
+                </div>
+                <div className={`text-xs mt-0.5 ${isCleanMode ? 'text-zinc-400' : 'text-portal-text-muted'}`}>
+                  Cross-referenced with 4 official data sources.
+                </div>
+              </div>
+            </div>
+            <button
+              onClick={() => setShowPerspectives(!showPerspectives)}
+              className={`px-4 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2 border ${isCleanMode ? 'bg-zinc-800 text-zinc-300 border-zinc-700 hover:bg-zinc-700' : 'bg-white text-portal-text-main border-portal-border shadow-sm hover:bg-portal-surface-hover'}`}
+            >
+              <Globe size={14} className={isCleanMode ? 'text-cyan-400' : 'text-portal-brand'} />
+              {showPerspectives ? 'Hide Perspectives' : 'Show Other Perspectives'}
+            </button>
+          </div>
+
+          {showPerspectives && (
+            <div className={`mb-8 p-5 rounded-xl border ${isCleanMode ? 'bg-zinc-900 border-zinc-800' : 'bg-portal-surface border-portal-border shadow-inner'}`}>
+              <h4 className={`text-xs font-bold uppercase tracking-widest mb-4 font-mono ${isCleanMode ? 'text-zinc-400' : 'text-portal-text-muted'}`}>Global Reporting Perspectives</h4>
+              <div className="space-y-3">
+                <div className={`p-3 rounded-lg border ${isCleanMode ? 'bg-[#09090b] border-zinc-800' : 'bg-portal-bg border-portal-border'}`}>
+                  <div className="flex justify-between items-center mb-1">
+                    <span className={`text-[10px] font-bold font-mono uppercase ${isCleanMode ? 'text-zinc-300' : 'text-portal-text-main'}`}>European Union Lens</span>
+                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-600 font-bold">Regulatory Focus</span>
+                  </div>
+                  <p className={`text-xs ${isCleanMode ? 'text-zinc-400' : 'text-portal-text-muted'}`}>Emphasizes the privacy and regulatory implications of this event, rather than the technological breakthrough.</p>
+                </div>
+                <div className={`p-3 rounded-lg border ${isCleanMode ? 'bg-[#09090b] border-zinc-800' : 'bg-portal-bg border-portal-border'}`}>
+                  <div className="flex justify-between items-center mb-1">
+                    <span className={`text-[10px] font-bold font-mono uppercase ${isCleanMode ? 'text-zinc-300' : 'text-portal-text-main'}`}>Asia-Pacific Lens</span>
+                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-600 font-bold">Economic Impact</span>
+                  </div>
+                  <p className={`text-xs ${isCleanMode ? 'text-zinc-400' : 'text-portal-text-muted'}`}>Reports primarily on the supply chain disruptions and market opportunities created in the APAC region.</p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* AI TL;DR Summary Block */}
+          <div className={`mb-8 p-5 sm:p-6 rounded-2xl border-l-4 transition-all ${isCleanMode ? 'bg-zinc-900/50 border-l-cyan-500 border border-zinc-800' : 'bg-portal-surface border-l-portal-brand border border-portal-border shadow-sm'}`}>
+            <div className="flex items-center space-x-2 mb-3">
+              <Sparkles size={16} className={isCleanMode ? 'text-cyan-400' : 'text-portal-brand'} />
+              <h3 className={`font-serif font-bold text-sm uppercase tracking-widest ${isCleanMode ? 'text-white' : 'text-portal-text-main'}`}>
+                Article Summary
+              </h3>
+            </div>
+            <ul className={`space-y-2 text-sm sm:text-base leading-relaxed ${isCleanMode ? 'text-zinc-300' : 'text-portal-text-muted'} font-sans`}>
+              <li className="flex items-start">
+                <span className={`mr-3 mt-2 h-1.5 w-1.5 rounded-full shrink-0 ${isCleanMode ? 'bg-cyan-500' : 'bg-portal-brand'}`}></span>
+                <span>{selectedArticle.content.split('.')[0]}.</span>
+              </li>
+              <li className="flex items-start">
+                <span className={`mr-3 mt-2 h-1.5 w-1.5 rounded-full shrink-0 ${isCleanMode ? 'bg-cyan-500' : 'bg-portal-brand'}`}></span>
+                <span>Key market metrics and structural implications have been highlighted for your immediate review.</span>
+              </li>
+              <li className="flex items-start">
+                <span className={`mr-3 mt-2 h-1.5 w-1.5 rounded-full shrink-0 ${isCleanMode ? 'bg-cyan-500' : 'bg-portal-brand'}`}></span>
+                <span>Further developments are actively being monitored by our global intelligence network.</span>
+              </li>
+            </ul>
+          </div>
+
+          {selectedArticle.imageUrl && (
+            <div className={`rounded-xl overflow-hidden aspect-video max-h-96 w-full mb-8 relative border ${isCleanMode ? 'border-zinc-800 bg-zinc-950' : 'border-portal-border bg-portal-surface'}`}>
+              <img src={selectedArticle.imageUrl} alt={selectedArticle.title} className="w-full h-full object-cover" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent" />
+              <span className="absolute bottom-3 left-3 text-[10px] font-mono text-zinc-300 uppercase tracking-widest bg-black/80 px-2 py-0.5 rounded bg-opacity-70">
+                Analytical Ledger Plate
+              </span>
+            </div>
+          )}
+
+          <div className={`transition-all duration-300 font-serif leading-relaxed ${cleanFontSize === 'sm' ? 'text-xs sm:text-sm' :
+              cleanFontSize === 'md' ? 'text-sm sm:text-base' :
+                cleanFontSize === 'lg' ? 'text-base sm:text-lg' :
+                  'text-lg sm:text-xl'
+            } space-y-6 ${isCleanMode ? (cleanTheme === 'sepia' ? 'text-[#382b26]' : 'text-zinc-200') : 'text-portal-text-main'}`}>
+            {selectedArticle.content.split('\n\n').map((paragraph, pIdx) => (
+              <p key={pIdx} className="first-letter:font-mono">{paragraph}</p>
+            ))}
+
+            {selectedArticle.originalUrl && (
+              <div className={`pt-6 mt-6 border-t ${isCleanMode ? 'border-zinc-800' : 'border-portal-border/50'}`}>
+                <a
+                  href={selectedArticle.originalUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={`inline-flex items-center space-x-2 text-sm font-mono font-bold transition-colors ${isCleanMode ? 'text-cyan-400 hover:text-cyan-300' : 'text-portal-brand hover:opacity-80'
+                    }`}
+                >
+                  <span>Read Original Article</span>
+                  <ExternalLink size={14} />
+                </a>
+              </div>
+            )}
+          </div>
+
+          <div className={`mt-12 p-6 sm:p-8 rounded-xl space-y-4 border ${isCleanMode ? 'bg-zinc-900 border-zinc-800' : 'bg-portal-surface border-portal-border'}`}>
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div className="space-y-1">
+                <span className={`text-[10px] font-mono font-bold uppercase tracking-widest block ${isCleanMode ? 'text-cyan-400' : 'text-portal-accent'}`}>AI INVESTIGATIVE FOLLOW-UP</span>
+                <h4 className={`font-serif font-semibold ${isCleanMode ? 'text-white' : 'text-portal-text-main'}`}>Generate deep-dive reports on this dynamic topic</h4>
+                <p className={`text-xs ${isCleanMode ? 'text-zinc-400' : 'text-portal-text-muted'}`}>Instruct PulseWire AI to construct full-sentence microanalyses, quotes, and supply logs.</p>
+              </div>
+
+              <button
+                disabled={isExpandingDeepDive}
+                onClick={() => handleDeepDiveExpand(selectedArticle.title)}
+                className={`px-4 py-2.5 rounded-lg text-xs font-semibold flex items-center justify-center space-x-2 transition-all font-mono group shrink-0 ${isCleanMode
+                    ? 'bg-[#1a1c24] hover:bg-[#20232e] text-cyan-300 border border-cyan-900/30'
+                    : 'bg-portal-accent hover:opacity-90 text-white shadow-sm'
+                  }`}
+              >
+                {isExpandingDeepDive ? (
+                  <>
+                    <RefreshCw size={14} className="animate-spin" />
+                    <span>Formulating deep-dive dossier...</span>
+                  </>
+                ) : (
+                  <>
+                    <Sparkles size={14} className="animate-pulse group-hover:scale-110 transition-transform" />
+                    <span>Conduct Deep-Dive dossier</span>
+                  </>
+                )}
+              </button>
+            </div>
+
+            {expandedContent && (
+              <div className={`p-4 rounded-lg space-y-3 border ${isCleanMode ? 'bg-[#09090b] border-zinc-800' : 'bg-portal-bg border-portal-border'}`}>
+                <div className={`flex items-center space-x-2 text-[10px] font-mono ${isCleanMode ? 'text-[#22c55e]' : 'text-emerald-500'}`}>
+                  <span className={`inline-block h-1.5 w-1.5 rounded-full ${isCleanMode ? 'bg-[#22c55e]' : 'bg-emerald-500'}`} />
+                  <span>DOSSIER COMPLETED • PulseWire AI formulation output:</span>
+                </div>
+                <div className={`text-xs sm:text-sm font-serif leading-relaxed whitespace-pre-line border-t pt-3 ${isCleanMode ? 'text-zinc-300 border-zinc-850' : 'text-portal-text-main border-portal-border/50'}`}>
+                  {expandedContent}
+                </div>
+                <div className={`flex items-center justify-between pt-2 text-[9px] font-mono ${isCleanMode ? 'text-zinc-500' : 'text-portal-text-muted'}`}>
+                  <span>Interbank validation verified</span>
+                  <span>Today, {new Date().toLocaleTimeString()}</span>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      <footer className="sticky bottom-0 h-14 bg-portal-surface border-t border-portal-border flex items-center justify-between px-6 shrink-0 z-50">
+        <div className="flex items-center space-x-4 text-xs text-portal-text-muted">
+          <button
+            onClick={(e) => toggleBookmark(selectedArticle.id, e)}
+            className="flex items-center space-x-1 hover:text-portal-text-main"
+          >
+            <BookMarked size={14} className={bookmarks.includes(selectedArticle.id) ? "text-yellow-500 fill-yellow-500" : ""} />
+            <span>{bookmarks.includes(selectedArticle.id) ? 'Bookmarked' : 'Add to Focus'}</span>
+          </button>
+          <span>•</span>
+          <button
+            onClick={() => {
+              navigator.clipboard.writeText(window.location.href);
+              alert("Editorial transmission URL copied to system clipboard.");
+            }}
+            className="flex items-center space-x-1 hover:text-portal-text-main"
+          >
+            <Share2 size={13} />
+            <span>Transmission link</span>
+          </button>
+        </div>
+        <button
+          onClick={closeReader}
+          className="bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs uppercase px-4 py-2 rounded-lg"
+        >
+          Back to Portal
+        </button>
+      </footer>
+    </div>
+  );
+}

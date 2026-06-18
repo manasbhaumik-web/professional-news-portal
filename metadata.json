@@ -1,0 +1,6 @@
+{
+  "name": "Professional News Portal",
+  "description": "A sophisticated news platform featuring a distraction-free Clean Mode, custom personalized feed generated with Gemini, and real-time push notification alerts.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

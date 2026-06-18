@@ -1,0 +1,144 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,300;0,400;0,500;0,700;0,900;1,400&family=JetBrains+Mono:wght@400;500;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Roboto", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Roboto", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+
+  --color-portal-bg: #0f172a;
+  --color-portal-surface: #1e293b;
+  --color-portal-surface-hover: #334155;
+  --color-portal-border: #334155;
+  --color-portal-text-main: #f8fafc;
+  --color-portal-text-muted: #94a3b8;
+  --color-portal-brand: #2563eb;
+  --color-portal-brand-hover: #1d4ed8;
+  --color-portal-accent: #22d3ee;
+}
+
+.theme-sepia {
+  --color-portal-bg: #FAF3E3;
+  --color-portal-surface: #EDE6D6;
+  --color-portal-surface-hover: #E2DAC5;
+  --color-portal-border: #DFD5C1;
+  --color-portal-text-main: #2C2114;
+  --color-portal-text-muted: #5C4D3E;
+  --color-portal-brand: #7C5A3E;
+  --color-portal-brand-hover: #684C33;
+  --color-portal-accent: #8C6239;
+}
+
+.theme-light {
+  --color-portal-bg: #FAF9F6;
+  --color-portal-surface: #ffffff;
+  --color-portal-surface-hover: #f8fafc;
+  --color-portal-border: rgba(229, 229, 229, 0.8);
+  --color-portal-text-main: #171717;
+  --color-portal-text-muted: #737373;
+  --color-portal-brand: #2563eb;
+  --color-portal-brand-hover: #1d4ed8;
+  --color-portal-accent: #2563eb;
+}
+
+/* Explicit Utility Classes to enforce theme colors */
+.bg-portal-bg {
+  background-color: var(--color-portal-bg);
+}
+
+.bg-portal-surface {
+  background-color: var(--color-portal-surface);
+}
+
+.bg-portal-surface-hover:hover {
+  background-color: var(--color-portal-surface-hover);
+}
+
+.hover\:bg-portal-surface-hover:hover {
+  background-color: var(--color-portal-surface-hover);
+}
+
+.border-portal-border {
+  border-color: var(--color-portal-border);
+}
+
+.text-portal-text-main {
+  color: var(--color-portal-text-main);
+}
+
+.hover\:text-portal-text-main:hover {
+  color: var(--color-portal-text-main);
+}
+
+.text-portal-text-muted {
+  color: var(--color-portal-text-muted);
+}
+
+.bg-portal-brand {
+  background-color: var(--color-portal-brand);
+}
+
+.hover\:bg-portal-brand-hover:hover {
+  background-color: var(--color-portal-brand-hover);
+}
+
+.border-portal-brand {
+  border-color: var(--color-portal-brand);
+}
+
+.text-portal-brand {
+  color: var(--color-portal-brand);
+}
+
+.text-portal-accent {
+  color: var(--color-portal-accent);
+}
+
+.bg-portal-accent {
+  background-color: var(--color-portal-accent);
+}
+
+.ring-portal-brand {
+  --tw-ring-color: var(--color-portal-brand);
+}
+
+.ring-portal-accent {
+  --tw-ring-color: var(--color-portal-accent);
+}
+
+.shadow-portal-brand {
+  --tw-shadow-color: var(--color-portal-brand);
+}
+
+/* Custom fade scrollbar styling for an elegant editorial feel */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(156, 163, 175, 0.3);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(156, 163, 175, 0.5);
+}
+
+/* Reader gradient highlight */
+.reader-gradient {
+  background: linear-gradient(180deg, rgba(250, 248, 245, 0) 0%, rgba(250, 248, 245, 1) 100%);
+}
+
+.dark-reader-gradient {
+  background: linear-gradient(180deg, rgba(24, 24, 27, 0) 0%, rgba(24, 24, 27, 1) 100%);
+}
+
+/* Glow effects */
+.glow-accent {
+  box-shadow: 0 0 20px rgba(14, 165, 233, 0.15);
+}
