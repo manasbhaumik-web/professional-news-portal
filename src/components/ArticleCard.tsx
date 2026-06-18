@@ -13,6 +13,7 @@ interface ArticleCardProps {
   isCustomFeed?: boolean;
   failedImages?: string[];
   setFailedImages?: (f: any) => void;
+  minimal?: boolean;
 }
 
 const itemVariants = {
@@ -28,7 +29,8 @@ export default React.memo(function ArticleCard({
   isBookmarked,
   isCustomFeed = false,
   failedImages = [],
-  setFailedImages
+  setFailedImages,
+  minimal = false
 }: ArticleCardProps) {
   const [imgError, setImgError] = useState(false);
 
@@ -54,11 +56,16 @@ export default React.memo(function ArticleCard({
     }
   }
 
+  if (minimal) {
+    bentoClass = 'flex-row items-center';
+    imageClass = 'w-24 h-24 sm:w-28 sm:h-28 rounded-xl';
+  }
+
   return (
     <motion.article
       variants={itemVariants}
       onClick={() => handleOpenArticle(art)}
-      className={`transition-all duration-300 group cursor-pointer flex gap-5 p-5 bg-portal-surface border border-portal-border hover:bg-portal-surface-hover shadow-sm hover:shadow-md transform rounded-3xl ${bentoClass}`}
+      className={`transition-all duration-300 group cursor-pointer flex gap-5 p-5 bg-portal-surface border border-portal-border hover:bg-portal-surface-hover shadow-sm hover:shadow-md transform rounded-3xl h-full ${bentoClass}`}
     >
       {art.imageUrl && (
         <div className={`overflow-hidden shrink-0 relative bg-portal-bg ${imageClass}`}>
@@ -87,51 +94,55 @@ export default React.memo(function ArticleCard({
       )}
 
       <div className={`flex-1 flex flex-col ${isHero ? 'justify-center' : ''} space-y-3`}>
-        <header className="flex items-center justify-between text-[11px] font-mono uppercase">
-          <div className="flex items-center space-x-2">
-            <span className="font-bold tracking-wider text-portal-accent">{art.category}</span>
-            <span className="text-portal-text-muted">•</span>
-            <span className="text-portal-text-muted line-clamp-1">{art.source}</span>
-          </div>
-          <span className="text-[10px] text-portal-text-muted shrink-0 ml-2 text-right">{art.timeAgo || art.date}</span>
-        </header>
+        {!minimal && (
+          <header className="flex items-center justify-between text-[11px] font-mono uppercase">
+            <div className="flex items-center space-x-2">
+              <span className="font-bold tracking-wider text-portal-accent">{art.category}</span>
+              <span className="text-portal-text-muted">•</span>
+              <span className="text-portal-text-muted line-clamp-1">{art.source}</span>
+            </div>
+            <span className="text-[10px] text-portal-text-muted shrink-0 ml-2 text-right">{art.timeAgo || art.date}</span>
+          </header>
+        )}
 
-        <h4 className={`text-portal-text-main group-hover:text-portal-brand transition-colors font-serif font-bold leading-snug ${isHero ? 'text-2xl' : isCompact ? 'text-base' : 'text-xl'}`}>
+        <h4 className={`text-portal-text-main group-hover:text-portal-brand transition-colors font-serif font-bold leading-snug ${isHero ? 'text-2xl' : isCompact ? 'text-base' : 'text-xl'} ${minimal ? 'text-left line-clamp-3 text-base sm:text-lg' : ''}`}>
           {art.title}
         </h4>
 
-        {!isCompact && (
+        {!isCompact && !minimal && (
           <p className="text-sm line-clamp-3 leading-relaxed text-portal-text-muted">
             {art.summary}
           </p>
         )}
 
-        <footer className="pt-2 flex items-center justify-between text-[10px] font-mono">
-          <div className="flex items-center space-x-3 text-portal-text-muted">
-            <span className="flex items-center space-x-1">
-              <Clock size={12} />
-              <span>{art.readTime || '4 min read'}</span>
-            </span>
-            <span>•</span>
-            <span className="flex items-center space-x-1">
-              <Eye size={12} />
-              <span>{art.views?.toLocaleString() || 400} views</span>
-            </span>
-          </div>
+        {!minimal && (
+          <footer className="pt-2 flex items-center justify-between text-[10px] font-mono mt-auto">
+            <div className="flex items-center space-x-3 text-portal-text-muted">
+              <span className="flex items-center space-x-1">
+                <Clock size={12} />
+                <span>{art.readTime || '4 min read'}</span>
+              </span>
+              <span>•</span>
+              <span className="flex items-center space-x-1">
+                <Eye size={12} />
+                <span>{art.views?.toLocaleString() || 400} views</span>
+              </span>
+            </div>
 
-          <div className="flex items-center space-x-2">
-            <button
-              onClick={(e) => toggleBookmark(art.id, e)}
-              className="p-1 rounded hover:text-portal-text-main hover:bg-portal-bg text-portal-text-muted transition-colors"
-              title="Bookmark article"
-            >
-              <BookMarked size={13} className={isBookmarked ? "text-yellow-500 fill-yellow-500" : ""} />
-            </button>
-            <span className="group-hover:translate-x-1 transition-transform inline-flex items-center font-bold text-portal-brand">
-              Review {isCustomFeed ? 'custom briefing' : 'analysis'} <ChevronRight size={12} />
-            </span>
-          </div>
-        </footer>
+            <div className="flex items-center space-x-2">
+              <button
+                onClick={(e) => toggleBookmark(art.id, e)}
+                className="p-1 rounded hover:text-portal-text-main hover:bg-portal-bg text-portal-text-muted transition-colors"
+                title="Bookmark article"
+              >
+                <BookMarked size={13} className={isBookmarked ? "text-yellow-500 fill-yellow-500" : ""} />
+              </button>
+              <span className="group-hover:translate-x-1 transition-transform inline-flex items-center font-bold text-portal-brand">
+                Review {isCustomFeed ? 'custom briefing' : 'analysis'} <ChevronRight size={12} />
+              </span>
+            </div>
+          </footer>
+        )}
       </div>
     </motion.article>
   );

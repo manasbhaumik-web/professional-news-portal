@@ -24,7 +24,7 @@ const parser = new Parser({
 const app = express();
 app.use(express.json());
 
-const PORT = 3000;
+const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3001;
 
 // Initialize Gemini SDK with User-Agent header as required by the instruction
 const ai = new GoogleGenAI({

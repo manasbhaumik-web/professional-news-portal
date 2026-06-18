@@ -674,7 +674,7 @@ export default function App() {
                       </div>
                       <div className="flex overflow-x-auto gap-4 snap-x snap-mandatory pb-4 hidden-scrollbar" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
                          {overflowArticles.map((art) => (
-                           <div key={art.id} className="min-w-[300px] w-[300px] sm:min-w-[400px] sm:w-[400px] snap-center shrink-0">
+                           <div key={art.id} className="h-full min-w-[280px] w-[280px] sm:min-w-[340px] sm:w-[340px] snap-center shrink-0">
                              <ArticleCard
                                 art={art}
                                 handleOpenArticle={handleOpenArticle}
@@ -682,6 +682,7 @@ export default function App() {
                                 isBookmarked={bookmarks.includes(art.id)}
                                 failedImages={failedImages}
                                 setFailedImages={setFailedImages}
+                                minimal={true}
                              />
                            </div>
                          ))}
@@ -693,7 +694,17 @@ export default function App() {
 
               <React.Suspense fallback={<div className="p-10 flex justify-center text-portal-brand animate-pulse font-mono tracking-widest text-xs">LOADING PORTAL...</div>}>
                 {activeTab === 'globalTv' && <GlobalPage theme={portalTheme} />}
-                {activeTab === 'local' && <LocalPage theme={portalTheme} />}
+                {activeTab === 'local' && (
+                  <LocalPage
+                    theme={portalTheme}
+                    articles={trendingArticles}
+                    handleOpenArticle={handleOpenArticle}
+                    toggleBookmark={toggleBookmark}
+                    bookmarks={bookmarks}
+                    failedImages={failedImages}
+                    setFailedImages={setFailedImages}
+                  />
+                )}
                 {activeTab === 'politics' && (
                   <PoliticsPage
                     theme={portalTheme}

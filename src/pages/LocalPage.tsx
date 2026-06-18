@@ -1,17 +1,34 @@
 import React, { useState, useEffect } from 'react';
-import { MapPin, Users, CloudRain, AlertTriangle, Calendar, ChevronRight, Activity, Clock, MoreHorizontal, Globe, ThumbsUp, MessageCircle, Share2 } from 'lucide-react';
+import { MapPin, Users, CloudRain, AlertTriangle, Calendar, ChevronRight, Activity, Clock, MoreHorizontal, Globe, ThumbsUp, MessageCircle, Share2, Rss } from 'lucide-react';
+import ArticleCard from '../components/ArticleCard';
+import { NewsArticle } from '../types';
 
 interface LocalPageProps {
   theme: 'dark' | 'light' | 'sepia';
+  articles: NewsArticle[];
+  handleOpenArticle: (art: NewsArticle) => void;
+  toggleBookmark: (id: string, e: React.MouseEvent) => void;
+  bookmarks: string[];
+  failedImages: string[];
+  setFailedImages: (f: any) => void;
 }
 
-export default function LocalPage({ theme }: LocalPageProps) {
+export default function LocalPage({ 
+  theme,
+  articles,
+  handleOpenArticle,
+  toggleBookmark,
+  bookmarks,
+  failedImages,
+  setFailedImages
+}: LocalPageProps) {
   const isDark = theme === 'dark';
   const isSepia = theme === 'sepia';
 
   const [citizenReports, setCitizenReports] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [locationName, setLocationName] = useState("San Francisco, CA");
+  const [showCommunity, setShowCommunity] = useState(false);
 
   useEffect(() => {
     if ('geolocation' in navigator) {
@@ -90,143 +107,149 @@ export default function LocalPage({ theme }: LocalPageProps) {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      {/* Toggles */}
+      <div className="flex items-center gap-4 pb-2 mt-4 mb-2">
+        <button 
+          onClick={() => setShowCommunity(false)}
+          className={`px-4 py-2 font-bold font-mono text-xs uppercase tracking-wider rounded-lg transition-colors border ${!showCommunity ? 'bg-portal-brand text-white border-portal-brand' : `bg-portal-surface text-portal-text-muted hover:text-portal-text-main border-portal-border`}`}
+        >
+          <div className="flex items-center gap-2"><Rss size={14} /> Local News Feed</div>
+        </button>
+        <button 
+          onClick={() => setShowCommunity(true)}
+          className={`px-4 py-2 font-bold font-mono text-xs uppercase tracking-wider rounded-lg transition-colors border ${showCommunity ? 'bg-portal-brand text-white border-portal-brand' : `bg-portal-surface text-portal-text-muted hover:text-portal-text-main border-portal-border`}`}
+        >
+          <div className="flex items-center gap-2"><Users size={14} /> Community Intel</div>
+        </button>
+      </div>
 
-        {/* Main Local News Column */}
-        <div className="lg:col-span-2 space-y-6">
-          <div className={`p-6 rounded-2xl border-2 border-portal-brand/40 shadow-[0_0_25px_rgba(16,185,129,0.15)] ${cardBgClass} relative overflow-hidden ring-1 ring-portal-brand/20`}>
-            <div className="absolute inset-0 bg-gradient-to-br from-portal-brand/5 to-transparent pointer-events-none" />
-            <div className="relative z-10 flex items-center justify-between mb-6">
-              <h3 className={`font-serif font-black text-2xl flex items-center gap-2 ${textPrimaryClass}`}>
-                <Activity className="text-portal-brand" /> Live Citizen Intel
-              </h3>
-              <span className={`text-[10px] font-mono tracking-widest uppercase font-bold px-2 py-1 rounded bg-portal-brand/10 text-portal-brand border border-portal-brand/20`}>Real-Time Feed</span>
+      <div className="w-full">
+        {!showCommunity ? (
+          <div className="space-y-6">
+            <div className={`p-6 rounded-2xl border ${borderClass} ${cardBgClass}`}>
+              <div className="relative z-10 flex items-center justify-between mb-6">
+                <h3 className={`font-serif font-black text-2xl flex items-center gap-2 ${textPrimaryClass}`}>
+                  <Rss className="text-portal-brand" /> Free News Feeds - {locationName}
+                </h3>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 auto-rows-auto">
+                {articles.slice(0, 10).map((art, idx) => (
+                  <ArticleCard
+                    key={art.id}
+                    index={idx}
+                    art={art}
+                    handleOpenArticle={handleOpenArticle}
+                    toggleBookmark={toggleBookmark}
+                    isBookmarked={bookmarks.includes(art.id)}
+                    failedImages={failedImages}
+                    setFailedImages={setFailedImages}
+                  />
+                ))}
+              </div>
             </div>
+          </div>
+        ) : (
+          <div className="space-y-6">
+            <div className={`p-6 rounded-2xl border-2 border-portal-brand/40 shadow-[0_0_25px_rgba(16,185,129,0.15)] ${cardBgClass} relative overflow-hidden ring-1 ring-portal-brand/20`}>
+              <div className="absolute inset-0 bg-gradient-to-br from-portal-brand/5 to-transparent pointer-events-none" />
+              <div className="relative z-10 flex items-center justify-between mb-6">
+                <h3 className={`font-serif font-black text-2xl flex items-center gap-2 ${textPrimaryClass}`}>
+                  <Activity className="text-portal-brand" /> Live Citizen Intel
+                </h3>
+                <span className={`text-[10px] font-mono tracking-widest uppercase font-bold px-2 py-1 rounded bg-portal-brand/10 text-portal-brand border border-portal-brand/20`}>Real-Time Feed</span>
+              </div>
 
-            <div className="space-y-4">
-              {isLoading ? (
-                <div className={`p-8 text-center border border-dashed rounded-xl ${borderClass} ${textMutedClass} font-mono text-xs uppercase tracking-widest`}>
-                  Syncing local reports...
-                </div>
-              ) : citizenReports.length === 0 ? (
-                <div className={`p-8 text-center border border-dashed rounded-xl ${borderClass} ${textMutedClass} font-mono text-xs flex flex-col items-center`}>
-                  <AlertTriangle size={32} className="mb-4 opacity-50" />
-                  <span className="uppercase tracking-widest mb-2 font-bold">No incidents detected</span>
-                  <p className="opacity-70 normal-case tracking-normal">The grid is quiet. Be the first to report an event from your sector.</p>
-                </div>
-              ) : (
-                citizenReports.map((report) => (
-                  <div key={report.id} className={`relative z-10 flex flex-col p-4 sm:p-5 rounded-xl border border-portal-border shadow-sm transition-all bg-portal-surface`}>
-                    {/* Facebook Post Header */}
-                    <div className="flex items-start justify-between mb-3">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-portal-brand to-portal-accent p-0.5 shrink-0">
-                          <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${report.id}`} alt="User Avatar" className="w-full h-full rounded-full bg-white object-cover" />
-                        </div>
-                        <div>
-                          <h4 className={`font-bold text-sm leading-none hover:underline cursor-pointer ${textPrimaryClass}`}>
-                            Anonymous Resident
-                          </h4>
-                          <div className={`flex items-center gap-1 mt-1 text-[11px] ${textMutedClass}`}>
-                            <span>{new Date(report.timestamp).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
-                            <span>·</span>
-                            <Globe size={10} />
-                            <span>·</span>
-                            <span className="font-semibold text-portal-brand">{report.location}</span>
+              <div className="space-y-4">
+                {isLoading ? (
+                  <div className={`p-8 text-center border border-dashed rounded-xl ${borderClass} ${textMutedClass} font-mono text-xs uppercase tracking-widest`}>
+                    Syncing local reports...
+                  </div>
+                ) : citizenReports.length === 0 ? (
+                  <div className={`p-8 text-center border border-dashed rounded-xl ${borderClass} ${textMutedClass} font-mono text-xs flex flex-col items-center`}>
+                    <AlertTriangle size={32} className="mb-4 opacity-50" />
+                    <span className="uppercase tracking-widest mb-2 font-bold">No incidents detected</span>
+                    <p className="opacity-70 normal-case tracking-normal">The grid is quiet. Be the first to report an event from your sector.</p>
+                  </div>
+                ) : (
+                  citizenReports.map((report) => (
+                    <div key={report.id} className={`relative z-10 flex flex-col p-4 sm:p-5 rounded-xl border border-portal-border shadow-sm transition-all bg-portal-surface`}>
+                      {/* Facebook Post Header */}
+                      <div className="flex items-start justify-between mb-3">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-portal-brand to-portal-accent p-0.5 shrink-0">
+                            <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${report.id}`} alt="User Avatar" className="w-full h-full rounded-full bg-white object-cover" />
+                          </div>
+                          <div>
+                            <h4 className={`font-bold text-sm leading-none hover:underline cursor-pointer ${textPrimaryClass}`}>
+                              Anonymous Resident
+                            </h4>
+                            <div className={`flex items-center gap-1 mt-1 text-[11px] ${textMutedClass}`}>
+                              <span>{new Date(report.timestamp).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
+                              <span>·</span>
+                              <Globe size={10} />
+                              <span>·</span>
+                              <span className="font-semibold text-portal-brand">{report.location}</span>
+                            </div>
                           </div>
                         </div>
+                        <button className={`p-1.5 rounded-full hover:bg-portal-surface-hover transition-colors ${textMutedClass}`}>
+                          <MoreHorizontal size={16} />
+                        </button>
                       </div>
-                      <button className={`p-1.5 rounded-full hover:bg-portal-surface-hover transition-colors ${textMutedClass}`}>
-                        <MoreHorizontal size={16} />
-                      </button>
-                    </div>
 
-                    {/* Post Content */}
-                    <div className="mb-3">
-                      <div className={`text-[10px] font-mono tracking-widest font-bold uppercase mb-2 ${report.category === 'Alert' ? 'text-red-500' : 'text-portal-brand'}`}>
-                        {report.category}
-                      </div>
-                      <h4 className={`font-bold text-base mb-1 ${textPrimaryClass}`}>
-                        {report.headline}
-                      </h4>
-                      <p className={`text-sm whitespace-pre-wrap leading-relaxed ${textPrimaryClass}`}>
-                        {report.details}
-                      </p>
-                    </div>
-
-                    {/* Attached Media (if any) */}
-                    {report.mediaUrl && (
-                      <div className="mb-3 -mx-4 sm:-mx-5 border-y border-portal-border bg-black">
-                        <img src={report.mediaUrl} alt="Report media" className="w-full h-auto object-contain max-h-96 mx-auto" onError={(e) => (e.currentTarget.style.display = 'none')} />
-                      </div>
-                    )}
-
-                    {/* Engagement Stats */}
-                    <div className={`flex items-center justify-between text-[11px] py-2 border-b border-portal-border ${textMutedClass}`}>
-                      <div className="flex items-center gap-1">
-                        <div className="w-4 h-4 rounded-full bg-portal-brand flex items-center justify-center">
-                          <ThumbsUp size={8} className="text-white fill-current" />
+                      {/* Post Content */}
+                      <div className="mb-3">
+                        <div className={`text-[10px] font-mono tracking-widest font-bold uppercase mb-2 ${report.category === 'Alert' ? 'text-red-500' : 'text-portal-brand'}`}>
+                          {report.category}
                         </div>
-                        <span>12</span>
+                        <h4 className={`font-bold text-base mb-1 ${textPrimaryClass}`}>
+                          {report.headline}
+                        </h4>
+                        <p className={`text-sm whitespace-pre-wrap leading-relaxed ${textPrimaryClass}`}>
+                          {report.details}
+                        </p>
                       </div>
-                      <div className="flex gap-3 hover:underline cursor-pointer">
-                        <span>4 Comments</span>
-                        <span>2 Shares</span>
+
+                      {/* Attached Media (if any) */}
+                      {report.mediaUrl && (
+                        <div className="mb-3 -mx-4 sm:-mx-5 border-y border-portal-border bg-black">
+                          <img src={report.mediaUrl} alt="Report media" className="w-full h-auto object-contain max-h-96 mx-auto" onError={(e) => (e.currentTarget.style.display = 'none')} />
+                        </div>
+                      )}
+
+                      {/* Engagement Stats */}
+                      <div className={`flex items-center justify-between text-[11px] py-2 border-b border-portal-border ${textMutedClass}`}>
+                        <div className="flex items-center gap-1">
+                          <div className="w-4 h-4 rounded-full bg-portal-brand flex items-center justify-center">
+                            <ThumbsUp size={8} className="text-white fill-current" />
+                          </div>
+                          <span>12</span>
+                        </div>
+                        <div className="flex gap-3 hover:underline cursor-pointer">
+                          <span>4 Comments</span>
+                          <span>2 Shares</span>
+                        </div>
+                      </div>
+
+                      {/* Facebook Actions */}
+                      <div className="flex items-center justify-between pt-1">
+                        <button className={`flex-1 flex items-center justify-center gap-2 py-1.5 rounded-md hover:bg-portal-surface-hover transition-colors text-sm font-semibold ${textMutedClass}`}>
+                          <ThumbsUp size={18} /> Like
+                        </button>
+                        <button className={`flex-1 flex items-center justify-center gap-2 py-1.5 rounded-md hover:bg-portal-surface-hover transition-colors text-sm font-semibold ${textMutedClass}`}>
+                          <MessageCircle size={18} /> Comment
+                        </button>
+                        <button className={`flex-1 flex items-center justify-center gap-2 py-1.5 rounded-md hover:bg-portal-surface-hover transition-colors text-sm font-semibold ${textMutedClass}`}>
+                          <Share2 size={18} /> Share
+                        </button>
                       </div>
                     </div>
-
-                    {/* Facebook Actions */}
-                    <div className="flex items-center justify-between pt-1">
-                      <button className={`flex-1 flex items-center justify-center gap-2 py-1.5 rounded-md hover:bg-portal-surface-hover transition-colors text-sm font-semibold ${textMutedClass}`}>
-                        <ThumbsUp size={18} /> Like
-                      </button>
-                      <button className={`flex-1 flex items-center justify-center gap-2 py-1.5 rounded-md hover:bg-portal-surface-hover transition-colors text-sm font-semibold ${textMutedClass}`}>
-                        <MessageCircle size={18} /> Comment
-                      </button>
-                      <button className={`flex-1 flex items-center justify-center gap-2 py-1.5 rounded-md hover:bg-portal-surface-hover transition-colors text-sm font-semibold ${textMutedClass}`}>
-                        <Share2 size={18} /> Share
-                      </button>
-                    </div>
-                  </div>
-                ))
-              )}
+                  ))
+                )}
+              </div>
             </div>
           </div>
-        </div>
-
-        {/* Sidebar: Upcoming Events */}
-        <div className="space-y-6">
-          <div className={`p-6 rounded-2xl border ${borderClass} ${cardBgClass}`}>
-            <div className="flex items-center justify-between mb-6">
-              <h3 className={`font-serif font-black text-lg ${textPrimaryClass}`}>Community Events</h3>
-              <Calendar size={18} className={textMutedClass} />
-            </div>
-
-            <div className="space-y-4">
-              {localEvents.map((event, idx) => (
-                <div key={idx} className={`pb-4 ${idx !== localEvents.length - 1 ? `border-b ${borderClass}` : ''}`}>
-                  <div className={`text-[9px] font-mono tracking-widest font-bold uppercase mb-1 ${textMutedClass}`}>
-                    {event.type}
-                  </div>
-                  <h4 className={`font-bold text-sm leading-snug mb-2 ${textPrimaryClass}`}>
-                    {event.title}
-                  </h4>
-                  <div className="flex items-center justify-between text-xs">
-                    <span className={`font-mono ${textMutedClass}`}>{event.time}</span>
-                    <span className="flex items-center gap-1 text-blue-500 font-medium">
-                      <Users size={12} /> {event.attendees}
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <button className={`w-full mt-4 py-2 text-xs font-mono font-bold uppercase tracking-wider rounded-lg border ${borderClass} hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors flex items-center justify-center gap-1 ${textPrimaryClass}`}>
-              View Full Calendar <ChevronRight size={14} />
-            </button>
-          </div>
-        </div>
-
+        )}
       </div>
 
     </div>
