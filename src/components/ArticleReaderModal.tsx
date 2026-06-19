@@ -18,6 +18,19 @@ interface ArticleReaderModalProps {
   bookmarks: string[];
 }
 
+const cleanHtmlText = (text: string) => {
+  if (!text) return '';
+  return text
+    .replace(/<[^>]*>?/gm, '') // Strip HTML tags
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&quot;/g, '"')
+    .replace(/&apos;/g, "'")
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .trim();
+};
+
 export default function ArticleReaderModal({
   selectedArticle,
   setSelectedArticle,
@@ -210,9 +223,13 @@ export default function ArticleReaderModal({
                     </p>
                   </div>
                 ) : (
-                  (fullContent || selectedArticle.content || '').split('\n\n').map((paragraph, pIdx) => (
-                    <p key={pIdx} className="first-letter:font-mono">{paragraph}</p>
-                  ))
+                  (fullContent || selectedArticle.content || '').split('\n\n').map((paragraph, pIdx) => {
+                    const cleaned = cleanHtmlText(paragraph);
+                    if (!cleaned) return null;
+                    return (
+                      <p key={pIdx} className="first-letter:font-mono">{cleaned}</p>
+                    );
+                  })
                 )}
 
                 {selectedArticle.originalUrl && (
