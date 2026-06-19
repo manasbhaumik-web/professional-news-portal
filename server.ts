@@ -3,6 +3,7 @@ import path from "path";
 import { createServer as createViteServer } from "vite";
 import dotenv from "dotenv";
 import Parser from "rss-parser";
+import * as cheerio from "cheerio";
 
 dotenv.config();
 
@@ -643,6 +644,93 @@ app.post("/api/news/summarize", async (req, res) => {
   } catch (error: any) {
     console.error("Local summary generation error:", error);
     res.status(500).json({ error: "Failed to summarize article content." });
+  }
+});
+
+// POST to scrape and extract full news report text from a URL using cheerio
+app.post("/api/news/full-content", async (req, res) => {
+  const { url, fallbackSummary } = req.body;
+  if (!url) {
+    return res.status(400).json({ error: "URL parameter is required." });
+  }
+
+  try {
+    const fetchRes = await fetch(url, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+      },
+      signal: AbortSignal.timeout(10000)
+    });
+
+    if (!fetchRes.ok) {
+      throw new Error(`Failed to fetch original page. Status: ${fetchRes.status}`);
+    }
+
+    const html = await fetchRes.text();
+    const $ = cheerio.load(html);
+
+    // Remove scripts, stylesheets, and irrelevant modules
+    $('script, style, svg, noscript, footer, nav, header, aside, iframe, .cookie-notice, .footer, .header, .nav').remove();
+
+    const paragraphs: string[] = [];
+    const selectors = [
+      'article p',
+      '.article-body p',
+      '.story-body p',
+      '.main-content p',
+      '.entry-content p',
+      'main p',
+      '.story p',
+      '.content p',
+      '.post-content p',
+      '.article__body p'
+    ];
+
+    $(selectors.join(', ')).each((_, el) => {
+      const text = $(el).text().trim();
+      if (text.length > 50 &&
+          !text.toLowerCase().includes('cookie') &&
+          !text.toLowerCase().includes('privacy policy') &&
+          !text.toLowerCase().includes('terms of service') &&
+          !text.toLowerCase().includes('subscribe') &&
+          !text.toLowerCase().includes('sign in')) {
+        paragraphs.push(text);
+      }
+    });
+
+    // Fallback to any paragraphs if container-specific selectors yielded nothing
+    if (paragraphs.length === 0) {
+      $('p').each((_, el) => {
+        const text = $(el).text().trim();
+        if (text.length > 80 &&
+            !text.toLowerCase().includes('cookie') &&
+            !text.toLowerCase().includes('privacy policy') &&
+            !text.toLowerCase().includes('terms of service') &&
+            !text.toLowerCase().includes('subscribe') &&
+            !text.toLowerCase().includes('sign in')) {
+          paragraphs.push(text);
+        }
+      });
+    }
+
+    if (paragraphs.length > 0) {
+      return res.json({ content: paragraphs.join('\n\n') });
+    }
+
+    // If scraping returned no text (e.g. paywall/anti-scraping), use fallback summary
+    return res.json({
+      content: fallbackSummary 
+        ? `${fallbackSummary}\n\n(Note: The full report text is protected behind a paywall or login screen. Please click the link below to read the original article directly.)`
+        : "The full report text is protected or could not be parsed. Please click the link below to read the original article directly."
+    });
+
+  } catch (error: any) {
+    console.error("Full content scraping error:", error.message);
+    return res.json({
+      content: fallbackSummary 
+        ? `${fallbackSummary}\n\n(Note: Connection to the original news server timed out or failed. Please click the link below to view the original report.)`
+        : "Failed to establish a connection to the original news host. Please check the original source link below."
+    });
   }
 });
 

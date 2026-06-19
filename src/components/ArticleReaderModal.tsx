@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ArrowLeft, Maximize2, Minimize2, X, Feather, RefreshCw, Sparkles, BookMarked, Share2, ExternalLink, ShieldCheck, Globe } from 'lucide-react';
 import { NewsArticle } from '../types';
 
@@ -34,11 +34,44 @@ export default function ArticleReaderModal({
   bookmarks
 }: ArticleReaderModalProps) {
   const [showPerspectives, setShowPerspectives] = useState(false);
+  const [fullContent, setFullContent] = useState<string | null>(null);
+  const [isScraping, setIsScraping] = useState(false);
 
   const closeReader = () => {
     setSelectedArticle(null);
     setIsCleanMode(false);
   };
+
+  useEffect(() => {
+    if (!selectedArticle.originalUrl) {
+      setFullContent(selectedArticle.content);
+      return;
+    }
+
+    const fetchFullReport = async () => {
+      setIsScraping(true);
+      setFullContent(null);
+      try {
+        const res = await fetch('/api/news/full-content', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            url: selectedArticle.originalUrl,
+            fallbackSummary: selectedArticle.summary || selectedArticle.content
+          })
+        });
+        if (!res.ok) throw new Error("Scraping failed");
+        const data = await res.json();
+        setFullContent(data.content);
+      } catch (err) {
+        setFullContent(selectedArticle.content || selectedArticle.summary || "Failed to load report.");
+      } finally {
+        setIsScraping(false);
+      }
+    };
+
+    fetchFullReport();
+  }, [selectedArticle.id, selectedArticle.originalUrl]);
 
   return (
     <div id="article-reader-root-modal" className="fixed inset-0 bg-portal-bg bg-opacity-95 z-50 flex flex-col overflow-y-auto antialiased">
@@ -169,9 +202,18 @@ export default function ArticleReaderModal({
                     cleanFontSize === 'lg' ? 'text-base sm:text-lg' :
                       'text-lg sm:text-xl'
                 } space-y-6 ${isCleanMode ? (cleanTheme === 'sepia' ? 'text-[#382b26]' : 'text-zinc-200') : 'text-portal-text-main'}`}>
-                {selectedArticle.content.split('\n\n').map((paragraph, pIdx) => (
-                  <p key={pIdx} className="first-letter:font-mono">{paragraph}</p>
-                ))}
+                {isScraping ? (
+                  <div className="py-12 flex flex-col items-center justify-center space-y-4">
+                    <RefreshCw size={24} className="animate-spin text-portal-brand" />
+                    <p className="text-xs font-mono text-portal-text-muted animate-pulse">
+                      Connecting secure stream to original news wire...
+                    </p>
+                  </div>
+                ) : (
+                  (fullContent || selectedArticle.content || '').split('\n\n').map((paragraph, pIdx) => (
+                    <p key={pIdx} className="first-letter:font-mono">{paragraph}</p>
+                  ))
+                )}
 
                 {selectedArticle.originalUrl && (
                   <div className={`pt-6 mt-6 border-t ${isCleanMode ? 'border-zinc-800' : 'border-portal-border/50'}`}>
