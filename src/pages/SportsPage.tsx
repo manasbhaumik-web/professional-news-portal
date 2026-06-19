@@ -33,6 +33,69 @@ const timeAgo = (dateStr: string) => {
   return `${Math.floor(hrs / 24)}d ago`;
 };
 
+const SPORTS_FEEDS: Record<string, { source: string; url: string; sportName: string }[]> = {
+  All: [
+    { source: 'Google News', url: 'https://news.google.com/rss/headlines/section/topic/SPORTS?hl=en-US&gl=US&ceid=US:en', sportName: 'Sports' },
+    { source: 'BBC Football', url: 'http://feeds.bbci.co.uk/sport/football/rss.xml', sportName: 'Football' },
+    { source: 'ESPN Soccer', url: 'https://www.espn.com/espn/rss/soccer/news', sportName: 'Football' },
+    { source: 'BBC Tennis', url: 'http://feeds.bbci.co.uk/sport/tennis/rss.xml', sportName: 'Tennis' },
+    { source: 'BBC Cricket', url: 'http://feeds.bbci.co.uk/sport/cricket/rss.xml', sportName: 'Cricket' },
+    { source: 'Sky Sports Golf', url: 'https://www.skysports.com/rss/12138', sportName: 'Golf' },
+    { source: 'BBC Golf', url: 'http://feeds.bbci.co.uk/sport/golf/rss.xml', sportName: 'Golf' },
+    { source: 'Sky Sports Boxing/MMA', url: 'https://www.skysports.com/rss/12183', sportName: 'Boxing/MMA' },
+    { source: 'Yahoo MMA', url: 'https://sports.yahoo.com/mma/rss.xml', sportName: 'Boxing/MMA' },
+    { source: 'Sky Sports Rugby', url: 'https://www.skysports.com/rss/12056', sportName: 'Rugby' },
+    { source: 'BBC Rugby Union', url: 'http://feeds.bbci.co.uk/sport/rugby-union/rss.xml', sportName: 'Rugby' },
+    { source: 'BBC Athletics', url: 'http://feeds.bbci.co.uk/sport/athletics/rss.xml', sportName: 'Athletics' },
+    { source: 'BBC Cycling', url: 'http://feeds.bbci.co.uk/sport/cycling/rss.xml', sportName: 'Cycling' }
+  ],
+  Football: [
+    { source: 'BBC Football', url: 'http://feeds.bbci.co.uk/sport/football/rss.xml', sportName: 'Football' },
+    { source: 'ESPN Soccer', url: 'https://www.espn.com/espn/rss/soccer/news', sportName: 'Football' }
+  ],
+  Tennis: [
+    { source: 'BBC Tennis', url: 'http://feeds.bbci.co.uk/sport/tennis/rss.xml', sportName: 'Tennis' }
+  ],
+  Motorsport: [
+    { source: 'Google News Motorsport', url: 'https://news.google.com/rss/search?q=Motorsport+Sports', sportName: 'Motorsport' }
+  ],
+  Cricket: [
+    { source: 'BBC Cricket', url: 'http://feeds.bbci.co.uk/sport/cricket/rss.xml', sportName: 'Cricket' }
+  ],
+  Golf: [
+    { source: 'Sky Sports Golf', url: 'https://www.skysports.com/rss/12138', sportName: 'Golf' },
+    { source: 'BBC Golf', url: 'http://feeds.bbci.co.uk/sport/golf/rss.xml', sportName: 'Golf' }
+  ],
+  'Boxing/MMA': [
+    { source: 'Sky Sports Boxing/MMA', url: 'https://www.skysports.com/rss/12183', sportName: 'Boxing/MMA' },
+    { source: 'Yahoo MMA', url: 'https://sports.yahoo.com/mma/rss.xml', sportName: 'Boxing/MMA' }
+  ],
+  Rugby: [
+    { source: 'Sky Sports Rugby', url: 'https://www.skysports.com/rss/12056', sportName: 'Rugby' },
+    { source: 'BBC Rugby Union', url: 'http://feeds.bbci.co.uk/sport/rugby-union/rss.xml', sportName: 'Rugby' }
+  ],
+  Athletics: [
+    { source: 'BBC Athletics', url: 'http://feeds.bbci.co.uk/sport/athletics/rss.xml', sportName: 'Athletics' }
+  ],
+  Cycling: [
+    { source: 'BBC Cycling', url: 'http://feeds.bbci.co.uk/sport/cycling/rss.xml', sportName: 'Cycling' }
+  ]
+};
+
+const SPORT_IMAGES: Record<string, string> = {
+  Football: 'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?auto=format&fit=crop&w=800&q=80',
+  Tennis: 'https://images.unsplash.com/photo-1595435934249-5df7ed86e1c0?auto=format&fit=crop&w=800&q=80',
+  Motorsport: 'https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?auto=format&fit=crop&w=800&q=80',
+  Cricket: 'https://images.unsplash.com/photo-1531415080290-bc9854503f37?auto=format&fit=crop&w=800&q=80',
+  Golf: 'https://images.unsplash.com/photo-1587174486073-ae5e5cff23aa?auto=format&fit=crop&w=800&q=80',
+  'Boxing/MMA': 'https://images.unsplash.com/photo-1549719386-74dfcbf7dbed?auto=format&fit=crop&w=800&q=80',
+  Rugby: 'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?auto=format&fit=crop&w=800&q=80',
+  Athletics: 'https://images.unsplash.com/photo-1476480862126-209bfaa8edc8?auto=format&fit=crop&w=800&q=80',
+  Cycling: 'https://images.unsplash.com/photo-1485965120184-e220f721d03e?auto=format&fit=crop&w=800&q=80',
+  All: 'https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?auto=format&fit=crop&w=800&q=80',
+  Sports: 'https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?auto=format&fit=crop&w=800&q=80'
+};
+
 export default function SportsPage({ articles, selectedSportFromMenu, handleOpenArticle, toggleBookmark, bookmarks }: SportsPageProps) {
   const [liveArticles, setLiveArticles] = useState<NewsArticle[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -43,43 +106,85 @@ export default function SportsPage({ articles, selectedSportFromMenu, handleOpen
       setIsLoading(true);
       setError(null);
       try {
-        const res = await fetch('https://api.rss2json.com/v1/api.json?rss_url=http://www.espncricinfo.com/rss/content/story/feeds/0.xml');
-        const data = await res.json();
-        
-        if (data.status === 'ok' && data.items) {
-          const mappedArticles: NewsArticle[] = data.items.map((item: any, idx: number) => ({
-            id: `live-cric-${idx}`,
-            title: item.title,
-            summary: item.description ? item.description.replace(/<[^>]+>/g, '').substring(0, 150) + '...' : '',
-            content: item.content || item.description || '',
-            imageUrl: item.enclosure?.link || item.thumbnail || `https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80`,
-            category: 'Sports',
-            sportName: 'Cricket',
-            author: item.author || 'ESPN Cricinfo',
-            timeAgo: item.pubDate ? timeAgo(item.pubDate) : 'Live',
-            readTime: '3 min read',
-            url: item.link
-          }));
+        const feedsToFetch = SPORTS_FEEDS[selectedSportFromMenu] || [
+          { source: 'Google News', url: `https://news.google.com/rss/search?q=${encodeURIComponent(selectedSportFromMenu + ' Sports')}`, sportName: selectedSportFromMenu }
+        ];
+
+        const fetchPromises = feedsToFetch.map(async (feed) => {
+          try {
+            const res = await fetch(`/api/news/proxy?url=${encodeURIComponent(feed.url)}`);
+            if (!res.ok) return [];
+            const data = await res.json();
+            
+            if (data.status === 'ok' && data.items) {
+              return data.items.map((item: any, idx: number) => ({
+                id: `live-sport-${feed.source.toLowerCase().replace(/[^a-z0-9]+/g, '-')}-${idx}-${Math.random().toString(36).substr(2, 5)}`,
+                title: item.title,
+                summary: item.description ? item.description.replace(/<[^>]+>/g, '').substring(0, 150) + '...' : '',
+                content: item.content || item.description || '',
+                imageUrl: item.enclosure?.link || item.thumbnail || SPORT_IMAGES[feed.sportName] || SPORT_IMAGES['All'],
+                category: 'Sports',
+                sportName: feed.sportName,
+                author: item.author || feed.source,
+                publishedAt: item.pubDate ? new Date(item.pubDate).toISOString() : new Date().toISOString(),
+                timeAgo: item.pubDate ? timeAgo(item.pubDate) : 'Live',
+                readTime: '3 min read',
+                url: item.link
+              }));
+            }
+          } catch (err) {
+            console.error(`Error fetching feed ${feed.source}:`, err);
+          }
+          return [];
+        });
+
+        const results = await Promise.allSettled(fetchPromises);
+        const combinedResults: NewsArticle[] = [];
+        results.forEach(r => {
+          if (r.status === 'fulfilled') {
+            combinedResults.push(...r.value);
+          }
+        });
+
+        if (combinedResults.length > 0) {
+          // Deduplicate by title
+          const seen = new Set<string>();
+          const deduped = combinedResults.filter(art => {
+            const titleNorm = art.title.toLowerCase().trim();
+            if (seen.has(titleNorm)) return false;
+            seen.add(titleNorm);
+            return true;
+          });
           
-          setLiveArticles(mappedArticles);
+          setLiveArticles(deduped);
         } else {
-          setError('Failed to parse live cricket feed from external server.');
+          setError('Failed to parse live sports feed from external server.');
         }
       } catch (err) {
-        setError('Connection error. Could not establish live cricket uplink.');
+        setError('Connection error. Could not establish live sports uplink.');
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchLiveNews();
-  }, []);
+  }, [selectedSportFromMenu]);
 
-  const displayArticles = selectedSportFromMenu === 'All' 
+  const combinedArticles = selectedSportFromMenu === 'All' 
     ? [...liveArticles, ...articles] 
-    : selectedSportFromMenu === 'Cricket' 
-      ? [...liveArticles, ...articles.filter(art => art.sportName === 'Cricket')]
-      : articles.filter(art => art.sportName === selectedSportFromMenu);
+    : [...liveArticles, ...articles.filter(art => 
+        art.sportName === selectedSportFromMenu || 
+        art.title.toLowerCase().includes(selectedSportFromMenu.toLowerCase()) || 
+        art.summary?.toLowerCase().includes(selectedSportFromMenu.toLowerCase())
+      )];
+
+  const displayArticles = combinedArticles.sort((a, b) => {
+    const timeA = new Date(a.publishedAt || a.date || Date.now()).getTime();
+    const timeB = new Date(b.publishedAt || b.date || Date.now()).getTime();
+    return timeB - timeA;
+  });
+
+  const finalDisplay = displayArticles.slice(0, 15);
 
   return (
     <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -90,7 +195,7 @@ export default function SportsPage({ articles, selectedSportFromMenu, handleOpen
           </h3>
           <span className="text-[10px] font-mono px-2 py-0.5 rounded uppercase bg-portal-surface text-portal-text-muted border border-portal-border/50 flex items-center gap-1.5">
             {isLoading ? <RefreshCw size={10} className="animate-spin" /> : <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span>}
-            {displayArticles.length} updates
+            {finalDisplay.length} updates
           </span>
         </div>
         <div className="text-xs flex items-center space-x-1 select-none font-mono text-portal-text-muted">
@@ -111,12 +216,12 @@ export default function SportsPage({ articles, selectedSportFromMenu, handleOpen
             Array.from({ length: 4 }).map((_, i) => (
               <SkeletonArticleCard key={`skel-${i}`} index={i} />
             ))
-          ) : displayArticles.length === 0 ? (
+          ) : finalDisplay.length === 0 ? (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-8 border border-dashed text-center text-xs rounded-xl font-mono border-portal-border text-portal-text-muted col-span-full">
               No sports intelligence available for {selectedSportFromMenu}.
             </motion.div>
           ) : (
-            displayArticles.map((art, idx) => (
+            finalDisplay.map((art, idx) => (
               <ArticleCard
                 key={art.id}
                 index={idx}

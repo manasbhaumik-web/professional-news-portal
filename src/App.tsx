@@ -220,7 +220,7 @@ export default function App() {
       setPersonalizedBriefing(data.briefing || '');
       setPersonalizedArticles(data.articles || []);
     } catch (e: any) {
-      setErrorFeedback(e.message || "Unable to formulate custom intelligence report. Check API Key credentials.");
+      setErrorFeedback(e.message || "Unable to formulate custom intelligence report. Please try again later.");
     } finally {
       setIsGeneratingBriefing(false);
     }
@@ -450,7 +450,7 @@ export default function App() {
             cricketMatches={cricketMatches}
           />
         ) : (
-          <MainAdBanner isAdMinimized={isAdMinimized} setIsAdMinimized={setIsAdMinimized} trendingArticles={trendingArticles} handleOpenArticle={handleOpenArticle} />
+          <MainAdBanner isAdMinimized={isAdMinimized} setIsAdMinimized={setIsAdMinimized} trendingArticles={filteredTrending} handleOpenArticle={handleOpenArticle} />
         )}
 
         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6 items-start">
@@ -534,7 +534,7 @@ export default function App() {
                     ) : (
                       (() => {
                         const topHeadlineIds = new Set(
-                          [...trendingArticles]
+                          [...filteredTrending]
                             .filter(art => !!art.imageUrl && !failedImages.includes(art.id))
                             .sort((a, b) => {
                               const tb = new Date(b.publishedAt || b.date).getTime();
@@ -615,7 +615,7 @@ export default function App() {
               {activeTab === 'trending' && filteredTrending.length > 0 && (
                 (() => {
                   const topHeadlineIds = new Set(
-                    [...trendingArticles]
+                    [...filteredTrending]
                       .filter(art => !!art.imageUrl && !failedImages.includes(art.id))
                       .sort((a, b) => {
                         const tb = new Date(b.publishedAt || b.date).getTime();
@@ -708,11 +708,12 @@ export default function App() {
                 {activeTab === 'politics' && (
                   <PoliticsPage
                     theme={portalTheme}
+                    selectedCategoryFromMenu={selectedMenuCategory.startsWith('Politics:') ? selectedMenuCategory.split(':')[1].trim() : 'All'}
                     articles={trendingArticles.filter(art => {
                       const isCat = ['Politics', 'Global Policy'].includes(art.category) && (!searchQuery || art.title.toLowerCase().includes(searchQuery.toLowerCase()));
-                      const activeRegion = selectedMenuCategory.startsWith('Region: ') ? selectedMenuCategory.replace('Region: ', '') : 'North America';
-                      return isCat && getArticleRegion(art.source) === activeRegion;
-                    })}
+                      const activeRegion = selectedMenuCategory.startsWith('Region: ') ? selectedMenuCategory.replace('Region: ', '') : 'All';
+                      return activeRegion === 'All' ? isCat : (isCat && getArticleRegion(art.source) === activeRegion);
+                    }).slice(0, 10)}
                     handleOpenArticle={handleOpenArticle}
                     toggleBookmark={toggleBookmark}
                     bookmarks={bookmarks}
@@ -723,11 +724,12 @@ export default function App() {
                 {activeTab === 'business' && (
                   <BusinessPage
                     theme={portalTheme}
+                    selectedCategoryFromMenu={selectedMenuCategory.startsWith('Business:') ? selectedMenuCategory.split(':')[1].trim() : 'All'}
                     articles={trendingArticles.filter(art => {
                       const isCat = ['Business', 'Finance', 'Markets'].includes(art.category) && (!searchQuery || art.title.toLowerCase().includes(searchQuery.toLowerCase()));
-                      const activeRegion = selectedMenuCategory.startsWith('Region: ') ? selectedMenuCategory.replace('Region: ', '') : 'North America';
-                      return isCat && getArticleRegion(art.source) === activeRegion;
-                    })}
+                      const activeRegion = selectedMenuCategory.startsWith('Region: ') ? selectedMenuCategory.replace('Region: ', '') : 'All';
+                      return activeRegion === 'All' ? isCat : (isCat && getArticleRegion(art.source) === activeRegion);
+                    }).slice(0, 10)}
                     handleOpenArticle={handleOpenArticle}
                     toggleBookmark={toggleBookmark}
                     bookmarks={bookmarks}
@@ -738,11 +740,12 @@ export default function App() {
                 {activeTab === 'entertainment' && (
                   <EntertainmentPage
                     theme={portalTheme}
+                    selectedCategoryFromMenu={selectedMenuCategory.startsWith('Entertainment:') ? selectedMenuCategory.split(':')[1].trim() : 'All'}
                     articles={trendingArticles.filter(art => {
                       const isCat = ['Entertainment', 'Movie', 'Music'].includes(art.category) && (!searchQuery || art.title.toLowerCase().includes(searchQuery.toLowerCase()));
-                      const activeRegion = selectedMenuCategory.startsWith('Region: ') ? selectedMenuCategory.replace('Region: ', '') : 'North America';
-                      return isCat && getArticleRegion(art.source) === activeRegion;
-                    })}
+                      const activeRegion = selectedMenuCategory.startsWith('Region: ') ? selectedMenuCategory.replace('Region: ', '') : 'All';
+                      return activeRegion === 'All' ? isCat : (isCat && getArticleRegion(art.source) === activeRegion);
+                    }).slice(0, 10)}
                     handleOpenArticle={handleOpenArticle}
                     toggleBookmark={toggleBookmark}
                     bookmarks={bookmarks}
@@ -753,7 +756,8 @@ export default function App() {
                 {activeTab === 'scienceTech' && (
                   <ScienceTechPage
                     theme={portalTheme}
-                    articles={trendingArticles.filter(art => ['Science', 'Technology', 'Science & Tech', 'Computing', 'Space', 'Cybersecurity'].includes(art.category) && (!searchQuery || art.title.toLowerCase().includes(searchQuery.toLowerCase())))}
+                    selectedCategoryFromMenu={selectedMenuCategory.startsWith('Science & Tech:') ? selectedMenuCategory.split(':')[1].trim() : 'All'}
+                    articles={trendingArticles.filter(art => ['Science', 'Technology', 'Science & Tech', 'Computing', 'Space', 'Cybersecurity'].includes(art.category) && (!searchQuery || art.title.toLowerCase().includes(searchQuery.toLowerCase()))).slice(0, 10)}
                     handleOpenArticle={handleOpenArticle}
                     toggleBookmark={toggleBookmark}
                     bookmarks={bookmarks}
@@ -765,7 +769,7 @@ export default function App() {
                 {activeTab === 'sports' && (
                   <SportsPage
                     theme={portalTheme}
-                    articles={trendingArticles.filter(art => art.category === 'Sports' && (!searchQuery || art.title.toLowerCase().includes(searchQuery.toLowerCase())))}
+                    articles={trendingArticles.filter(art => art.category === 'Sports' && (!searchQuery || art.title.toLowerCase().includes(searchQuery.toLowerCase()))).slice(0, 10)}
                     selectedSportFromMenu={selectedMenuCategory.startsWith('Sports:') ? selectedMenuCategory.split(':')[1].trim() : 'All'}
                     handleOpenArticle={handleOpenArticle}
                     toggleBookmark={toggleBookmark}

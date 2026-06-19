@@ -52,7 +52,7 @@ export default function ReportNewsPage() {
         </div>
         <h2 className="text-3xl font-serif font-bold text-portal-text-main mb-4 tracking-tight">Transmission Received</h2>
         <p className="text-portal-text-muted font-mono text-sm max-w-xl mx-auto leading-relaxed border-t border-portal-border pt-6">
-          Your report has been successfully transmitted to the editorial queue. Our investigative AI layer is actively cross-referencing your submission against verified databases.
+          Your report has been successfully transmitted to the editorial queue. Our verification team is actively reviewing your submission against verified sources.
         </p>
         <button 
           onClick={() => {

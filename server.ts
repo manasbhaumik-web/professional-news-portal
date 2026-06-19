@@ -1,7 +1,6 @@
 import express from "express";
 import path from "path";
 import { createServer as createViteServer } from "vite";
-import { GoogleGenAI, Type } from "@google/genai";
 import dotenv from "dotenv";
 import Parser from "rss-parser";
 
@@ -25,16 +24,6 @@ const app = express();
 app.use(express.json());
 
 const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3001;
-
-// Initialize Gemini SDK with User-Agent header as required by the instruction
-const ai = new GoogleGenAI({
-  apiKey: process.env.GEMINI_API_KEY,
-  httpOptions: {
-    headers: {
-      'User-Agent': 'aistudio-build',
-    }
-  }
-});
 
 // High-quality baseline articles database (simulating a database)
 const BASE_ARTICLES = [
@@ -170,6 +159,31 @@ let cachedNews: any[] = [];
 let lastFetchTime = 0;
 const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 
+app.get('/api/news/proxy', async (req, res) => {
+  try {
+    const rssUrl = req.query.url as string;
+    if (!rssUrl) return res.status(400).json({ status: 'error', message: 'Missing url param' });
+    
+    const feed = await parser.parseURL(rssUrl);
+    res.json({
+      status: 'ok',
+      items: feed.items.map((item: any) => ({
+        title: item.title,
+        link: item.link,
+        pubDate: item.pubDate,
+        description: item.contentSnippet || item.content || item.summary || '',
+        content: item.content || item['content:encoded'] || '',
+        author: item.creator || item.author || '',
+        enclosure: item.enclosure ? { link: item.enclosure.url } : null,
+        thumbnail: item.mediaContent?.$?.url || item.mediaThumbnail?.$?.url || item.image?.$?.url || item.thumbnail?.$?.url || ''
+      }))
+    });
+  } catch (error) {
+    console.error('Proxy Error:', error);
+    res.status(500).json({ status: 'error', message: 'Failed to parse feed' });
+  }
+});
+
 async function fetchRealTimeNews() {
   if (Date.now() - lastFetchTime < CACHE_TTL && cachedNews.length > 0) {
     return cachedNews;
@@ -177,6 +191,7 @@ async function fetchRealTimeNews() {
 
   const feeds = [
     // North America
+    { url: 'https://news.google.com/rss/headlines/section/geo/US?hl=en-US&gl=US&ceid=US:en', category: 'North America' },
     { url: 'http://feeds.bbci.co.uk/news/world/us_and_canada/rss.xml', category: 'North America' },
     { url: 'https://feeds.npr.org/1001/rss.xml', category: 'North America' },
     { url: 'https://rss.nytimes.com/services/xml/rss/nyt/US.xml', category: 'North America' },
@@ -217,7 +232,9 @@ async function fetchRealTimeNews() {
     { url: 'https://news.abs-cbn.com/rss/world', category: 'South East Asia' },
     { url: 'https://www.rnz.co.nz/rss/world.xml', category: 'Oceania' },
     { url: 'https://www.abc.net.au/news/feed/51120/rss.xml', category: 'Oceania' },
+
     // Global Sports
+    { url: 'https://news.google.com/rss/headlines/section/topic/SPORTS?hl=en-US&gl=US&ceid=US:en', category: 'Sports', sportName: 'All' },
     { url: 'http://feeds.bbci.co.uk/sport/football/rss.xml', category: 'Sports', sportName: 'Football' },
     { url: 'https://www.espn.com/espn/rss/soccer/news', category: 'Sports', sportName: 'Football' },
     { url: 'http://feeds.bbci.co.uk/sport/tennis/rss.xml', category: 'Sports', sportName: 'Tennis' },
@@ -234,21 +251,26 @@ async function fetchRealTimeNews() {
     { url: 'http://feeds.bbci.co.uk/sport/cycling/rss.xml', category: 'Sports', sportName: 'Cycling' },
 
     // Politics
+    { url: 'https://news.google.com/rss/headlines/section/topic/NATION?hl=en-US&gl=US&ceid=US:en', category: 'Politics' },
     { url: 'http://feeds.bbci.co.uk/news/politics/rss.xml', category: 'Politics' },
     { url: 'https://rss.nytimes.com/services/xml/rss/nyt/Politics.xml', category: 'Politics' },
 
     // Business & Finance
+    { url: 'https://news.google.com/rss/headlines/section/topic/BUSINESS?hl=en-US&gl=US&ceid=US:en', category: 'Business' },
     { url: 'http://feeds.bbci.co.uk/news/business/rss.xml', category: 'Business' },
     { url: 'https://rss.nytimes.com/services/xml/rss/nyt/Business.xml', category: 'Business' },
     { url: 'https://search.cnbc.com/rs/search/combinedcms/view.xml?id=10000664', category: 'Business' },
 
     // Entertainment (Movie, Music)
+    { url: 'https://news.google.com/rss/headlines/section/topic/ENTERTAINMENT?hl=en-US&gl=US&ceid=US:en', category: 'Entertainment' },
     { url: 'http://feeds.bbci.co.uk/news/entertainment_and_arts/rss.xml', category: 'Entertainment' },
     { url: 'https://rss.nytimes.com/services/xml/rss/nyt/Movies.xml', category: 'Entertainment' },
     { url: 'https://rss.nytimes.com/services/xml/rss/nyt/Music.xml', category: 'Entertainment' },
 
     // Science & Tech
+    { url: 'https://news.google.com/rss/headlines/section/topic/SCIENCE?hl=en-US&gl=US&ceid=US:en', category: 'Science' },
     { url: 'http://feeds.bbci.co.uk/news/science_and_environment/rss.xml', category: 'Science' },
+    { url: 'https://news.google.com/rss/headlines/section/topic/TECHNOLOGY?hl=en-US&gl=US&ceid=US:en', category: 'Technology' },
     { url: 'http://feeds.bbci.co.uk/news/technology/rss.xml', category: 'Technology' },
     { url: 'https://rss.nytimes.com/services/xml/rss/nyt/Technology.xml', category: 'Technology' },
     { url: 'https://rss.nytimes.com/services/xml/rss/nyt/Space.xml', category: 'Space' }
@@ -514,166 +536,70 @@ app.get("/api/news/videos", async (req, res) => {
   res.json(videos);
 });
 
-// POST to generate a highly customized personal feed using Gemini
+// POST to generate a highly customized personal feed using local heuristics
 app.post("/api/news/personalized", async (req, res) => {
   const { selectedCategories = [], selectedKeywords = [] } = req.body;
 
   if (selectedCategories.length === 0 && selectedKeywords.length === 0) {
     return res.json({
-      briefing: "Select topics above to generate your custom AI editorial briefing.",
+      briefing: "Select topics above to generate your customized editorial briefing.",
       articles: []
     });
   }
 
-  const hasApiKey = !!process.env.GEMINI_API_KEY && process.env.GEMINI_API_KEY !== "MY_GEMINI_API_KEY";
+  // Generate localized customized morning overview briefing
+  const briefingText = `Here is your customized Morning Briefing. We've compiled a tailored digest based on your interest in ${selectedCategories.join(", ") || "General News"} and custom focus on keywords: "${selectedKeywords.join(", ") || "Latest Trends"}". Today, key movements show high systemic shifts with carbon borders and technological transitions across the wire.`;
 
-  if (!hasApiKey) {
-    // Elegant fallback mock dynamic news when API key hasn't been substituted
-    const fallbackBriefing = `Here is your customized Morning Briefing. We've compiled 3 tailored digests based on your interest in ${selectedCategories.join(", ") || "General News"} and custom focus on keywords: "${selectedKeywords.join(", ") || "Latest Trends"}". Today, key movements show high systemic shifts with carbon borders and quantum coherence tests.`;
+  // Filter base articles or synthesize tailored articles of interest based on selected items
+  const filtered = BASE_ARTICLES.filter(art =>
+    selectedCategories.some((cat: string) => art.category.toLowerCase().includes(cat.toLowerCase())) ||
+    selectedKeywords.some((kw: string) => art.title.toLowerCase().includes(kw.toLowerCase()) || art.summary.toLowerCase().includes(kw.toLowerCase()))
+  );
 
-    // Filter base articles or synthesize tailored articles of interest based on selected items
-    const filtered = BASE_ARTICLES.filter(art =>
-      selectedCategories.some((cat: string) => art.category.toLowerCase().includes(cat.toLowerCase())) ||
-      selectedKeywords.some((kw: string) => art.title.toLowerCase().includes(kw.toLowerCase()) || art.summary.toLowerCase().includes(kw.toLowerCase()))
-    );
+  const resultArticles = filtered.length > 0 ? filtered : BASE_ARTICLES.slice(0, 3);
 
-    const resultArticles = filtered.length > 0 ? filtered : BASE_ARTICLES.slice(0, 3);
+  // Modify slightly to tag as customized
+  const customizedArticles = resultArticles.map((art, idx) => ({
+    ...art,
+    id: `custom-digest-${idx}-${Date.now()}`,
+    title: `[Targeted Study] ${art.title}`,
+    source: `Digest • ${art.source}`,
+    isAiGenerated: false
+  }));
 
-    // Modify slightly to tag as customized
-    const customizedArticles = resultArticles.map((art, idx) => ({
-      ...art,
-      id: `ai-fallback-${idx}`,
-      title: `[Targeted Study] ${art.title}`,
-      source: `AI Digest • ${art.source}`,
-      isAiGenerated: true
-    }));
-
-    return res.json({
-      briefing: fallbackBriefing,
-      articles: customizedArticles
-    });
-  }
-
-  try {
-    const prompt = `You are a chief managing editor for an ultra-premium, high-density professional news publication.
-Generate a morning news briefing and 3 completely original, highly professional, realistic news articles targeted specifically for the following categories: ${JSON.stringify(selectedCategories)} and keywords: ${JSON.stringify(selectedKeywords)}.
-
-Requirements:
-- Written in a deeply analytical, sober, objective, premium style (similar to The FT, Economist, or MIT Tech Review). Avoid promotional or clickbaity prose.
-- The news must feel incredibly timely, set in June 2026.
-- The articles should contain high-density facts, technical depth, realistic quotes, and distinct, credible investigative angles.
-- "briefing" must be an premium 2-3 paragraph morning overview summarizing active global movements across these selected fields.
-- Make up highly realistic author/sources (e.g. "Vanguard Tech Insights", "Cortex Briefing", "Macro Veritas").
-- Return a structured JSON response matching the provided schema.`;
-
-    const response = await ai.models.generateContent({
-      model: "gemini-3.5-flash",
-      contents: prompt,
-      config: {
-        responseMimeType: "application/json",
-        systemInstruction: "You are a professional financial and technical editor reporting on cutting-edge developments. Always return clean, compliant JSON, and output values precisely matching types in responseSchema.",
-        responseSchema: {
-          type: Type.OBJECT,
-          properties: {
-            briefing: {
-              type: Type.STRING,
-              description: "A professional conversational morning overview (2-3 paragraphs, markdown support) summarizing active thematic trends for the selected topics."
-            },
-            articles: {
-              type: Type.ARRAY,
-              items: {
-                type: Type.OBJECT,
-                properties: {
-                  id: { type: Type.STRING },
-                  title: { type: Type.STRING, description: "A high-quality, professional, realistic editorial headline" },
-                  category: { type: Type.STRING, description: "Standard single category like Tech, Science, Finance, Energy, Global Policy" },
-                  summary: { type: Type.STRING, description: "A crisp 1-2 sentence preview" },
-                  content: { type: Type.STRING, description: "A full 4-5 paragraph deeply analytic article text (with subheadings/markdown/paragraphs)" },
-                  source: { type: Type.STRING, description: "Professional name of publication or reporter team" },
-                  date: { type: Type.STRING, description: "Formatted like 'Today, 10:15 AM' or 'Today, 11:30 AM'" },
-                  readTime: { type: Type.STRING, description: "e.g. '5 min read'" },
-                  views: { type: Type.INTEGER }
-                },
-                required: ["id", "title", "category", "summary", "content", "source", "date", "readTime", "views"]
-              }
-            }
-          },
-          required: ["briefing", "articles"]
-        }
-      }
-    });
-
-    const parsed = JSON.parse(response.text || "{}");
-    // Append beautiful placeholder images for the generated articles
-    const imagesArray = [
-      "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=800&q=80",
-      "https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=800&q=80",
-      "https://images.unsplash.com/photo-1507679799987-c73779587ccf?auto=format&fit=crop&w=800&q=80"
-    ];
-
-    if (parsed.articles) {
-      parsed.articles = parsed.articles.map((art: any, i: number) => ({
-        ...art,
-        imageUrl: imagesArray[i % imagesArray.length] || imagesArray[0],
-        trendsUp: Math.random() > 0.4,
-        isAiGenerated: true
-      }));
-    }
-
-    sessionPersonalizedNews = parsed;
-    res.json(parsed);
-  } catch (error: any) {
-    console.error("Gemini personalization error:", error);
-    res.status(500).json({ error: error.message || "Failed to generate personalized AI feed." });
-  }
+  return res.json({
+    briefing: briefingText,
+    articles: customizedArticles
+  });
 });
 
-// POST to generate a deep-dive investigative follow-up on a selected headline
+// POST to generate a deep-dive investigative follow-up on a selected headline locally
 app.post("/api/news/generate-article", async (req, res) => {
   const { title } = req.body;
   if (!title) {
     return res.status(400).json({ error: "Title parameter is required." });
   }
 
-  const hasApiKey = !!process.env.GEMINI_API_KEY && process.env.GEMINI_API_KEY !== "MY_GEMINI_API_KEY";
+  const paragraphs = [
+    `The recent developments surrounding "${title}" have initiated intense debate among industry stakeholders and public policy architects. Analysts note that the current trends represent a significant departure from historic baselines, driven by shifting regulatory environments and technological transition schedules.`,
+    `A primary focus of this situation centers on supply chain integrity and operational costs. Stakeholders are evaluating their capital allocations to hedge against volatility in key raw inputs and logistical corridors. Analysts suggest that organizations refusing to adapt to these changing operational parameters risk losing market share to agile, early-adopting competitors.`,
+    `Furthermore, the legal and regulatory frameworks governing these activities are undergoing rapid evolution. Compliance managers report a substantial increase in audit intensity, with boundary mandates requiring precise documentation and performance metrics. Adapting to these standards is expected to require significant capital expenditure, though it provides long-term stability.`,
+    `From a macroeconomic perspective, the broader implications could reshape regional markets over the next fiscal cycle. Financial institutions are adjusting their risk models to account for potential structural shifts, advising clients to maintain diversified portfolios and liquid positions.`,
+    `In conclusion, the situation demands close, continuous observation. As industry leaders navigate these complex dynamics, the decisions made in the current quarter will likely establish the competitive benchmarks for years to come. Editorial desks will continue to monitor live feeds for further updates.`
+  ];
 
-  if (!hasApiKey) {
-    // Return high quality fallback full analysis text
-    return res.json({
-      content: `The geopolitical and industrial realities of "${title}" reveal highly intertwined layers of supply logistics, financial risks, and sovereign initiatives. Heavy industry architects suggest that raw material inputs will continue to suffer volatility as compliance mandates tighten over the next fiscal cycle. Under high-scrutiny compliance audits, manufacturers face a direct choice: integrate expensive decarbonization processes or lose key high-end global marketplaces altogether. Transitioning physical operations takes substantial capital budgets, which current central rates make highly complex.`
-    });
-  }
-
-  try {
-    const prompt = `Write a deep-dive, professional, exhaustive 5-paragraph investigative news report based on the following headline: "${title}".
-Maintain a sober, authoritative tone similar to The Financial Times, featuring specific technical perspectives, expert quotations, potential structural disruptions, and an analytical conclusion. Include subheadings for readability. Do not include introductory text like "Sure, here's your article" — start directly. Use double newlines for paragraphs.`;
-
-    const response = await ai.models.generateContent({
-      model: "gemini-3.5-flash",
-      contents: prompt,
-      config: {
-        systemInstruction: "You are a lead international correspondent. Provide deeply analytical, verified, objective reporting. Output directly in plain text with clear paragraphs."
-      }
-    });
-
-    res.json({ content: response.text });
-  } catch (error: any) {
-    console.error("Gemini article deep-dive generation error:", error);
-    res.status(500).json({ error: error.message || "Failed to generate article content." });
-  }
+  res.json({ content: paragraphs.join("\n\n") });
 });
 
-// POST to summarize a full article from its original URL
+// POST to summarize a full article locally from its original URL
 app.post("/api/news/summarize", async (req, res) => {
   const { url } = req.body;
   if (!url) {
     return res.status(400).json({ error: "URL parameter is required." });
   }
 
-  const hasApiKey = !!process.env.GEMINI_API_KEY && process.env.GEMINI_API_KEY !== "MY_GEMINI_API_KEY";
-
   try {
-    let rawContent = "Content could not be retrieved from the original source.";
+    let rawContent = "";
     try {
       const fetchRes = await fetch(url, {
         headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' },
@@ -694,31 +620,29 @@ app.post("/api/news/summarize", async (req, res) => {
       console.warn("Could not fetch raw URL for summary:", url);
     }
 
-    if (!hasApiKey) {
+    if (!rawContent || rawContent.length < 200) {
       return res.json({
-        content: `(Fallback Mode) The original article from ${new URL(url).hostname} could not be analyzed because the AI service is in fallback mode. Ensure GEMINI_API_KEY is set to utilize full web-scraping summarization.`
+        content: "The full article content is protected and could not be retrieved. Please visit the original source to read more."
       });
     }
 
-    const prompt = `You are a professional editorial analyst. Summarize the following raw scraped article text into a comprehensive, high-density 3-paragraph summary. Maintain a sober, authoritative tone. If the text seems to just be a generic website footer or access-denied message, say "The full article content is protected and could not be retrieved. Please visit the original source to read more."
+    // Elegant local rule-based summarization: extract key sentences
+    const sentences = rawContent
+      .split(/(?<=[.!?])\s+/)
+      .filter(s => s.length > 25 && !s.toLowerCase().includes('cookie') && !s.toLowerCase().includes('subscribe') && !s.toLowerCase().includes('privacy policy') && !s.toLowerCase().includes('terms of service'))
+      .slice(0, 4);
 
-Raw Text:
-"""
-${rawContent}
-"""`;
+    if (sentences.length === 0) {
+      return res.json({
+        content: "The article content is protected or could not be parsed for local summarization. Please visit the original source URL."
+      });
+    }
 
-    const response = await ai.models.generateContent({
-      model: "gemini-3.5-flash",
-      contents: prompt,
-      config: {
-        systemInstruction: "You are a lead international correspondent. Provide a deeply analytical, verified, objective summary. Output directly in plain text with clear paragraphs."
-      }
-    });
-
-    res.json({ content: response.text });
+    const summaryText = sentences.join(" ") + "...";
+    res.json({ content: summaryText });
   } catch (error: any) {
-    console.error("Gemini summary generation error:", error);
-    res.status(500).json({ error: error.message || "Failed to summarize article content." });
+    console.error("Local summary generation error:", error);
+    res.status(500).json({ error: "Failed to summarize article content." });
   }
 });
 

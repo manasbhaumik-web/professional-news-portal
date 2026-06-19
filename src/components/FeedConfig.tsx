@@ -63,14 +63,14 @@ export default function FeedConfig({
         <div>
           <h3 className="text-md flex items-center space-x-2 font-bold">
             <Sparkles size={18} className="text-portal-accent animate-pulse" />
-            <span className="text-portal-text-main font-semibold">Personal AI Feed Intelligence Setup</span>
+            <span className="text-portal-text-main font-semibold">Personalized Feed Setup</span>
           </h3>
           <p className="text-xs text-portal-text-muted">Toggle categories and feed custom keywords to generate real-time analytical briefs.</p>
         </div>
         <div className="flex items-center space-x-2">
           <span className="text-[10px] font-mono text-portal-text-muted uppercase">Engine Status:</span>
           <span className="px-2 py-0.5 text-[10px] rounded-full border bg-emerald-500/10 text-emerald-500 border-emerald-500/30">
-            PulseWire AI Online
+            PulseWire Engine Online
           </span>
         </div>
       </div>

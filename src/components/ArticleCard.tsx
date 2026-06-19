@@ -34,7 +34,16 @@ export default React.memo(function ArticleCard({
 }: ArticleCardProps) {
   const [imgError, setImgError] = useState(false);
 
-  if (!art.imageUrl || imgError || failedImages.includes(art.id)) return null;
+  const hasMissingImage = !art.imageUrl || imgError || (failedImages && failedImages.includes(art.id));
+  const isFootballOrCricket = art.category === 'Sports' || art.sportName === 'Football' || art.sportName === 'Cricket' || (art.title && (art.title.toLowerCase().includes('football') || art.title.toLowerCase().includes('cricket') || art.title.toLowerCase().includes('fifa')));
+
+  if (hasMissingImage && !isFootballOrCricket) return null;
+
+  const defaultSportsImg = art.title?.toLowerCase().includes('cricket') || art.sportName === 'Cricket'
+    ? 'https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80' 
+    : 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=800&q=80';
+    
+  const displayImage = hasMissingImage ? defaultSportsImg : art.imageUrl;
 
   let bentoClass = 'flex-col sm:flex-row';
   let imageClass = 'w-full sm:w-36 h-28 rounded-lg';
@@ -67,15 +76,19 @@ export default React.memo(function ArticleCard({
       onClick={() => handleOpenArticle(art)}
       className={`transition-all duration-300 group cursor-pointer flex gap-5 p-5 bg-portal-surface border border-portal-border hover:bg-portal-surface-hover shadow-sm hover:shadow-md transform rounded-3xl h-full ${bentoClass}`}
     >
-      {art.imageUrl && (
+      {displayImage && (
         <div className={`overflow-hidden shrink-0 relative bg-portal-bg ${imageClass}`}>
           <img
-            src={art.imageUrl}
+            src={displayImage}
             alt={art.title}
-            className="w-full h-full object-cover opacity-80 group-hover:scale-105 transition-transform duration-500"
-            onError={() => {
-              setImgError(true);
-              if (setFailedImages) setFailedImages((prev: string[]) => [...prev, art.id]);
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+            onError={(e) => {
+              if (displayImage !== defaultSportsImg) {
+                setImgError(true);
+                if (setFailedImages) setFailedImages((prev: string[]) => [...prev, art.id]);
+              } else {
+                (e.target as HTMLImageElement).style.display = 'none';
+              }
             }}
           />
           {art.trendsUp && !isCustomFeed && (

@@ -6,36 +6,153 @@ import { Activity } from 'lucide-react';
 interface BusinessPageProps {
   theme: 'dark' | 'light' | 'sepia';
   articles: NewsArticle[];
+  selectedCategoryFromMenu: string;
   handleOpenArticle: (art: NewsArticle) => void;
   toggleBookmark: (id: string, e: React.MouseEvent) => void;
   bookmarks: string[];
+  failedImages?: string[];
+  setFailedImages?: (f: any) => void;
 }
 
-export default function BusinessPage({ articles, handleOpenArticle, toggleBookmark, bookmarks }: BusinessPageProps) {
+const BUSINESS_FEEDS: Record<string, { source: string; url: string; subCategory: string }[]> = {
+  All: [
+    { source: 'Google Business', url: 'https://news.google.com/rss/headlines/section/topic/BUSINESS?hl=en-US&gl=US&ceid=US:en', subCategory: 'General' },
+    { source: 'BBC Business', url: 'http://feeds.bbci.co.uk/news/business/rss.xml', subCategory: 'Economy' },
+    { source: 'NYT Business', url: 'https://rss.nytimes.com/services/xml/rss/nyt/Business.xml', subCategory: 'Finance' },
+    { source: 'CNBC', url: 'https://search.cnbc.com/rs/search/combinedcms/view.xml?id=10000664', subCategory: 'Markets' }
+  ],
+  Markets: [
+    { source: 'CNBC', url: 'https://search.cnbc.com/rs/search/combinedcms/view.xml?id=10000664', subCategory: 'Markets' },
+    { source: 'Google News Markets', url: 'https://news.google.com/rss/search?q=Financial+Markets', subCategory: 'Markets' }
+  ],
+  Finance: [
+    { source: 'NYT Business', url: 'https://rss.nytimes.com/services/xml/rss/nyt/Business.xml', subCategory: 'Finance' },
+    { source: 'Google News Finance', url: 'https://news.google.com/rss/search?q=Corporate+Finance', subCategory: 'Finance' }
+  ],
+  Economy: [
+    { source: 'BBC Business', url: 'http://feeds.bbci.co.uk/news/business/rss.xml', subCategory: 'Economy' },
+    { source: 'Google News Economy', url: 'https://news.google.com/rss/search?q=Global+Economy', subCategory: 'Economy' }
+  ],
+  Startups: [
+    { source: 'Google News Startups', url: 'https://news.google.com/rss/search?q=Venture+Capital+Startups', subCategory: 'Startups' }
+  ]
+};
+
+const BUSINESS_IMAGES: Record<string, string> = {
+  Markets: 'https://images.unsplash.com/photo-1611974789855-9c2a0a2236a0?auto=format&fit=crop&w=800&q=80',
+  Finance: 'https://images.unsplash.com/photo-1559526324-4b87b5e36e44?auto=format&fit=crop&w=800&q=80',
+  Economy: 'https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?auto=format&fit=crop&w=800&q=80',
+  Startups: 'https://images.unsplash.com/photo-1556761175-4b46a572b786?auto=format&fit=crop&w=800&q=80',
+  All: 'https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?auto=format&fit=crop&w=800&q=80',
+  General: 'https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?auto=format&fit=crop&w=800&q=80'
+};
+
+export default function BusinessPage({ articles, selectedCategoryFromMenu, handleOpenArticle, toggleBookmark, bookmarks, failedImages, setFailedImages }: BusinessPageProps) {
+  const [liveArticles, setLiveArticles] = React.useState<NewsArticle[]>([]);
+  const [isLoading, setIsLoading] = React.useState(false);
+
+  React.useEffect(() => {
+    const fetchCategoryFeed = async () => {
+      setIsLoading(true);
+      try {
+        const feedsToFetch = BUSINESS_FEEDS[selectedCategoryFromMenu] || [
+          { source: 'Google News', url: `https://news.google.com/rss/search?q=${encodeURIComponent(selectedCategoryFromMenu + ' Business')}`, subCategory: selectedCategoryFromMenu }
+        ];
+
+        const fetchPromises = feedsToFetch.map(async (feed) => {
+          try {
+            const res = await fetch(`/api/news/proxy?url=${encodeURIComponent(feed.url)}`);
+            if (!res.ok) return [];
+            const data = await res.json();
+            
+            if (data.status === 'ok' && data.items) {
+              return data.items.map((item: any, idx: number) => ({
+                id: `biz-live-${feed.source.toLowerCase().replace(/[^a-z0-9]+/g, '-')}-${idx}-${Math.random().toString(36).substr(2, 5)}`,
+                title: item.title,
+                summary: item.description ? item.description.replace(/<[^>]+>/g, '').substring(0, 150) + '...' : '',
+                content: item.content || item.description || '',
+                imageUrl: item.enclosure?.link || item.thumbnail || BUSINESS_IMAGES[feed.subCategory] || BUSINESS_IMAGES['All'],
+                category: 'Business',
+                sportName: feed.subCategory,
+                source: feed.source,
+                publishedAt: item.pubDate ? new Date(item.pubDate).toISOString() : new Date().toISOString(),
+                timeAgo: item.pubDate ? new Date(item.pubDate).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'Live',
+                readTime: '3 min read',
+                url: item.link
+              }));
+            }
+          } catch (err) {
+            console.error(`Error fetching feed ${feed.source}:`, err);
+          }
+          return [];
+        });
+
+        const results = await Promise.allSettled(fetchPromises);
+        const combinedResults: NewsArticle[] = [];
+        results.forEach(r => {
+          if (r.status === 'fulfilled') {
+            combinedResults.push(...r.value);
+          }
+        });
+
+        if (combinedResults.length > 0) {
+          // Deduplicate by title
+          const seen = new Set<string>();
+          const deduped = combinedResults.filter(art => {
+            const titleNorm = art.title.toLowerCase().trim();
+            if (seen.has(titleNorm)) return false;
+            seen.add(titleNorm);
+            return true;
+          });
+          
+          setLiveArticles(deduped);
+        }
+      } catch (err) {
+        console.error('Failed to fetch live business feed', err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchCategoryFeed();
+  }, [selectedCategoryFromMenu]);
+
+  const combinedArticles = selectedCategoryFromMenu === 'All' 
+    ? [...liveArticles, ...articles] 
+    : [...liveArticles, ...articles.filter(art => 
+        art.title.toLowerCase().includes(selectedCategoryFromMenu.toLowerCase()) || 
+        art.summary?.toLowerCase().includes(selectedCategoryFromMenu.toLowerCase())
+      )];
+
+  const displayArticles = combinedArticles.sort((a, b) => {
+    const timeA = new Date(a.publishedAt || a.date || Date.now()).getTime();
+    const timeB = new Date(b.publishedAt || b.date || Date.now()).getTime();
+    return timeB - timeA;
+  }).slice(0, 15);
   return (
     <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="flex items-center justify-between border-b pb-2 border-portal-border">
         <div className="flex items-center space-x-3">
           <h3 className="font-serif font-black text-lg sm:text-xl tracking-tight capitalize text-portal-text-main">
-            Business & Finance
+            {selectedCategoryFromMenu === 'All' ? 'Business & Finance' : `${selectedCategoryFromMenu} Feed`}
           </h3>
           <span className="text-[10px] font-mono px-2 py-0.5 rounded uppercase bg-portal-surface text-portal-text-muted border border-portal-border/50">
-            {articles.length} indexes
+            {isLoading ? 'Loading...' : `${displayArticles.length} indexes`}
           </span>
         </div>
         <div className="text-xs flex items-center space-x-1 select-none font-mono text-portal-text-muted">
           <Activity size={12} className="text-blue-500 animate-pulse" />
-          <span className="hidden sm:inline">Live Market Feed</span>
+          <span className="hidden sm:inline">{selectedCategoryFromMenu === 'All' ? 'Live Market Feed' : `Live ${selectedCategoryFromMenu} Radar`}</span>
         </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 auto-rows-auto">
-        {articles.length === 0 ? (
+        {displayArticles.length === 0 ? (
           <div className="p-8 border border-dashed text-center text-xs rounded-xl font-mono border-portal-border text-portal-text-muted col-span-full">
-            No business intelligence available.
+            No intelligence available for {selectedCategoryFromMenu}.
           </div>
         ) : (
-          articles.map((art, idx) => (
+          displayArticles.map((art, idx) => (
             <ArticleCard
               key={art.id}
               index={idx}
@@ -43,6 +160,8 @@ export default function BusinessPage({ articles, handleOpenArticle, toggleBookma
               handleOpenArticle={handleOpenArticle}
               toggleBookmark={toggleBookmark}
               isBookmarked={bookmarks.includes(art.id)}
+              failedImages={failedImages}
+              setFailedImages={setFailedImages}
             />
           ))
         )}

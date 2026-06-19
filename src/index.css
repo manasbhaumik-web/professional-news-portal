@@ -1,20 +1,20 @@
-@import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,300;0,400;0,500;0,700;0,900;1,400&family=JetBrains+Mono:wght@400;500;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,900;1,400&family=JetBrains+Mono:wght@400;500;700&display=swap');
 @import "tailwindcss";
 
 @theme {
-  --font-sans: "Roboto", ui-sans-serif, system-ui, sans-serif;
-  --font-serif: "Roboto", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Playfair Display", Georgia, Cambria, serif;
   --font-mono: "JetBrains Mono", ui-monospace, monospace;
 
-  --color-portal-bg: #0f172a;
-  --color-portal-surface: #1e293b;
-  --color-portal-surface-hover: #334155;
-  --color-portal-border: #334155;
-  --color-portal-text-main: #f8fafc;
-  --color-portal-text-muted: #94a3b8;
-  --color-portal-brand: #2563eb;
-  --color-portal-brand-hover: #1d4ed8;
-  --color-portal-accent: #22d3ee;
+  --color-portal-bg: #090d16;
+  --color-portal-surface: #111827;
+  --color-portal-surface-hover: #1f2937;
+  --color-portal-border: #1f2937;
+  --color-portal-text-main: #f9fafb;
+  --color-portal-text-muted: #9ca3af;
+  --color-portal-brand: #3b82f6;
+  --color-portal-brand-hover: #2563eb;
+  --color-portal-accent: #06b6d4;
 }
 
 .theme-sepia {

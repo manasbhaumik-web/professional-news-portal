@@ -29,6 +29,8 @@ export default function LocalPage({
   const [isLoading, setIsLoading] = useState(true);
   const [locationName, setLocationName] = useState("San Francisco, CA");
   const [showCommunity, setShowCommunity] = useState(false);
+  const [liveArticles, setLiveArticles] = useState<NewsArticle[]>([]);
+  const [isLiveLoading, setIsLiveLoading] = useState(false);
 
   useEffect(() => {
     if ('geolocation' in navigator) {
@@ -59,6 +61,44 @@ export default function LocalPage({
       });
   }, []);
 
+  useEffect(() => {
+    const fetchLocalFeed = async () => {
+      setIsLiveLoading(true);
+      try {
+        const query = locationName === "Unknown Country" ? "Local" : locationName;
+        const rssUrl = encodeURIComponent(`https://news.google.com/rss/search?q=${query}+News`);
+        const res = await fetch(`/api/news/proxy?url=${rssUrl}`);
+        const data = await res.json();
+
+        if (data.status === 'ok' && data.items) {
+          const mapped: NewsArticle[] = data.items.map((item: any, idx: number) => ({
+            id: `local-live-${idx}`,
+            title: item.title,
+            summary: item.description ? item.description.replace(/<[^>]+>/g, '').substring(0, 150) + '...' : '',
+            content: item.content || item.description || '',
+            imageUrl: item.enclosure?.link || item.thumbnail || `https://images.unsplash.com/photo-1449824913935-59a10b8d2000?auto=format&fit=crop&w=800&q=80`,
+            category: 'Local',
+            sportName: 'Local News',
+            source: 'Google News Feed',
+            publishedAt: item.pubDate ? new Date(item.pubDate).toISOString() : new Date().toISOString(),
+            timeAgo: item.pubDate ? new Date(item.pubDate).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'Live',
+            readTime: '3 min read',
+            url: item.link
+          }));
+          setLiveArticles(mapped);
+        }
+      } catch (err) {
+        console.error('Failed to fetch live local feed', err);
+      } finally {
+        setIsLiveLoading(false);
+      }
+    };
+
+    if (locationName) {
+      fetchLocalFeed();
+    }
+  }, [locationName]);
+
   const bgClass = isDark ? 'bg-[#0A0B0D]' : isSepia ? 'bg-[#FAF3E3]' : 'bg-white';
   const borderClass = isDark ? 'border-zinc-800' : isSepia ? 'border-[#CDBC9D]' : 'border-neutral-200';
   const textMutedClass = isDark ? 'text-zinc-400' : isSepia ? 'text-[#5C4D3E]' : 'text-neutral-500';
@@ -70,6 +110,13 @@ export default function LocalPage({
     { title: 'Downtown Tech Mixer & Startup Pitch', time: 'Tomorrow, 5:30 PM', attendees: 85, type: 'Business' },
     { title: 'Community Park Restoration Drive', time: 'Saturday, 9:00 AM', attendees: 340, type: 'Volunteer' },
   ];
+
+  const combinedArticles = [...liveArticles, ...articles.filter(art => art.title.toLowerCase().includes(locationName.toLowerCase()) || art.category === 'Local')];
+  const displayArticles = combinedArticles.sort((a, b) => {
+    const timeA = new Date(a.publishedAt || a.date || Date.now()).getTime();
+    const timeB = new Date(b.publishedAt || b.date || Date.now()).getTime();
+    return timeB - timeA;
+  }).slice(0, 15);
 
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -133,18 +180,24 @@ export default function LocalPage({
                 </h3>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 auto-rows-auto">
-                {articles.slice(0, 10).map((art, idx) => (
-                  <ArticleCard
-                    key={art.id}
-                    index={idx}
-                    art={art}
-                    handleOpenArticle={handleOpenArticle}
-                    toggleBookmark={toggleBookmark}
-                    isBookmarked={bookmarks.includes(art.id)}
-                    failedImages={failedImages}
-                    setFailedImages={setFailedImages}
-                  />
-                ))}
+                {isLiveLoading && displayArticles.length === 0 ? (
+                   <div className={`p-8 text-center border border-dashed rounded-xl ${borderClass} ${textMutedClass} font-mono text-xs uppercase tracking-widest col-span-full`}>
+                     Fetching local dispatch...
+                   </div>
+                ) : (
+                  displayArticles.map((art, idx) => (
+                    <ArticleCard
+                      key={art.id}
+                      index={idx}
+                      art={art}
+                      handleOpenArticle={handleOpenArticle}
+                      toggleBookmark={toggleBookmark}
+                      isBookmarked={bookmarks.includes(art.id)}
+                      failedImages={failedImages}
+                      setFailedImages={setFailedImages}
+                    />
+                  ))
+                )}
               </div>
             </div>
           </div>

@@ -19,8 +19,15 @@ export default React.memo(function MainAdBanner({
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [failedImages, setFailedImages] = useState<string[]>([]);
 
+  const seenTitles = new Set<string>();
   const topHeadlines = [...trendingArticles]
-    .filter(art => !!art.imageUrl && !failedImages.includes(art.id))
+    .filter(art => {
+      if (!art.imageUrl || failedImages.includes(art.id)) return false;
+      const normTitle = art.title.trim().toLowerCase();
+      if (seenTitles.has(normTitle)) return false;
+      seenTitles.add(normTitle);
+      return true;
+    })
     .sort((a, b) => {
       const tb = new Date(b.publishedAt || b.date).getTime();
       const ta = new Date(a.publishedAt || a.date).getTime();
@@ -92,11 +99,11 @@ export default React.memo(function MainAdBanner({
 
           {/* ── Split body ── */}
           <div
-            className={`flex cursor-pointer transition-opacity duration-200 ${isTransitioning ? 'opacity-0' : 'opacity-100'}`}
+            className={`flex cursor-pointer transition-opacity duration-300 ${isTransitioning ? 'opacity-0' : 'opacity-100'}`}
             onClick={() => handleOpenArticle(article)}
           >
             {/* LEFT — Image flush with container */}
-            <div className="w-56 md:w-72 relative overflow-hidden shrink-0">
+            <div className="w-24 sm:w-56 md:w-72 relative overflow-hidden shrink-0">
               <img
                 key={article.id}
                 src={article.imageUrl}
@@ -112,7 +119,7 @@ export default React.memo(function MainAdBanner({
             <div className="flex flex-1 min-w-0 overflow-hidden">
 
               {/* Content column */}
-              <div className="flex flex-col justify-between px-5 py-4 flex-1 min-w-0 bg-transparent border-r border-slate-700/50">
+              <div className="flex flex-col justify-between px-5 py-4 flex-1 min-w-0 bg-transparent lg:border-r lg:border-slate-700/50">
                 {/* Index pill */}
                 <div className="flex items-center gap-2 mb-2">
                   <div className="h-px flex-1 bg-slate-600" />
@@ -120,7 +127,7 @@ export default React.memo(function MainAdBanner({
                 </div>
 
                 {/* Headline */}
-                <h2 className="text-2xl md:text-3xl font-black text-white leading-tight line-clamp-2 hover:text-portal-brand transition-colors drop-shadow-sm">
+                <h2 className="text-xl sm:text-2xl md:text-3xl font-bold font-serif text-white leading-tight line-clamp-2 hover:text-portal-brand transition-colors drop-shadow-sm">
                   {article.title}
                 </h2>
 
@@ -128,7 +135,7 @@ export default React.memo(function MainAdBanner({
                 {article.summary && (
                   <p 
                     className="text-[11px] text-slate-300 leading-relaxed mt-2 hidden md:block overflow-hidden"
-                    style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}
+                    style={{ display: '-webkit-box', WebkitLineClamp: 1, WebkitBoxOrient: 'vertical' }}
                   >
                     {article.summary}
                   </p>
@@ -148,7 +155,7 @@ export default React.memo(function MainAdBanner({
 
               {/* Advertisement column */}
               <div
-                className="w-44 shrink-0 mr-2 border-l border-slate-700/50 flex flex-col overflow-hidden cursor-default bg-slate-900/40"
+                className="w-44 shrink-0 mr-2 border-l border-slate-700/50 hidden lg:flex flex-col overflow-hidden cursor-default bg-slate-900/40"
                 onClick={(e) => e.stopPropagation()}
               >
                 {/* Ad header strip */}
