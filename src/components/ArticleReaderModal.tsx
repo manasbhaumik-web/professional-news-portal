@@ -199,29 +199,7 @@ export default function ArticleReaderModal({
             </div>
           )}
 
-          {/* AI TL;DR Summary Block */}
-          <div className={`mb-8 p-5 sm:p-6 rounded-2xl border-l-4 transition-all ${isCleanMode ? 'bg-zinc-900/50 border-l-cyan-500 border border-zinc-800' : 'bg-portal-surface border-l-portal-brand border border-portal-border shadow-sm'}`}>
-            <div className="flex items-center space-x-2 mb-3">
-              <Sparkles size={16} className={isCleanMode ? 'text-cyan-400' : 'text-portal-brand'} />
-              <h3 className={`font-serif font-bold text-sm uppercase tracking-widest ${isCleanMode ? 'text-white' : 'text-portal-text-main'}`}>
-                Article Summary
-              </h3>
-            </div>
-            <ul className={`space-y-2 text-sm sm:text-base leading-relaxed ${isCleanMode ? 'text-zinc-300' : 'text-portal-text-muted'} font-sans`}>
-              <li className="flex items-start">
-                <span className={`mr-3 mt-2 h-1.5 w-1.5 rounded-full shrink-0 ${isCleanMode ? 'bg-cyan-500' : 'bg-portal-brand'}`}></span>
-                <span>{selectedArticle.content.split('.')[0]}.</span>
-              </li>
-              <li className="flex items-start">
-                <span className={`mr-3 mt-2 h-1.5 w-1.5 rounded-full shrink-0 ${isCleanMode ? 'bg-cyan-500' : 'bg-portal-brand'}`}></span>
-                <span>Key market metrics and structural implications have been highlighted for your immediate review.</span>
-              </li>
-              <li className="flex items-start">
-                <span className={`mr-3 mt-2 h-1.5 w-1.5 rounded-full shrink-0 ${isCleanMode ? 'bg-cyan-500' : 'bg-portal-brand'}`}></span>
-                <span>Further developments are actively being monitored by our global intelligence network.</span>
-              </li>
-            </ul>
-          </div>
+
 
           {selectedArticle.imageUrl && (
             <div className={`rounded-xl overflow-hidden aspect-video max-h-96 w-full mb-8 relative border ${isCleanMode ? 'border-zinc-800 bg-zinc-950' : 'border-portal-border bg-portal-surface'}`}>
@@ -261,9 +239,9 @@ export default function ArticleReaderModal({
           <div className={`mt-12 p-6 sm:p-8 rounded-xl space-y-4 border ${isCleanMode ? 'bg-zinc-900 border-zinc-800' : 'bg-portal-surface border-portal-border'}`}>
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
               <div className="space-y-1">
-                <span className={`text-[10px] font-mono font-bold uppercase tracking-widest block ${isCleanMode ? 'text-cyan-400' : 'text-portal-accent'}`}>AI INVESTIGATIVE FOLLOW-UP</span>
+                <span className={`text-[10px] font-mono font-bold uppercase tracking-widest block ${isCleanMode ? 'text-cyan-400' : 'text-portal-accent'}`}>EDITORIAL INVESTIGATIVE FOLLOW-UP</span>
                 <h4 className={`font-serif font-semibold ${isCleanMode ? 'text-white' : 'text-portal-text-main'}`}>Generate deep-dive reports on this dynamic topic</h4>
-                <p className={`text-xs ${isCleanMode ? 'text-zinc-400' : 'text-portal-text-muted'}`}>Instruct PulseWire AI to construct full-sentence microanalyses, quotes, and supply logs.</p>
+                <p className={`text-xs ${isCleanMode ? 'text-zinc-400' : 'text-portal-text-muted'}`}>Instruct the PulseWire engine to construct full-sentence microanalyses, quotes, and supply logs.</p>
               </div>
 
               <button
@@ -292,7 +270,7 @@ export default function ArticleReaderModal({
               <div className={`p-4 rounded-lg space-y-3 border ${isCleanMode ? 'bg-[#09090b] border-zinc-800' : 'bg-portal-bg border-portal-border'}`}>
                 <div className={`flex items-center space-x-2 text-[10px] font-mono ${isCleanMode ? 'text-[#22c55e]' : 'text-emerald-500'}`}>
                   <span className={`inline-block h-1.5 w-1.5 rounded-full ${isCleanMode ? 'bg-[#22c55e]' : 'bg-emerald-500'}`} />
-                  <span>DOSSIER COMPLETED • PulseWire AI formulation output:</span>
+                  <span>DOSSIER COMPLETED • PulseWire formulation output:</span>
                 </div>
                 <div className={`text-xs sm:text-sm font-serif leading-relaxed whitespace-pre-line border-t pt-3 ${isCleanMode ? 'text-zinc-300 border-zinc-850' : 'text-portal-text-main border-portal-border/50'}`}>
                   {expandedContent}
