@@ -12,10 +12,11 @@ interface SystemSidebarProps {
   setSearchQuery: (query: string) => void;
   activeTab?: string;
   failedImages?: string[];
+  googleArticles?: NewsArticle[];
 }
 
 import MatchResultsPanel from './MatchResultsPanel';
-import { SidebarAdvertisement, OngoingIccSeriesCard, BreakingNewsCard, BookmarkedArticlesCard, UpcomingFixturesCard, TopScorersCard, TrendingTopicsCard, ProAdCard } from './SidebarComponents';
+import { SidebarAdvertisement, OngoingIccSeriesCard, BreakingNewsCard, BookmarkedArticlesCard, UpcomingFixturesCard, TopScorersCard, TrendingTopicsCard, ProAdCard, GoogleNewsPanel } from './SidebarComponents';
 
 export default React.memo(function SystemSidebar({
   bookmarks,
@@ -26,7 +27,8 @@ export default React.memo(function SystemSidebar({
   setActiveTab,
   setSearchQuery,
   activeTab,
-  failedImages = []
+  failedImages = [],
+  googleArticles = []
 }: SystemSidebarProps) {
   const [cricketMatches, setCricketMatches] = useState<any[]>([]);
   const [cricketIsMock, setCricketIsMock] = useState(true);
@@ -47,7 +49,7 @@ export default React.memo(function SystemSidebar({
       {/* Top panel: ICC on sports/cricket, Match Results on fifa, Breaking News everywhere else */}
       {(activeTab === 'sports' || activeTab === 'cricket') ? (
         <div className="space-y-6">
-          <SidebarAdvertisement />
+          {/* Removed SidebarAdvertisement */}
           <OngoingIccSeriesCard cricketIsMock={cricketIsMock} cricketMatches={cricketMatches} />
         </div>
       ) : (activeTab === 'fifa' || activeTab === 'fifaAllScores') ? (
@@ -55,8 +57,7 @@ export default React.memo(function SystemSidebar({
       ) : (
         <>
           <BreakingNewsCard relatedArticles={trendingArticles} handleOpenArticle={handleOpenArticle} />
-          {/* Second Advertisement — right under Breaking News */}
-          <SidebarAdvertisement />
+          {/* Removed Second Advertisement */}
         </>
       )}
 
@@ -67,7 +68,10 @@ export default React.memo(function SystemSidebar({
       ) : activeTab === 'fifaAllScores' ? (
         <TopScorersCard />
       ) : (
-        <TrendingTopicsCard relatedArticles={trendingArticles} handleOpenArticle={handleOpenArticle} failedImages={failedImages} />
+        <>
+          <TrendingTopicsCard relatedArticles={trendingArticles} handleOpenArticle={handleOpenArticle} failedImages={failedImages} />
+          <GoogleNewsPanel googleArticles={googleArticles} handleOpenArticle={handleOpenArticle} failedImages={failedImages} />
+        </>
       )}
 
       <ProAdCard />

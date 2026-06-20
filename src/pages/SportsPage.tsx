@@ -38,6 +38,12 @@ const SPORTS_FEEDS: Record<string, { source: string; url: string; sportName: str
     { source: 'Google News', url: 'https://news.google.com/rss/headlines/section/topic/SPORTS?hl=en-US&gl=US&ceid=US:en', sportName: 'Sports' },
     { source: 'BBC Football', url: 'http://feeds.bbci.co.uk/sport/football/rss.xml', sportName: 'Football' },
     { source: 'ESPN Soccer', url: 'https://www.espn.com/espn/rss/soccer/news', sportName: 'Football' },
+    { source: 'ESPN Top Sports', url: 'https://www.espn.com/espn/rss/news', sportName: 'Sports' },
+    { source: 'ESPN NFL', url: 'https://www.espn.com/espn/rss/nfl/news', sportName: 'American Football' },
+    { source: 'ESPN NBA', url: 'https://www.espn.com/espn/rss/nba/news', sportName: 'Basketball' },
+    { source: 'ESPN MLB', url: 'https://www.espn.com/espn/rss/mlb/news', sportName: 'Baseball' },
+    { source: 'ESPN NHL', url: 'https://www.espn.com/espn/rss/nhl/news', sportName: 'Ice Hockey' },
+    { source: 'ESPN F1', url: 'https://www.espn.com/espn/rss/f1/news', sportName: 'Motorsport' },
     { source: 'BBC Tennis', url: 'http://feeds.bbci.co.uk/sport/tennis/rss.xml', sportName: 'Tennis' },
     { source: 'BBC Cricket', url: 'http://feeds.bbci.co.uk/sport/cricket/rss.xml', sportName: 'Cricket' },
     { source: 'Sky Sports Golf', url: 'https://www.skysports.com/rss/12138', sportName: 'Golf' },
@@ -57,7 +63,20 @@ const SPORTS_FEEDS: Record<string, { source: string; url: string; sportName: str
     { source: 'BBC Tennis', url: 'http://feeds.bbci.co.uk/sport/tennis/rss.xml', sportName: 'Tennis' }
   ],
   Motorsport: [
+    { source: 'ESPN F1', url: 'https://www.espn.com/espn/rss/f1/news', sportName: 'Motorsport' },
     { source: 'Google News Motorsport', url: 'https://news.google.com/rss/search?q=Motorsport+Sports', sportName: 'Motorsport' }
+  ],
+  Basketball: [
+    { source: 'ESPN NBA', url: 'https://www.espn.com/espn/rss/nba/news', sportName: 'Basketball' }
+  ],
+  'American Football': [
+    { source: 'ESPN NFL', url: 'https://www.espn.com/espn/rss/nfl/news', sportName: 'American Football' }
+  ],
+  Baseball: [
+    { source: 'ESPN MLB', url: 'https://www.espn.com/espn/rss/mlb/news', sportName: 'Baseball' }
+  ],
+  'Ice Hockey': [
+    { source: 'ESPN NHL', url: 'https://www.espn.com/espn/rss/nhl/news', sportName: 'Ice Hockey' }
   ],
   Cricket: [
     { source: 'BBC Cricket', url: 'http://feeds.bbci.co.uk/sport/cricket/rss.xml', sportName: 'Cricket' }
@@ -92,6 +111,10 @@ const SPORT_IMAGES: Record<string, string> = {
   Rugby: 'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?auto=format&fit=crop&w=800&q=80',
   Athletics: 'https://images.unsplash.com/photo-1476480862126-209bfaa8edc8?auto=format&fit=crop&w=800&q=80',
   Cycling: 'https://images.unsplash.com/photo-1485965120184-e220f721d03e?auto=format&fit=crop&w=800&q=80',
+  Basketball: 'https://images.unsplash.com/photo-1519861531473-9200262188bf?auto=format&fit=crop&w=800&q=80',
+  'American Football': 'https://images.unsplash.com/photo-1566577739112-5180d4bf9390?auto=format&fit=crop&w=800&q=80',
+  Baseball: 'https://images.unsplash.com/photo-1508344928928-7165b67de128?auto=format&fit=crop&w=800&q=80',
+  'Ice Hockey': 'https://images.unsplash.com/photo-1515703407324-5f753eedf9ce?auto=format&fit=crop&w=800&q=80',
   All: 'https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?auto=format&fit=crop&w=800&q=80',
   Sports: 'https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?auto=format&fit=crop&w=800&q=80'
 };
@@ -122,9 +145,10 @@ export default function SportsPage({ articles, selectedSportFromMenu, handleOpen
                 title: item.title,
                 summary: item.description ? item.description.replace(/<[^>]+>/g, '').substring(0, 150) + '...' : '',
                 content: item.content || item.description || '',
-                imageUrl: item.enclosure?.link || item.thumbnail || SPORT_IMAGES[feed.sportName] || SPORT_IMAGES['All'],
+                imageUrl: item.enclosure?.link || item.thumbnail || (feed.source.includes('Google') ? undefined : (SPORT_IMAGES[feed.sportName] || SPORT_IMAGES['All'])),
                 category: 'Sports',
                 sportName: feed.sportName,
+                source: feed.source,
                 author: item.author || feed.source,
                 publishedAt: item.pubDate ? new Date(item.pubDate).toISOString() : new Date().toISOString(),
                 timeAgo: item.pubDate ? timeAgo(item.pubDate) : 'Live',

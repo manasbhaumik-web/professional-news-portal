@@ -75,51 +75,49 @@ export default React.memo(function MainAdBanner({
         </div>
       ) : (
         /* ── Expanded Split Card ── */
-        <section id="top-headlines-carousel" className="mb-4 rounded-xl overflow-hidden shadow-2xl bg-gradient-to-br from-slate-900 via-slate-800 to-zinc-900 text-white border-0">
-
-          {/* ── Top label bar ── */}
-          <div className="flex items-center justify-between px-4 py-2 bg-slate-950/40 border-b border-slate-700/50">
-            <div className="flex items-center gap-2">
-              <TrendingUp size={12} className="text-portal-brand" />
-              <span className="text-[10px] font-mono font-black uppercase tracking-widest text-portal-brand">Top Headlines</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <button onClick={prevSlide} className="p-1 rounded border border-slate-600 bg-slate-800 text-slate-400 hover:text-white hover:border-slate-400 transition-all cursor-pointer">
-                <ChevronLeft size={13} />
+        <section id="top-headlines-carousel" className="mb-4 text-white border-0">
+          <div className="flex gap-4 items-stretch">
+            {/* News Headline Item */}
+            <div
+              className={`flex-1 flex cursor-pointer transition-opacity duration-300 ${isTransitioning ? 'opacity-0' : 'opacity-100'} relative group rounded-xl overflow-hidden shadow-2xl bg-gradient-to-br from-slate-900 via-slate-800 to-zinc-900 border border-slate-700/50 min-w-0`}
+              onClick={() => handleOpenArticle(article)}
+            >
+              {/* MINIMIZE BUTTON */}
+              <button onClick={(e) => { e.stopPropagation(); setIsAdMinimized(true); }} className="absolute top-3 right-3 z-20 p-1.5 rounded-full bg-black/40 text-white hover:bg-black/70 transition-colors" title="Minimize">
+                <Minus size={14} />
               </button>
-              <button onClick={nextSlide} className="p-1 rounded border border-slate-600 bg-slate-800 text-slate-400 hover:text-white hover:border-slate-400 transition-all cursor-pointer">
-                <ChevronRight size={13} />
+
+              {/* LEFT ARROW */}
+              <button 
+                onClick={(e) => { e.stopPropagation(); prevSlide(); }} 
+                className="absolute left-3 top-1/2 -translate-y-1/2 z-20 p-2 rounded-full bg-black/40 text-white hover:bg-black/70 transition-colors opacity-0 group-hover:opacity-100"
+              >
+                <ChevronLeft size={20} />
               </button>
-              <div className="w-px h-4 bg-slate-700 mx-1" />
-              <button onClick={(e) => { e.stopPropagation(); setIsAdMinimized(true); }} className="p-1 rounded border border-slate-600 bg-slate-800 text-slate-400 hover:text-white transition-all cursor-pointer" title="Minimize">
-                <Minus size={13} />
+
+              {/* RIGHT ARROW */}
+              <button 
+                onClick={(e) => { e.stopPropagation(); nextSlide(); }} 
+                className="absolute right-3 top-1/2 -translate-y-1/2 z-20 p-2 rounded-full bg-black/40 text-white hover:bg-black/70 transition-colors opacity-0 group-hover:opacity-100"
+              >
+                <ChevronRight size={20} />
               </button>
-            </div>
-          </div>
 
-          {/* ── Split body ── */}
-          <div
-            className={`flex cursor-pointer transition-opacity duration-300 ${isTransitioning ? 'opacity-0' : 'opacity-100'}`}
-            onClick={() => handleOpenArticle(article)}
-          >
-            {/* LEFT — Image flush with container */}
-            <div className="w-24 sm:w-56 md:w-72 relative overflow-hidden shrink-0">
-              <img
-                key={article.id}
-                src={article.imageUrl}
-                alt={article.title}
-                className="absolute inset-0 w-full h-full object-cover"
-                onError={() => {
-                  setFailedImages(prev => [...prev, article.id]);
-                }}
-              />
-            </div>
+              {/* LEFT — Image flush with container */}
+              <div className="w-24 sm:w-56 md:w-72 relative overflow-hidden shrink-0">
+                <img
+                  key={article.id}
+                  src={article.imageUrl}
+                  alt={article.title}
+                  className="absolute inset-0 w-full h-full object-cover"
+                  onError={() => {
+                    setFailedImages(prev => [...prev, article.id]);
+                  }}
+                />
+              </div>
 
-            {/* RIGHT — Two columns: Content + Advertisement */}
-            <div className="flex flex-1 min-w-0 overflow-hidden">
-
-              {/* Content column */}
-              <div className="flex flex-col justify-between px-5 py-4 flex-1 min-w-0 bg-transparent lg:border-r lg:border-slate-700/50">
+              {/* RIGHT — Content */}
+              <div className="flex flex-col justify-between px-5 py-4 pb-6 flex-1 min-w-0 bg-transparent">
                 {/* Index pill */}
                 <div className="flex items-center gap-2 mb-2">
                   <div className="h-px flex-1 bg-slate-600" />
@@ -127,13 +125,13 @@ export default React.memo(function MainAdBanner({
                 </div>
 
                 {/* Headline */}
-                <h2 className="text-xl sm:text-2xl md:text-3xl font-bold font-serif text-white leading-tight line-clamp-2 hover:text-portal-brand transition-colors drop-shadow-sm">
+                <h2 className="text-xl sm:text-2xl md:text-3xl font-bold font-serif text-white leading-tight line-clamp-2 hover:text-portal-brand transition-colors drop-shadow-sm pr-8">
                   {article.title}
                 </h2>
 
                 {/* Summary */}
                 {article.summary && (
-                  <p 
+                  <p
                     className="text-[11px] text-slate-300 leading-relaxed mt-2 hidden md:block overflow-hidden"
                     style={{ display: '-webkit-box', WebkitLineClamp: 1, WebkitBoxOrient: 'vertical' }}
                   >
@@ -153,46 +151,45 @@ export default React.memo(function MainAdBanner({
                 </div>
               </div>
 
-              {/* Advertisement column */}
-              <div
-                className="w-44 shrink-0 mr-2 border-l border-slate-700/50 hidden lg:flex flex-col overflow-hidden cursor-default bg-slate-900/40"
-                onClick={(e) => e.stopPropagation()}
-              >
-                {/* Ad header strip */}
-                <div className="w-full h-20 bg-gradient-to-br from-teal-500 via-cyan-500 to-blue-600 flex flex-col items-center justify-center relative overflow-hidden shrink-0">
-                  <div className="absolute inset-0" style={{backgroundImage: 'radial-gradient(circle at 70% 30%, rgba(255,255,255,0.15) 0%, transparent 60%)'}} />
-                  <div className="text-white text-base font-black tracking-tight relative z-10">Horizon+</div>
-                  <div className="text-white/80 text-[8px] font-mono uppercase tracking-widest relative z-10">Premium Access</div>
-                </div>
+              {/* ── Progress dots ── */}
+              <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex items-center justify-center gap-1.5 z-20">
+                {topHeadlines.map((_, idx) => (
+                  <button
+                    key={idx}
+                    onClick={(e) => { e.stopPropagation(); goToSlide(idx); }}
+                    className={`rounded-full transition-all duration-300 ${idx === activeIndex ? 'w-5 h-1 bg-portal-brand' : 'w-1.5 h-1 bg-white/40 hover:bg-white/70'}`}
+                    aria-label={`Headline ${idx + 1}`}
+                  />
+                ))}
+              </div>
+            </div>
 
-                {/* Ad body */}
-                <div className="flex flex-col gap-1.5 px-2.5 py-2 flex-1">
-                  <div className="text-[7px] font-mono uppercase tracking-widest text-slate-400 self-end">Sponsored</div>
-                  <p className="text-[10px] font-black text-white leading-snug">Go Ad-Free + Unlock Archives</p>
-                  <ul className="text-[9px] text-slate-300 space-y-0.5">
-                    <li>✓ Zero advertisements</li>
-                    <li>✓ 10-year archive access</li>
-                    <li>✓ Faster data streams</li>
-                  </ul>
-                  <button className="mt-auto text-[8px] font-black uppercase tracking-widest bg-gradient-to-r from-teal-500 to-cyan-500 text-white py-1 rounded-md hover:opacity-90 transition-opacity w-full">
-                    Upgrade Now
-                  </button>
-                </div>
+            {/* Advertisement Div */}
+            <div
+              className="w-44 shrink-0 hidden lg:flex flex-col overflow-hidden rounded-xl shadow-2xl bg-gradient-to-br from-slate-900 via-slate-800 to-zinc-900 border border-slate-700/50 cursor-default"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Ad header strip */}
+              <div className="w-full h-20 bg-gradient-to-br from-teal-500 via-cyan-500 to-blue-600 flex flex-col items-center justify-center relative overflow-hidden shrink-0">
+                <div className="absolute inset-0" style={{ backgroundImage: 'radial-gradient(circle at 70% 30%, rgba(255,255,255,0.15) 0%, transparent 60%)' }} />
+                <div className="text-white text-base font-black tracking-tight relative z-10">Horizon+</div>
+                <div className="text-white/80 text-[8px] font-mono uppercase tracking-widest relative z-10">Premium Access</div>
               </div>
 
+              {/* Ad body */}
+              <div className="flex flex-col gap-1.5 px-2.5 py-2 flex-1">
+                <div className="text-[7px] font-mono uppercase tracking-widest text-slate-400 self-end">Sponsored</div>
+                <p className="text-[10px] font-black text-white leading-snug">Go Ad-Free + Unlock Archives</p>
+                <ul className="text-[9px] text-slate-300 space-y-0.5">
+                  <li>✓ Zero advertisements</li>
+                  <li>✓ 10-year archive access</li>
+                  <li>✓ Faster data streams</li>
+                </ul>
+                <button className="mt-auto text-[8px] font-black uppercase tracking-widest bg-gradient-to-r from-teal-500 to-cyan-500 text-white py-1 rounded-md hover:opacity-90 transition-opacity w-full">
+                  Upgrade Now
+                </button>
+              </div>
             </div>
-          </div>
-
-          {/* ── Progress dots ── */}
-          <div className="flex items-center justify-center gap-1.5 py-2 border-t border-slate-700/50 bg-slate-950/40">
-            {topHeadlines.map((_, idx) => (
-              <button
-                key={idx}
-                onClick={() => goToSlide(idx)}
-                className={`rounded-full transition-all duration-300 ${idx === activeIndex ? 'w-5 h-1 bg-portal-brand' : 'w-1.5 h-1 bg-slate-600 hover:bg-slate-400'}`}
-                aria-label={`Headline ${idx + 1}`}
-              />
-            ))}
           </div>
         </section>
       )}

@@ -71,7 +71,7 @@ export default function ReportNewsPage() {
     <div className="max-w-4xl mx-auto py-12 px-6">
       <div className="mb-12 border-b border-portal-border pb-6">
         <h1 className="text-4xl font-serif font-bold text-portal-text-main tracking-tight mb-2">Citizen Reporting Terminal</h1>
-        <p className="text-sm font-mono text-portal-text-muted">Direct uplink to the PulseWire editorial desk. Submit verifiable incidents and local events.</p>
+        <p className="text-sm font-mono text-portal-text-muted">Direct uplink to The Horizon Post editorial desk. Submit verifiable incidents and local events.</p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-8">

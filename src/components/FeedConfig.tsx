@@ -70,7 +70,7 @@ export default function FeedConfig({
         <div className="flex items-center space-x-2">
           <span className="text-[10px] font-mono text-portal-text-muted uppercase">Engine Status:</span>
           <span className="px-2 py-0.5 text-[10px] rounded-full border bg-emerald-500/10 text-emerald-500 border-emerald-500/30">
-            PulseWire Engine Online
+            The Horizon Post Engine Online
           </span>
         </div>
       </div>

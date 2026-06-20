@@ -17,7 +17,7 @@ export default function MarketTicker({ theme = 'dark' }: MarketTickerProps) {
     { symbol: "FUSN", name: "Helion Plasma Yield", price: 92.15, change: 4.88 },
     { symbol: "CARB", name: "EU Carbon Border Duty", price: 104.20, change: -1.35 },
     { symbol: "NDX", name: "Silicon Tech Composite", price: 18451.20, change: 1.25 },
-    { symbol: "CBDC", name: "USD Sovereign Ledger", price: 1.0000, change: 0.00 },
+    { symbol: "CBDC", name: "USD The Horizon Post", price: 1.0000, change: 0.00 },
     { symbol: "NPR", name: "News Product Registry", price: 302.10, change: -0.45 },
   ]);
 

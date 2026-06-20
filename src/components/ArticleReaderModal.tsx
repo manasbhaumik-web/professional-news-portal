@@ -20,14 +20,15 @@ interface ArticleReaderModalProps {
 
 const cleanHtmlText = (text: string) => {
   if (!text) return '';
-  return text
-    .replace(/<[^>]*>?/gm, '') // Strip HTML tags
+  const decoded = text
     .replace(/&nbsp;/g, ' ')
     .replace(/&amp;/g, '&')
     .replace(/&quot;/g, '"')
     .replace(/&apos;/g, "'")
     .replace(/&lt;/g, '<')
-    .replace(/&gt;/g, '>')
+    .replace(/&gt;/g, '>');
+  return decoded
+    .replace(/<[^>]*>?/gm, '') // Strip HTML tags
     .trim();
 };
 
@@ -302,7 +303,7 @@ export default function ArticleReaderModal({
               <div className={`p-5 sm:p-6 rounded-xl space-y-4 border ${isCleanMode ? 'bg-zinc-900 border-zinc-800' : 'bg-portal-surface border-portal-border'}`}>
                 <span className={`text-[10px] font-mono font-bold uppercase tracking-widest block ${isCleanMode ? 'text-cyan-400' : 'text-portal-accent'}`}>EDITORIAL INVESTIGATIVE FOLLOW-UP</span>
                 <h4 className={`font-serif font-semibold ${isCleanMode ? 'text-white' : 'text-portal-text-main'}`}>Generate deep-dive reports on this dynamic topic</h4>
-                <p className={`text-xs ${isCleanMode ? 'text-zinc-400' : 'text-portal-text-muted'}`}>Instruct the PulseWire engine to construct full-sentence microanalyses, quotes, and supply logs.</p>
+                <p className={`text-xs ${isCleanMode ? 'text-zinc-400' : 'text-portal-text-muted'}`}>Instruct The Horizon Post engine to construct full-sentence microanalyses, quotes, and supply logs.</p>
                 <button
                   disabled={isExpandingDeepDive}
                   onClick={() => handleDeepDiveExpand(selectedArticle.title)}
@@ -328,7 +329,7 @@ export default function ArticleReaderModal({
                   <div className={`p-4 rounded-lg space-y-3 border ${isCleanMode ? 'bg-[#09090b] border-zinc-800' : 'bg-portal-bg border-portal-border'}`}>
                     <div className={`flex items-center space-x-2 text-[10px] font-mono ${isCleanMode ? 'text-[#22c55e]' : 'text-emerald-500'}`}>
                       <span className={`inline-block h-1.5 w-1.5 rounded-full ${isCleanMode ? 'bg-[#22c55e]' : 'bg-emerald-500'}`} />
-                      <span>DOSSIER COMPLETED • PulseWire formulation output:</span>
+                      <span>DOSSIER COMPLETED • The Horizon Post formulation output:</span>
                     </div>
                     <div className={`text-xs sm:text-sm font-serif leading-relaxed whitespace-pre-line border-t pt-3 ${isCleanMode ? 'text-zinc-300 border-zinc-850' : 'text-portal-text-main border-portal-border/50'}`}>
                       {expandedContent}

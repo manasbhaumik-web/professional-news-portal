@@ -19,22 +19,25 @@ const BUSINESS_FEEDS: Record<string, { source: string; url: string; subCategory:
     { source: 'Google Business', url: 'https://news.google.com/rss/headlines/section/topic/BUSINESS?hl=en-US&gl=US&ceid=US:en', subCategory: 'General' },
     { source: 'BBC Business', url: 'http://feeds.bbci.co.uk/news/business/rss.xml', subCategory: 'Economy' },
     { source: 'NYT Business', url: 'https://rss.nytimes.com/services/xml/rss/nyt/Business.xml', subCategory: 'Finance' },
-    { source: 'CNBC', url: 'https://search.cnbc.com/rs/search/combinedcms/view.xml?id=10000664', subCategory: 'Markets' }
+    { source: 'CNBC', url: 'https://www.cnbc.com/id/10000664/device/rss/rss.html', subCategory: 'Markets' },
+    { source: 'Yahoo Finance', url: 'https://finance.yahoo.com/news/rssindex', subCategory: 'Finance' }
   ],
   Markets: [
-    { source: 'CNBC', url: 'https://search.cnbc.com/rs/search/combinedcms/view.xml?id=10000664', subCategory: 'Markets' },
-    { source: 'Google News Markets', url: 'https://news.google.com/rss/search?q=Financial+Markets', subCategory: 'Markets' }
+    { source: 'CNBC', url: 'https://www.cnbc.com/id/10000664/device/rss/rss.html', subCategory: 'Markets' },
+    { source: 'Google News Markets', url: 'https://news.google.com/rss/search?q=Financial+Markets&hl=en-US&gl=US&ceid=US:en', subCategory: 'Markets' }
   ],
   Finance: [
     { source: 'NYT Business', url: 'https://rss.nytimes.com/services/xml/rss/nyt/Business.xml', subCategory: 'Finance' },
-    { source: 'Google News Finance', url: 'https://news.google.com/rss/search?q=Corporate+Finance', subCategory: 'Finance' }
+    { source: 'Google News Finance', url: 'https://news.google.com/rss/search?q=Corporate+Finance&hl=en-US&gl=US&ceid=US:en', subCategory: 'Finance' },
+    { source: 'Yahoo Finance', url: 'https://finance.yahoo.com/news/rssindex', subCategory: 'Finance' }
   ],
   Economy: [
     { source: 'BBC Business', url: 'http://feeds.bbci.co.uk/news/business/rss.xml', subCategory: 'Economy' },
-    { source: 'Google News Economy', url: 'https://news.google.com/rss/search?q=Global+Economy', subCategory: 'Economy' }
+    { source: 'Google News Economy', url: 'https://news.google.com/rss/search?q=Global+Economy&hl=en-US&gl=US&ceid=US:en', subCategory: 'Economy' }
   ],
   Startups: [
-    { source: 'Google News Startups', url: 'https://news.google.com/rss/search?q=Venture+Capital+Startups', subCategory: 'Startups' }
+    { source: 'TechCrunch', url: 'https://techcrunch.com/category/startups/feed/', subCategory: 'Startups' },
+    { source: 'Google News Startups', url: 'https://news.google.com/rss/search?q=Venture+Capital+Startups&hl=en-US&gl=US&ceid=US:en', subCategory: 'Startups' }
   ]
 };
 
@@ -71,7 +74,7 @@ export default function BusinessPage({ articles, selectedCategoryFromMenu, handl
                 title: item.title,
                 summary: item.description ? item.description.replace(/<[^>]+>/g, '').substring(0, 150) + '...' : '',
                 content: item.content || item.description || '',
-                imageUrl: item.enclosure?.link || item.thumbnail || BUSINESS_IMAGES[feed.subCategory] || BUSINESS_IMAGES['All'],
+                imageUrl: item.enclosure?.link || item.thumbnail || (feed.source.includes('Google') ? undefined : (BUSINESS_IMAGES[feed.subCategory] || BUSINESS_IMAGES['General'])),
                 category: 'Business',
                 sportName: feed.subCategory,
                 source: feed.source,

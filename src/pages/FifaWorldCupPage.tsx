@@ -35,27 +35,27 @@ const FIFA_FEEDS = [
   {
     name: 'BBC Sport - Football',
     flag: '🇬🇧',
-    url: 'https://api.rss2json.com/v1/api.json?rss_url=http://feeds.bbci.co.uk/sport/football/rss.xml',
+    url: '/api/news/proxy?url=' + encodeURIComponent('http://feeds.bbci.co.uk/sport/football/rss.xml'),
   },
   {
     name: 'ESPN FC',
     flag: '🇺🇸',
-    url: 'https://api.rss2json.com/v1/api.json?rss_url=https://www.espn.com/espn/rss/soccer/news',
+    url: '/api/news/proxy?url=' + encodeURIComponent('https://www.espn.com/espn/rss/soccer/news'),
   },
   {
     name: 'Goal.com',
     flag: '⚽',
-    url: 'https://api.rss2json.com/v1/api.json?rss_url=https://www.goal.com/feeds/en/news',
+    url: '/api/news/proxy?url=' + encodeURIComponent('https://www.goal.com/feeds/en/news'),
   },
   {
     name: 'Reuters Sports',
     flag: '🌍',
-    url: 'https://api.rss2json.com/v1/api.json?rss_url=https://feeds.reuters.com/reuters/sportsNews',
+    url: '/api/news/proxy?url=' + encodeURIComponent('https://feeds.reuters.com/reuters/sportsNews'),
   },
   {
     name: 'Sky Sports Football',
     flag: '🇬🇧',
-    url: 'https://api.rss2json.com/v1/api.json?rss_url=https://www.skysports.com/rss/12040',
+    url: '/api/news/proxy?url=' + encodeURIComponent('https://www.skysports.com/rss/12040'),
   },
 ];
 

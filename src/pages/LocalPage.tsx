@@ -76,7 +76,7 @@ export default function LocalPage({
             title: item.title,
             summary: item.description ? item.description.replace(/<[^>]+>/g, '').substring(0, 150) + '...' : '',
             content: item.content || item.description || '',
-            imageUrl: item.enclosure?.link || item.thumbnail || `https://images.unsplash.com/photo-1449824913935-59a10b8d2000?auto=format&fit=crop&w=800&q=80`,
+            imageUrl: item.enclosure?.link || item.thumbnail || undefined,
             category: 'Local',
             sportName: 'Local News',
             source: 'Google News Feed',

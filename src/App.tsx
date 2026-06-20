@@ -265,8 +265,19 @@ export default function App() {
     setBookmarks(prev => prev.includes(id) ? prev.filter(bId => bId !== id) : [...prev, id]);
   }, []);
 
+  const nonGoogleTrending = useMemo(() => trendingArticles.filter(a => {
+    const isGoogle = a.source?.toLowerCase().includes('google') || (a.originalUrl && a.originalUrl.includes('google.com'));
+    if (isGoogle) {
+      if (!a.imageUrl) return false;
+      if (a.imageUrl.includes('unsplash.com')) return false;
+      return true;
+    }
+    return true;
+  }), [trendingArticles]);
+  const googleTrending = useMemo(() => trendingArticles.filter(a => a.source?.toLowerCase().includes('google') || (a.originalUrl && a.originalUrl.includes('google.com'))), [trendingArticles]);
+
   const filteredTrending = useMemo(() => {
-    let list = trendingArticles;
+    let list = nonGoogleTrending;
     if (selectedMenuCategory.startsWith('Region:')) {
       const region = selectedMenuCategory.split(':')[1].trim();
       list = list.filter(art =>
@@ -502,7 +513,7 @@ export default function App() {
                   {activeTab === 'trending' ? (
                     <div className="text-xs flex items-center space-x-1 select-none font-mono text-portal-text-muted">
                       <Flame size={12} className="text-[#ef4444] animate-pulse" />
-                      <span>Updated in Real-Time via Telecom Core</span>
+                      <span>Updated in Real-Time</span>
                     </div>
                   ) : (
                     <button
@@ -697,7 +708,7 @@ export default function App() {
                 {activeTab === 'local' && (
                   <LocalPage
                     theme={portalTheme}
-                    articles={trendingArticles}
+                    articles={nonGoogleTrending}
                     handleOpenArticle={handleOpenArticle}
                     toggleBookmark={toggleBookmark}
                     bookmarks={bookmarks}
@@ -709,7 +720,7 @@ export default function App() {
                   <PoliticsPage
                     theme={portalTheme}
                     selectedCategoryFromMenu={selectedMenuCategory.startsWith('Politics:') ? selectedMenuCategory.split(':')[1].trim() : 'All'}
-                    articles={trendingArticles.filter(art => {
+                    articles={nonGoogleTrending.filter(art => {
                       const isCat = ['Politics', 'Global Policy'].includes(art.category) && (!searchQuery || art.title.toLowerCase().includes(searchQuery.toLowerCase()));
                       const activeRegion = selectedMenuCategory.startsWith('Region: ') ? selectedMenuCategory.replace('Region: ', '') : 'All';
                       return activeRegion === 'All' ? isCat : (isCat && getArticleRegion(art.source) === activeRegion);
@@ -725,7 +736,7 @@ export default function App() {
                   <BusinessPage
                     theme={portalTheme}
                     selectedCategoryFromMenu={selectedMenuCategory.startsWith('Business:') ? selectedMenuCategory.split(':')[1].trim() : 'All'}
-                    articles={trendingArticles.filter(art => {
+                    articles={nonGoogleTrending.filter(art => {
                       const isCat = ['Business', 'Finance', 'Markets'].includes(art.category) && (!searchQuery || art.title.toLowerCase().includes(searchQuery.toLowerCase()));
                       const activeRegion = selectedMenuCategory.startsWith('Region: ') ? selectedMenuCategory.replace('Region: ', '') : 'All';
                       return activeRegion === 'All' ? isCat : (isCat && getArticleRegion(art.source) === activeRegion);
@@ -741,7 +752,7 @@ export default function App() {
                   <EntertainmentPage
                     theme={portalTheme}
                     selectedCategoryFromMenu={selectedMenuCategory.startsWith('Entertainment:') ? selectedMenuCategory.split(':')[1].trim() : 'All'}
-                    articles={trendingArticles.filter(art => {
+                    articles={nonGoogleTrending.filter(art => {
                       const isCat = ['Entertainment', 'Movie', 'Music'].includes(art.category) && (!searchQuery || art.title.toLowerCase().includes(searchQuery.toLowerCase()));
                       const activeRegion = selectedMenuCategory.startsWith('Region: ') ? selectedMenuCategory.replace('Region: ', '') : 'All';
                       return activeRegion === 'All' ? isCat : (isCat && getArticleRegion(art.source) === activeRegion);
@@ -757,7 +768,7 @@ export default function App() {
                   <ScienceTechPage
                     theme={portalTheme}
                     selectedCategoryFromMenu={selectedMenuCategory.startsWith('Science & Tech:') ? selectedMenuCategory.split(':')[1].trim() : 'All'}
-                    articles={trendingArticles.filter(art => ['Science', 'Technology', 'Science & Tech', 'Computing', 'Space', 'Cybersecurity'].includes(art.category) && (!searchQuery || art.title.toLowerCase().includes(searchQuery.toLowerCase()))).slice(0, 10)}
+                    articles={nonGoogleTrending.filter(art => ['Science', 'Technology', 'Science & Tech', 'Computing', 'Space', 'Cybersecurity'].includes(art.category) && (!searchQuery || art.title.toLowerCase().includes(searchQuery.toLowerCase()))).slice(0, 10)}
                     handleOpenArticle={handleOpenArticle}
                     toggleBookmark={toggleBookmark}
                     bookmarks={bookmarks}
@@ -769,7 +780,7 @@ export default function App() {
                 {activeTab === 'sports' && (
                   <SportsPage
                     theme={portalTheme}
-                    articles={trendingArticles.filter(art => art.category === 'Sports' && (!searchQuery || art.title.toLowerCase().includes(searchQuery.toLowerCase()))).slice(0, 10)}
+                    articles={nonGoogleTrending.filter(art => art.category === 'Sports' && (!searchQuery || art.title.toLowerCase().includes(searchQuery.toLowerCase()))).slice(0, 10)}
                     selectedSportFromMenu={selectedMenuCategory.startsWith('Sports:') ? selectedMenuCategory.split(':')[1].trim() : 'All'}
                     handleOpenArticle={handleOpenArticle}
                     toggleBookmark={toggleBookmark}
@@ -793,13 +804,14 @@ export default function App() {
           <SystemSidebar
             activeTab={activeTab}
             bookmarks={bookmarks}
-            trendingArticles={trendingArticles}
+            trendingArticles={nonGoogleTrending}
             personalizedArticles={personalizedArticles}
             relatedArticles={filteredTrending}
             handleOpenArticle={handleOpenArticle}
             setActiveTab={setActiveTab}
             setSearchQuery={setSearchQuery}
             failedImages={failedImages}
+            googleArticles={googleTrending}
           />
         </div>
       </main>
@@ -833,7 +845,7 @@ export default function App() {
           </div>
           <div className="flex items-center space-x-2 text-[10px] text-portal-text-muted font-mono">
             <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></span>
-            <span>Sovereign Ledger Online</span>
+            <span>The Horizon Post Online</span>
             <span className="ml-4">© 2026 THE HORIZON POST INC</span>
           </div>
         </div>

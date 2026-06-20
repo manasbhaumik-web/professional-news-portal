@@ -69,7 +69,7 @@ export default function PoliticsPage({ articles, selectedCategoryFromMenu, handl
                 title: item.title,
                 summary: item.description ? item.description.replace(/<[^>]+>/g, '').substring(0, 150) + '...' : '',
                 content: item.content || item.description || '',
-                imageUrl: item.enclosure?.link || item.thumbnail || POLITICS_IMAGES[feed.subCategory] || POLITICS_IMAGES['All'],
+                imageUrl: item.enclosure?.link || item.thumbnail || undefined,
                 category: 'Politics',
                 sportName: feed.subCategory,
                 source: feed.source,

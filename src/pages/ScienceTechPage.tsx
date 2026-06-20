@@ -33,7 +33,7 @@ export default function ScienceTechPage({ articles, selectedCategoryFromMenu, ha
             title: item.title,
             summary: item.description ? item.description.replace(/<[^>]+>/g, '').substring(0, 150) + '...' : '',
             content: item.content || item.description || '',
-            imageUrl: item.enclosure?.link || item.thumbnail || `https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=800&q=80`,
+            imageUrl: item.enclosure?.link || item.thumbnail || undefined,
             category: 'Technology',
             sportName: selectedCategoryFromMenu,
             source: 'Google News Feed',
