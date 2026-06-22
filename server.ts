@@ -150,6 +150,40 @@ In this blog, we explore how spatial networks and headless web directories will 
     imageUrl: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=800&q=80",
     trendsUp: true,
     views: 2310
+  },
+  {
+    id: "art-entertainment-1",
+    title: "Global Film Festival Premieres Revolutionary Holographic Cinema Experience",
+    category: "Entertainment",
+    summary: "Industry leaders unveil immersive 3D holographic projection technology, reshaping the future of theatrical releases.",
+    content: `At the opening night of the International Cinema Expo, directors and tech visionaries showcased the first full-length feature film utilizing volumetric holographic projection. Unlike traditional 3D, this technology requires no glasses and projects life-sized actors directly into the theater space.
+
+Major studios have already committed to retrofitting select flagship theaters in metropolitan hubs to support the new format, which relies on a complex array of laser emitters and localized atmospheric manipulators to create tangible depth.
+
+Critics at the premiere praised the system's ability to maintain crystal-clear resolution from any viewing angle, noting that this innovation could reverse the decade-long trend of declining theater attendance by offering an experience impossible to replicate at home.`,
+    source: "Culture & Screen",
+    date: "Today, 11:30 AM",
+    readTime: "4 min read",
+    imageUrl: "https://images.unsplash.com/photo-1485846234645-a62644f84728?auto=format&fit=crop&w=800&q=80",
+    trendsUp: true,
+    views: 3105
+  },
+  {
+    id: "art-science-1",
+    title: "Breakthrough in Quantum Error Correction Achieved at CERN",
+    category: "Technology",
+    summary: "Researchers successfully maintain quantum coherence ten times longer than previous records.",
+    content: `Scientists at the European Organization for Nuclear Research (CERN) announced a major milestone in quantum computing today. By implementing a novel topological error correction code, the team managed to keep a 50-qubit array stable for over three seconds—a full order of magnitude improvement over existing commercial quantum processors.
+
+This breakthrough addresses one of the most stubborn hurdles in the field: quantum decoherence. The new technique dynamically isolates individual qubits from environmental thermal noise without requiring near-absolute zero temperatures.
+
+Tech analysts suggest this development could accelerate the timeline for practical quantum supremacy, paving the way for revolutionary advancements in cryptographic decryption, complex molecular modeling, and artificial intelligence training protocols within the next five years.`,
+    source: "Quantum Daily",
+    date: "Today, 02:15 PM",
+    readTime: "6 min read",
+    imageUrl: "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=800&q=80",
+    trendsUp: true,
+    views: 4520
   }
 ];
 

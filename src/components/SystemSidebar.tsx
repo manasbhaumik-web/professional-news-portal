@@ -16,7 +16,7 @@ interface SystemSidebarProps {
 }
 
 import MatchResultsPanel from './MatchResultsPanel';
-import { SidebarAdvertisement, OngoingIccSeriesCard, BreakingNewsCard, BookmarkedArticlesCard, UpcomingFixturesCard, TopScorersCard, TrendingTopicsCard, ProAdCard, GoogleNewsPanel } from './SidebarComponents';
+import { SidebarAdvertisement, OngoingIccSeriesCard, BookmarkedArticlesCard, UpcomingFixturesCard, TopScorersCard, ThumbnailNewsCard, TrendingTopicsCard, ProAdCard, GoogleNewsPanel } from './SidebarComponents';
 
 export default React.memo(function SystemSidebar({
   bookmarks,
@@ -43,36 +43,67 @@ export default React.memo(function SystemSidebar({
       .catch(err => console.error('Failed to fetch cricket live data', err));
   }, []);
 
+  const context = (activeTab === 'sports' || activeTab === 'cricket') ? 'sports' :
+                  (activeTab === 'fifa' || activeTab === 'fifaAllScores') ? 'fifa' :
+                  'news';
+
+  const [activeSidebarTab, setActiveSidebarTab] = useState('Highlights');
+
+  useEffect(() => {
+    if (context === 'sports') setActiveSidebarTab('Live');
+    else if (context === 'fifa') setActiveSidebarTab('Matches');
+    else setActiveSidebarTab('Highlights');
+  }, [context]);
+
+  let tabs = [];
+  if (context === 'sports') tabs = ['Live', 'Upcoming', 'Saved'];
+  else if (context === 'fifa') tabs = ['Matches', 'Stats', 'Saved'];
+  else tabs = ['Highlights', 'Trending', 'Saved'];
+
   return (
     <aside id="systems-meta-sidebar" className="space-y-6">
 
-      {/* Top panel: ICC on sports/cricket, Match Results on fifa, Breaking News everywhere else */}
-      {(activeTab === 'sports' || activeTab === 'cricket') ? (
-        <div className="space-y-6">
-          {/* Removed SidebarAdvertisement */}
+      <div className="flex border-b border-portal-border/50 gap-2 mb-4">
+        {tabs.map(t => (
+          <button
+            key={t}
+            onClick={() => setActiveSidebarTab(t)}
+            className={`px-3 py-2 text-[11px] font-bold uppercase tracking-wider transition-colors border-b-2 cursor-pointer ${activeSidebarTab === t ? 'border-portal-brand text-portal-brand' : 'border-transparent text-portal-text-muted hover:text-portal-text-main hover:border-portal-border'}`}
+          >
+            {t}
+          </button>
+        ))}
+      </div>
+
+      <div className="min-h-[400px] space-y-6">
+        {activeSidebarTab === 'Live' && context === 'sports' && (
           <OngoingIccSeriesCard cricketIsMock={cricketIsMock} cricketMatches={cricketMatches} />
-        </div>
-      ) : (activeTab === 'fifa' || activeTab === 'fifaAllScores') ? (
-        <MatchResultsPanel setActiveTab={setActiveTab} key={activeTab} activeTab={activeTab} />
-      ) : (
-        <>
-          <BreakingNewsCard relatedArticles={trendingArticles} handleOpenArticle={handleOpenArticle} />
-          {/* Removed Second Advertisement */}
-        </>
-      )}
+        )}
+        {activeSidebarTab === 'Upcoming' && context === 'sports' && (
+          <UpcomingFixturesCard />
+        )}
 
-      <BookmarkedArticlesCard bookmarks={bookmarks} trendingArticles={trendingArticles} personalizedArticles={personalizedArticles} handleOpenArticle={handleOpenArticle} />
+        {activeSidebarTab === 'Matches' && context === 'fifa' && (
+          <MatchResultsPanel setActiveTab={setActiveTab} key={activeTab} activeTab={activeTab} />
+        )}
+        {activeSidebarTab === 'Stats' && context === 'fifa' && (
+          <TopScorersCard />
+        )}
 
-      {activeTab === 'sports' ? (
-        <UpcomingFixturesCard />
-      ) : activeTab === 'fifaAllScores' ? (
-        <TopScorersCard />
-      ) : (
-        <>
+        {activeSidebarTab === 'Highlights' && context === 'news' && (
+          <>
+            <ThumbnailNewsCard relatedArticles={trendingArticles} handleOpenArticle={handleOpenArticle} failedImages={failedImages} />
+            <GoogleNewsPanel googleArticles={googleArticles} handleOpenArticle={handleOpenArticle} failedImages={failedImages} />
+          </>
+        )}
+        {activeSidebarTab === 'Trending' && context === 'news' && (
           <TrendingTopicsCard relatedArticles={trendingArticles} handleOpenArticle={handleOpenArticle} failedImages={failedImages} />
-          <GoogleNewsPanel googleArticles={googleArticles} handleOpenArticle={handleOpenArticle} failedImages={failedImages} />
-        </>
-      )}
+        )}
+
+        {activeSidebarTab === 'Saved' && (
+          <BookmarkedArticlesCard bookmarks={bookmarks} trendingArticles={trendingArticles} personalizedArticles={personalizedArticles} handleOpenArticle={handleOpenArticle} />
+        )}
+      </div>
 
       <ProAdCard />
     </aside>
