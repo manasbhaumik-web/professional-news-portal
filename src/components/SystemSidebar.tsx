@@ -60,6 +60,24 @@ export default React.memo(function SystemSidebar({
   else if (context === 'fifa') tabs = ['Matches', 'Stats', 'Saved'];
   else tabs = ['Highlights', 'Trending', 'Saved'];
 
+  const filteredForSidebar = React.useMemo(() => {
+    if (activeTab === 'trending') {
+      return trendingArticles.slice(25);
+    } else if (activeTab === 'business') {
+      return trendingArticles.filter(a => !['Business', 'Finance', 'Markets'].includes(a.category));
+    } else if (activeTab === 'politics') {
+      return trendingArticles.filter(a => !['Politics', 'Global Policy'].includes(a.category));
+    } else if (activeTab === 'sports' || activeTab === 'cricket') {
+      return trendingArticles.filter(a => !['Sports', 'Athletics'].includes(a.category));
+    } else if (activeTab === 'scienceTech') {
+      return trendingArticles.filter(a => !['Technology', 'Science', 'Innovation', 'Tech', 'Space'].includes(a.category));
+    } else if (activeTab === 'entertainment') {
+      return trendingArticles.filter(a => !['Entertainment', 'Culture', 'Arts', 'Lifestyle'].includes(a.category));
+    } else {
+      return trendingArticles.slice(15);
+    }
+  }, [trendingArticles, activeTab]);
+
   return (
     <aside id="systems-meta-sidebar" className="space-y-6">
 
@@ -84,7 +102,7 @@ export default React.memo(function SystemSidebar({
         )}
 
         {activeSidebarTab === 'Matches' && context === 'fifa' && (
-          <MatchResultsPanel setActiveTab={setActiveTab} key={activeTab} activeTab={activeTab} />
+          <MatchResultsPanel setActiveTab={setActiveTab} activeTab={activeTab} />
         )}
         {activeSidebarTab === 'Stats' && context === 'fifa' && (
           <TopScorersCard />
@@ -92,12 +110,12 @@ export default React.memo(function SystemSidebar({
 
         {activeSidebarTab === 'Highlights' && context === 'news' && (
           <>
-            <ThumbnailNewsCard relatedArticles={trendingArticles} handleOpenArticle={handleOpenArticle} failedImages={failedImages} />
+            <ThumbnailNewsCard relatedArticles={filteredForSidebar} handleOpenArticle={handleOpenArticle} failedImages={failedImages} />
             <GoogleNewsPanel googleArticles={googleArticles} handleOpenArticle={handleOpenArticle} failedImages={failedImages} />
           </>
         )}
         {activeSidebarTab === 'Trending' && context === 'news' && (
-          <TrendingTopicsCard relatedArticles={trendingArticles} handleOpenArticle={handleOpenArticle} failedImages={failedImages} />
+          <TrendingTopicsCard relatedArticles={filteredForSidebar} handleOpenArticle={handleOpenArticle} failedImages={failedImages} />
         )}
 
         {activeSidebarTab === 'Saved' && (

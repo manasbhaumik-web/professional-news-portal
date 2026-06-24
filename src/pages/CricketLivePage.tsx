@@ -300,7 +300,7 @@ function EmptyState({ message }: { message: string }) {
  );
 }
 
-function LiveCard({ match: m, idx }: { match: LiveMatch; idx: number }) {
+function LiveCard({ match: m, idx }: { match: LiveMatch; idx: number; key?: React.Key }) {
  return (
  <motion.div
  initial={{ opacity: 0, y: 12 }}
@@ -340,7 +340,7 @@ function LiveCard({ match: m, idx }: { match: LiveMatch; idx: number }) {
  );
 }
 
-function ResultCard({ match: m, idx }: { match: ResultMatch; idx: number }) {
+function ResultCard({ match: m, idx }: { match: ResultMatch; idx: number; key?: React.Key }) {
  return (
  <motion.div
  initial={{ opacity: 0, y: 12 }}
@@ -390,7 +390,7 @@ function ResultCard({ match: m, idx }: { match: ResultMatch; idx: number }) {
  );
 }
 
-function FixtureCard({ match: m, idx }: { match: FixtureMatch; idx: number }) {
+function FixtureCard({ match: m, idx }: { match: FixtureMatch; idx: number; key?: React.Key }) {
  return (
  <motion.div
  initial={{ opacity: 0, y: 12 }}

@@ -79,7 +79,7 @@ export default function BusinessPage({ articles, selectedCategoryFromMenu, handl
                                 category: 'Business',
                                 sportName: feed.subCategory,
                                 source: feed.source,
-                                publishedAt: item.pubDate ? new Date(item.pubDate).toISOString() : new Date().toISOString(),
+                                publishedAt: (item.pubDate && !isNaN(new Date(item.pubDate).getTime())) ? new Date(item.pubDate).toISOString() : new Date().toISOString(),
                                 timeAgo: item.pubDate ? new Date(item.pubDate).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'Live',
                                 readTime: '3 min read',
                                 url: item.link
@@ -139,27 +139,7 @@ export default function BusinessPage({ articles, selectedCategoryFromMenu, handl
 
     return (
         <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
-            {/* Header section */}
-            <div className="relative p-8 md:p-10 border border-zinc-800/60 bg-gradient-to-br from-[#14161B] via-[#1A1C23] to-[#0F1115] text-white flex flex-col md:flex-row md:items-center justify-start gap-6 overflow-hidden shadow-2xl">
-                {/* Decorative background glow */}
-                <div className="absolute top-0 right-0 w-96 h-96 bg-portal-brand/10 blur-[100px] rounded-full pointer-events-none transform translate-x-1/3 -translate-y-1/3" />
-                <div className="absolute bottom-0 left-0 w-96 h-96 bg-blue-500/10 blur-[100px] rounded-full pointer-events-none transform -translate-x-1/3 translate-y-1/3" />
-
-                <div className="relative z-10 p-1 bg-gradient-to-tr from-portal-brand to-portal-accent rounded-full shadow-lg shrink-0">
-                    <div className="h-16 w-16 md:h-20 md:w-20 rounded-full bg-[#14161B] flex items-center justify-center border-4 border-[#14161B]">
-                        <Activity className="h-8 w-8 text-portal-brand" />
-                    </div>
-                </div>
-                <div className="flex-1 relative z-10">
-                    <div className="flex items-center gap-3 mb-2">
-                        <span className="w-8 h-[2px] bg-portal-brand rounded-full"></span>
-                        <span className="text-xs font-mono tracking-[0.2em] font-bold uppercase text-portal-brand">Business Feed</span>
-                    </div>
-                    <h2 className="text-4xl md:text-5xl font-serif font-black text-transparent bg-clip-text bg-gradient-to-r from-white via-zinc-100 to-zinc-400 drop-shadow-sm tracking-tight">
-                        {selectedCategoryFromMenu === 'All' ? 'Business & Finance' : selectedCategoryFromMenu} News
-                    </h2>
-                </div>
-            </div>
+            {/* Banner removed as per user request */}
 
             <div className="flex items-center justify-between border-b pb-2 border-portal-border">
                 <div className="flex items-center space-x-3">

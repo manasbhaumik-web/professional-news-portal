@@ -3,7 +3,7 @@ import { Search, Sparkles, MonitorPlay, Megaphone, MapPin, Sun, Moon, Coffee } f
 import NotificationCenter from './NotificationCenter';
 
 interface HeaderProps {
-    activeTab: 'trending' | 'foryou' | 'globalNews' | 'globalTv' | 'local' | 'politics' | 'business' | 'sports' | 'report' | 'entertainment' | 'scienceTech';
+    activeTab: string;
     setActiveTab: (tab: any) => void;
     searchQuery: string;
     setSearchQuery: (query: string) => void;

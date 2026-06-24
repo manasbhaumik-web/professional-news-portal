@@ -14,6 +14,7 @@ export interface NewsArticle {
   originalUrl?: string;
   sportName?: string;
   publishedAt?: string;
+  timeAgo?: string;
 }
 
 export interface UserPreferences {

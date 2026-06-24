@@ -153,7 +153,7 @@ export default function SportsPage({ articles, selectedSportFromMenu, handleOpen
  sportName: feed.sportName,
  source: feed.source,
  author: item.author || feed.source,
- publishedAt: item.pubDate ? new Date(item.pubDate).toISOString() : new Date().toISOString(),
+ publishedAt: (item.pubDate && !isNaN(new Date(item.pubDate).getTime())) ? new Date(item.pubDate).toISOString() : new Date().toISOString(),
  timeAgo: item.pubDate ? timeAgo(item.pubDate) : 'Live',
  readTime: '3 min read',
  url: item.link

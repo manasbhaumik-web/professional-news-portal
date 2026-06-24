@@ -155,7 +155,7 @@ export default function CountryPage({
                             category: 'Country',
                             sportName: country,
                             source: feed.name,
-                            publishedAt: item.pubDate ? new Date(item.pubDate).toISOString() : new Date().toISOString(),
+                            publishedAt: (item.pubDate && !isNaN(new Date(item.pubDate).getTime())) ? new Date(item.pubDate).toISOString() : new Date().toISOString(),
                             timeAgo: item.pubDate ? new Date(item.pubDate).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'Recent',
                             readTime: '3 min read',
                             url: item.link
@@ -197,76 +197,25 @@ export default function CountryPage({
     return (
         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
 
-            {/* Header section */}
-            <div className="relative p-8 md:p-10 border border-zinc-800/60 bg-gradient-to-br from-[#14161B] via-[#1A1C23] to-[#0F1115] text-white flex flex-col md:flex-row md:items-center justify-start gap-6 overflow-hidden shadow-2xl">
-                {/* Decorative background glow */}
-                <div className="absolute top-0 right-0 w-96 h-96 bg-portal-brand/10 blur-[100px] rounded-full pointer-events-none transform translate-x-1/3 -translate-y-1/3" />
-                <div className="absolute bottom-0 left-0 w-96 h-96 bg-blue-500/10 blur-[100px] rounded-full pointer-events-none transform -translate-x-1/3 translate-y-1/3" />
+            {/* Banner removed as per user request */}
 
-                {countryFlagUrl ? (
-                    <div className="relative z-10 p-1 bg-gradient-to-tr from-portal-brand to-portal-accent rounded-full shadow-lg shrink-0">
-                        <img
-                            src={countryFlagUrl}
-                            alt="flag"
-                            className="h-16 w-16 md:h-20 md:w-20 rounded-full object-cover border-4 border-[#14161B] shadow-inner"
-                        />
-                    </div>
-                ) : (
-                    <div className="relative z-10 p-1 bg-gradient-to-tr from-portal-brand to-portal-accent rounded-full shadow-lg shrink-0">
-                        <div className="h-16 w-16 md:h-20 md:w-20 rounded-full bg-[#14161B] flex items-center justify-center border-4 border-[#14161B]">
-                            <Globe2 className="h-8 w-8 text-portal-brand" />
-                        </div>
-                    </div>
-                )}
-                <div className="flex-1 relative z-10">
-                    <div className="flex items-center gap-3 mb-2">
-                        <span className="w-8 h-[2px] bg-portal-brand rounded-full"></span>
-                        <span className="text-xs font-mono tracking-[0.2em] font-bold uppercase text-portal-brand">Country Feed</span>
-                    </div>
-                    <h2 className="text-4xl md:text-5xl font-serif font-black text-transparent bg-clip-text bg-gradient-to-r from-white via-zinc-100 to-zinc-400 drop-shadow-sm tracking-tight mb-4">
-                        {selectedCountry} News
-                    </h2>
-
-                    {/* Meta Info */}
-                    <div className="flex flex-wrap items-center gap-4 text-xs font-mono text-zinc-300">
-                        {countryMeta?.population && (
-                            <div className="flex items-center gap-1.5 bg-white/5 px-3 py-1.5 rounded-md border border-white/10 backdrop-blur-sm shadow-sm">
-                                <Users size={14} className="text-blue-400" />
-                                <span>Pop: {countryMeta.population}</span>
-                            </div>
-                        )}
-                        {countryMeta?.region && (
-                            <div className="flex items-center gap-1.5 bg-white/5 px-3 py-1.5 rounded-md border border-white/10 backdrop-blur-sm shadow-sm">
-                                <Map size={14} className="text-green-400" />
-                                <span>{countryMeta.region}</span>
-                            </div>
-                        )}
-                        {countryMeta?.time && (
-                            <div className="flex items-center gap-1.5 bg-white/5 px-3 py-1.5 rounded-md border border-white/10 backdrop-blur-sm shadow-sm">
-                                <Clock size={14} className="text-purple-400" />
-                                <span>{countryMeta.time}</span>
-                            </div>
-                        )}
-                        {countryMeta?.weather && (
-                            <div className="flex items-center gap-1.5 bg-white/5 px-3 py-1.5 rounded-md border border-white/10 backdrop-blur-sm shadow-sm">
-                                <Cloud size={14} className="text-yellow-400" />
-                                <span>{countryMeta.weather}</span>
-                            </div>
-                        )}
-                    </div>
+            {/* News Feed */}
+            <div className="flex items-center justify-between border-b pb-2 border-portal-border">
+                <div className="flex items-center space-x-3">
+                    <h3 className="font-serif font-black text-lg sm:text-xl tracking-tight capitalize text-portal-text-main">
+                        {selectedCountry} Feed
+                    </h3>
+                    <span className="text-[10px] font-mono px-2 py-0.5 uppercase bg-portal-surface text-portal-text-muted border border-portal-border/50">
+                        {isLoading ? 'Loading...' : `${articles.length} updates`}
+                    </span>
+                </div>
+                <div className="text-xs flex items-center space-x-1 select-none font-mono text-portal-text-muted">
+                    <Globe2 size={12} className="text-blue-500 animate-pulse" />
+                    <span className="hidden sm:inline">Live {selectedCountry} Radar</span>
                 </div>
             </div>
 
-            {/* News Feed */}
-            <div className={`p-6 border ${borderClass} ${cardBgClass}`}>
-                <div className="relative z-10 flex items-center justify-between mb-6">
-                    <h3 className={`font-serif font-black text-2xl flex items-center gap-2 ${textPrimaryClass}`}>
-                        <Rss className="text-portal-brand" /> Top Headlines
-                    </h3>
-                    <span className="text-[10px] font-mono tracking-widest uppercase font-bold px-2 py-1 bg-portal-brand/10 text-portal-brand border border-portal-brand/20">
-                        {articles.length} Items
-                    </span>
-                </div> <div className="grid grid-cols-1 md:grid-cols-2 gap-4 auto-rows-auto">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 auto-rows-auto">
                     {isLoading ? (
                         <div className={`col-span-full p-12 text-center border border-dashed ${borderClass} ${textMutedClass} font-mono text-xs flex flex-col items-center justify-center gap-3`}>
                             <Rss size={24} className="animate-pulse text-portal-brand" />
@@ -303,7 +252,6 @@ export default function CountryPage({
                         setFailedImages={setFailedImages || (() => {})}
                     />
                 )}
-            </div>
         </div>
     );
 }

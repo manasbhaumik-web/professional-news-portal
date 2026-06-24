@@ -6,7 +6,7 @@ import {
     Vote, ScrollText, LineChart, DollarSign, PieChart, Rocket,
     Activity, CircleDot, Flag, FlagTriangleRight, Swords, Shield, Timer, Bike,
     Film, Music, Tv, Star, Cpu, Microscope, Monitor, ShieldAlert,
-    CarFront, Footprints, Castle, Moon, Tent, Waves, Mountain, Target, Globe3
+    CarFront, Footprints, Castle, Moon, Tent, Waves, Mountain, Target
 } from 'lucide-react';
 import { NewsArticle, UserPreferences } from './types';
 import MarketTicker from './components/MarketTicker';
@@ -29,7 +29,7 @@ import ChannelsNav from './components/ChannelsNav';
 import MainAdBanner from './components/MainAdBanner';
 import { BreakingNewsTicker } from './components/SidebarComponents';
 import MoreFromWire from './components/MoreFromWire';
-import { initialArticles } from './data/mockData';
+
 import IccCricketBanner from './components/IccCricketBanner';
 import FeedConfig from './components/FeedConfig';
 import ArticleCard from './components/ArticleCard';
@@ -81,7 +81,7 @@ const getArticleRegion = (source: string): string => {
 };
 
 export default function App() {
-    const [activeTab, setActiveTab] = useState<'trending' | 'foryou' | 'globalTv' | 'local' | 'country' | 'politics' | 'business' | 'sports' | 'report' | 'entertainment' | 'scienceTech' | 'fifa' | 'fifaAllScores' | 'fifaHighlight'>('trending');
+    const [activeTab, setActiveTab] = useState<string>('trending');
     const [highlightMatch, setHighlightMatch] = useState<any | null>(null);
     const [highlightMatchList, setHighlightMatchList] = useState<any[]>([]);
     const [searchQuery, setSearchQuery] = useState('');
@@ -337,7 +337,7 @@ export default function App() {
 
     return (
         <div id="news-portal-root" className={`min-h-screen theme-${portalTheme} bg-portal-bg text-portal-text-main font-sans flex flex-col antialiased selection:bg-portal-brand selection:text-white transition-colors duration-300`}>
-            <div className={`sticky top-0 z-50 flex flex-col w-full shadow-md drop-shadow-md transition-transform duration-300 ${scrollDirection === 'down' ? '-translate-y-full' : 'translate-y-0'}`}>
+            <div className="sticky top-0 z-50 flex flex-col w-full shadow-md drop-shadow-md bg-portal-bg">
                 <Header
                     activeTab={activeTab}
                     setActiveTab={setActiveTab}
@@ -349,8 +349,6 @@ export default function App() {
                     handleNotificationRead={handleNotificationRead}
                 />
 
-                <MarketTicker theme={portalTheme} />
-
                 <ChannelsNav
                     selectedMenuCategory={selectedMenuCategory}
                     setSelectedMenuCategory={setSelectedMenuCategory}
@@ -359,6 +357,10 @@ export default function App() {
                     selectedCountry={selectedCountry}
                     setSelectedCountry={setSelectedCountry}
                 />
+            </div>
+
+            <div className="flex flex-col w-full">
+                <MarketTicker theme={portalTheme} />
                 <BreakingNewsTicker relatedArticles={nonGoogleTrending} handleOpenArticle={handleOpenArticle} />
             </div>
 
@@ -373,112 +375,108 @@ export default function App() {
             <main id="news-portal-grid" className="flex-1 max-w-[1400px] w-full mx-auto p-4 sm:p-6 lg:p-8 flex flex-col gap-6">
 
                 {activeTab === 'sports' && selectedMenuCategory === 'Sports: Football' ? (
-                    <section className="mb-2 p-5 sm:p-6 border flex flex-col items-start gap-4 shadow-sm transition-colors bg-portal-surface border-portal-border relative overflow-hidden">
-                        <div className="absolute top-0 right-0 p-8 opacity-5 pointer-events-none text-portal-brand">
-                            <Trophy size={160} />
+                    <section className="mb-6 p-6 sm:p-8 rounded-none border flex flex-col items-start gap-6 shadow-2xl transition-all border-[#c9a84c]/20 bg-gradient-to-br from-[#0B101E] via-[#111827] to-[#0A0D14] relative overflow-hidden group">
+                        {/* Glow effects */}
+                        <div className="absolute -inset-[100%] bg-gradient-to-r from-transparent via-[#c9a84c]/5 to-transparent opacity-0 group-hover:opacity-100 group-hover:animate-[shimmer_2s_infinite] transition-opacity duration-1000 pointer-events-none" style={{ transform: 'skewX(-20deg)' }} />
+                        <div className="absolute top-0 right-0 w-64 h-64 bg-[#c9a84c]/10 blur-3xl -mr-20 -mt-20 pointer-events-none rounded-full" />
+                        <div className="absolute bottom-0 left-0 w-48 h-48 bg-blue-500/10 blur-3xl -ml-20 -mb-20 pointer-events-none rounded-full" />
+                        
+                        <div className="absolute top-1/2 right-4 -translate-y-1/2 opacity-5 pointer-events-none text-[#c9a84c]">
+                            <Trophy size={220} strokeWidth={1} />
                         </div>
 
-                        <div className="flex w-full items-center justify-between relative z-10">
-                            <div className="flex items-center gap-2 text-portal-brand font-bold uppercase text-[10px] tracking-widest font-mono">
-                                <Trophy size={14} /> FIFA World Cup 2026 — Match Results
-                                {fifaStatus === 'live' && (
-                                    <span className="ml-2 flex items-center gap-1 text-[9px] text-green-500 font-mono">
-                                        <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span> Live Data
-                                    </span>
-                                )}
-                                {fifaStatus === 'demo' && (
-                                    <span className="ml-2 text-[9px] text-amber-500 font-mono">⚠ Demo Data</span>
-                                )}
+                        <div className="flex flex-col sm:flex-row w-full items-start sm:items-center justify-between relative z-10 border-b border-[#c9a84c]/10 pb-4 gap-4">
+                            <div className="flex items-center gap-3 text-[#c9a84c] font-black uppercase text-sm tracking-widest font-sans drop-shadow-md">
+                                <div className="p-2 bg-[#c9a84c]/10 rounded-none ring-1 ring-[#c9a84c]/30">
+                                    <Trophy size={16} />
+                                </div>
+                                <span>FIFA World Cup 2026 <span className="opacity-60 font-medium">|</span> Match Results</span>
                             </div>
-                            <div className="flex items-center gap-3">
-                                {fifaLastUpdated && (
-                                    <span className="text-[9px] font-mono text-portal-text-muted">
-                                        Updated {fifaLastUpdated.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                    </span>
-                                )}
-                                <button
-                                    onClick={fetchFifaScores}
-                                    disabled={fifaLoading}
-                                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold transition-all bg-portal-bg hover:bg-portal-surface-hover text-portal-text-main border border-portal-border shadow-sm disabled:opacity-50"
-                                >
-                                    <RefreshCw size={11} className={fifaLoading ? 'animate-spin' : ''} />
-                                    {fifaLoading ? 'Fetching...' : 'Refresh'}
-                                </button>
-                                <button
-                                    onClick={() => { setActiveTab('trending'); setSelectedMenuCategory('All'); }}
-                                    className="px-4 py-1.5 text-xs font-bold transition-all bg-portal-bg hover:bg-portal-surface-hover text-portal-text-main border border-portal-border shadow-sm"
-                                >
-                                    Exit Stadium
+                            <div className="flex items-center">
+                                <button onClick={() => setActiveTab('fifaAllScores')} className="text-[#c9a84c] text-xs font-bold tracking-widest uppercase flex items-center gap-2 hover:text-white hover:bg-[#c9a84c]/20 px-4 py-2 rounded-lg transition-all group">
+                                    View All Match Scores <span className="group-hover:translate-x-1 transition-transform">→</span>
                                 </button>
                             </div>
                         </div>
 
                         {fifaLoading && fifaScores.length === 0 ? (
-                            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4 w-full relative z-10">
-                                {Array.from({ length: 5 }).map((_, i) => (
-                                    <div key={i} className="animate-pulse flex flex-col bg-portal-bg p-3 border border-portal-border h-28">
-                                        <div className="flex justify-between items-center gap-2">
-                                            <div className="w-8 h-8 bg-portal-surface-hover"></div>
-                                            <div className="flex-1 h-6 bg-portal-surface-hover "></div>
-                                            <div className="w-8 h-8 bg-portal-surface-hover"></div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 w-full relative z-10">
+                                {Array.from({ length: 4 }).map((_, i) => (
+                                    <div key={i} className="animate-pulse flex flex-col bg-white/5 p-4 rounded-none border border-white/10 h-32 backdrop-blur-sm">
+                                        <div className="flex justify-between items-center gap-2 h-full">
+                                            <div className="w-10 h-10 rounded-full bg-white/10"></div>
+                                            <div className="flex-1 h-8 bg-white/10 rounded-none"></div>
+                                            <div className="w-10 h-10 rounded-full bg-white/10"></div>
                                         </div>
                                     </div>
                                 ))}
                             </div>
                         ) : (
-                            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4 w-full relative z-10">
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 w-full relative z-10">
                                 {(fifaScores.length > 0 ? fifaScores : [
                                     { team1: 'Japan', flag1: null, crest1: 'https://flagcdn.com/jp.svg', score1: 3, team2: 'Senegal', flag2: null, crest2: 'https://flagcdn.com/sn.svg', score2: 1, status: 'FULL TIME', date: 'JUN 15', goals: [{ minute: 14, scorer: 'Mitoma' }, { minute: 38, scorer: 'Dia' }, { minute: 67, scorer: 'Kubo' }, { minute: 82, scorer: 'Doan' }] },
                                     { team1: 'Australia', flag1: null, crest1: 'https://flagcdn.com/au.svg', score1: 2, team2: 'Türkiye', flag2: null, crest2: 'https://flagcdn.com/tr.svg', score2: 0, status: 'FULL TIME', date: 'JUN 14', goals: [{ minute: 31, scorer: 'Duke' }, { minute: 78, scorer: 'Irvine' }] },
                                     { team1: 'South Korea', flag1: null, crest1: 'https://flagcdn.com/kr.svg', score1: 2, team2: 'Czechia', flag2: null, crest2: 'https://flagcdn.com/cz.svg', score2: 1, status: 'FULL TIME', date: 'JUN 14', goals: [{ minute: 22, scorer: 'Son' }, { minute: 55, scorer: 'Schick' }, { minute: 73, scorer: 'Hwang' }] },
                                     { team1: 'Mexico', flag1: null, crest1: 'https://flagcdn.com/mx.svg', score1: 2, team2: 'S. Africa', flag2: null, crest2: 'https://flagcdn.com/za.svg', score2: 0, status: 'FULL TIME', date: 'JUN 13', goals: [{ minute: 40, scorer: 'Giménez' }, { minute: 89, scorer: 'Martin' }] },
                                     { team1: 'USA', flag1: null, crest1: 'https://flagcdn.com/us.svg', score1: 4, team2: 'Paraguay', flag2: null, crest2: 'https://flagcdn.com/py.svg', score2: 1, status: 'FULL TIME', date: 'JUN 12', goals: [{ minute: 10, scorer: 'Pulisic' }, { minute: 28, scorer: 'Balogun' }, { minute: 45, scorer: 'Almirón' }, { minute: 61, scorer: 'Weah' }, { minute: 85, scorer: 'Pepi' }] },
-                                ]).slice(0, 5).map((game: any, idx: number) => {
+                                ]).slice(0, 4).map((game: any, idx: number) => {
                                     const img1 = game.flag1 && game.flag1.startsWith('http') ? game.flag1 : (game.crest1 || `https://flagcdn.com/${game.flag1}.svg`);
                                     const img2 = game.flag2 && game.flag2.startsWith('http') ? game.flag2 : (game.crest2 || `https://flagcdn.com/${game.flag2}.svg`);
                                     const statusLabel = game.status === 'FT' ? 'FULL TIME' : game.status;
                                     return (
-                                        <div key={game.id || idx} className="flex flex-col justify-between bg-portal-bg p-3 border border-portal-border shadow-sm h-full w-full">
-                                            <div className="flex items-center justify-between gap-2 w-full">
-                                                <div className="text-center flex flex-col items-center w-14 shrink-0">
-                                                    <img src={img1} alt={game.team1} className="w-8 h-8 rounded-full object-cover border border-portal-border shadow-sm mb-1" onError={e => { (e.target as HTMLImageElement).style.opacity = '0.3'; }} />
-                                                    <h3 className="font-bold text-portal-text-main text-[10px] text-center w-full truncate">{game.team1}</h3>
-                                                </div>
-                                                <div className="flex flex-col items-center flex-1 shrink-0 px-1">
-                                                    <div className="text-2xl font-black font-mono text-portal-text-main tracking-widest flex items-center justify-center drop-shadow-sm whitespace-nowrap">
-                                                        {game.score1} <span className="mx-1.5 text-portal-text-muted/50">-</span> {game.score2}
+                                        <div key={game.id || idx} className="flex flex-col justify-between bg-white/5 hover:bg-white/10 p-4 rounded-none border border-white/10 hover:border-[#c9a84c]/40 shadow-lg hover:shadow-[0_8px_30px_rgba(201,168,76,0.15)] transition-all duration-300 backdrop-blur-md h-full w-full group/card relative overflow-hidden">
+                                            {/* Top accent line */}
+                                            <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-[#c9a84c]/50 to-transparent opacity-0 group-hover/card:opacity-100 transition-opacity" />
+                                            
+                                            <div className="flex items-center justify-between gap-3 w-full relative z-10">
+                                                {/* Team 1 */}
+                                                <div className="text-center flex flex-col items-center w-16 shrink-0 transform group-hover/card:scale-105 transition-transform">
+                                                    <div className="relative">
+                                                        <div className="absolute inset-0 bg-white/20 blur-md rounded-full opacity-0 group-hover/card:opacity-100 transition-opacity" />
+                                                        <img src={img1} alt={game.team1} className="w-10 h-10 rounded-full object-cover border-2 border-white/10 group-hover/card:border-[#c9a84c]/50 shadow-md mb-2 relative z-10 bg-black/50" onError={e => { (e.target as HTMLImageElement).style.opacity = '0.3'; }} />
                                                     </div>
-                                                    <div className="text-[8px] bg-portal-surface-hover text-portal-text-main border border-portal-border px-1.5 py-0.5 font-bold mt-1 whitespace-nowrap">{statusLabel}</div>
-                                                    <div className="text-[8px] text-portal-brand mt-1 font-mono uppercase tracking-widest whitespace-nowrap">{game.date}</div>
+                                                    <h3 className="font-bold text-white text-[11px] text-center w-full truncate">{game.team1}</h3>
                                                 </div>
-                                                <div className="text-center flex flex-col items-center w-14 shrink-0">
-                                                    <img src={img2} alt={game.team2} className="w-8 h-8 rounded-full object-cover border border-portal-border shadow-sm mb-1" onError={e => { (e.target as HTMLImageElement).style.opacity = '0.3'; }} />
-                                                    <h3 className="font-bold text-portal-text-main text-[10px] text-center w-full truncate">{game.team2}</h3>
+                                                
+                                                {/* Score */}
+                                                <div className="flex flex-col items-center flex-1 shrink-0 px-2">
+                                                    <div className="text-3xl font-black font-sans text-white tracking-widest flex items-center justify-center drop-shadow-[0_2px_10px_rgba(0,0,0,0.5)] whitespace-nowrap mb-1">
+                                                        {game.score1} <span className="mx-2 text-[#c9a84c]/50">-</span> {game.score2}
+                                                    </div>
+                                                    <div className="text-[9px] uppercase tracking-widest text-[#c9a84c] font-bold bg-[#c9a84c]/10 px-2 py-0.5 rounded-none ring-1 ring-[#c9a84c]/30">
+                                                        {statusLabel}
+                                                    </div>
+                                                    <div className="text-[10px] text-white/50 mt-1.5 font-medium tracking-widest uppercase">
+                                                        {game.date}
+                                                    </div>
+                                                </div>
+
+                                                {/* Team 2 */}
+                                                <div className="text-center flex flex-col items-center w-16 shrink-0 transform group-hover/card:scale-105 transition-transform">
+                                                    <div className="relative">
+                                                        <div className="absolute inset-0 bg-white/20 blur-md rounded-full opacity-0 group-hover/card:opacity-100 transition-opacity" />
+                                                        <img src={img2} alt={game.team2} className="w-10 h-10 rounded-full object-cover border-2 border-white/10 group-hover/card:border-[#c9a84c]/50 shadow-md mb-2 relative z-10 bg-black/50" onError={e => { (e.target as HTMLImageElement).style.opacity = '0.3'; }} />
+                                                    </div>
+                                                    <h3 className="font-bold text-white text-[11px] text-center w-full truncate">{game.team2}</h3>
                                                 </div>
                                             </div>
+                                            
                                             {/* Scorers */}
-                                            {game.goals && game.goals.length > 0 && (
-                                                <div className="mt-2 text-[8px] text-portal-text-muted border-t border-portal-border/40 pt-1 text-center font-mono truncate px-1 w-full">
-                                                    ⚽ {game.goals.map((g: any) => `${g.scorer} (${g.minute}')`).join(', ')}
-                                                </div>
-                                            )}
+                                            <div className="mt-4 text-[10px] text-white/40 border-t border-white/5 pt-3 text-center truncate px-2 font-mono group-hover/card:text-white/70 transition-colors flex justify-center items-center h-4">
+                                                {game.goals && game.goals.length > 0 ? (
+                                                    <span className="flex items-center justify-center gap-1.5">
+                                                        <Trophy size={10} className="text-[#c9a84c]/60" />
+                                                        {game.goals.map((g: any) => `${g.scorer} (${g.minute}')`).join(', ')}
+                                                    </span>
+                                                ) : (
+                                                    <span className="opacity-0">No goals</span>
+                                                )}
+                                            </div>
                                         </div>
                                     );
                                 })}
                             </div>
                         )}
-
-                        {/* View All Scores link */}
-                        <div className="flex items-center justify-end w-full relative z-10">
-                            <button
-                                onClick={() => setActiveTab('fifaAllScores')}
-                                className="flex items-center gap-1.5 text-[11px] font-mono font-bold text-portal-brand hover:text-portal-accent transition-colors group"
-                            >
-                                <Trophy size={11} />
-                                View All Match Scores
-                                <span className="group-hover:translate-x-0.5 transition-transform">→</span>
-                            </button>
-                        </div>
                     </section>
                 ) : activeTab === 'cricket' || activeTab === 'fifa' || (activeTab === 'sports' && selectedMenuCategory === 'Sports: Cricket') ? (
                     <IccCricketBanner
@@ -600,7 +598,7 @@ export default function App() {
                                                         .map(a => a.id)
                                                 );
 
-                                                const isBannerVisible = activeTab !== 'cricket' && activeTab !== 'fifa' && !(activeTab === 'sports' && (selectedMenuCategory === 'Sports: Football' || selectedMenuCategory === 'Sports: Cricket'));
+                                                const isBannerVisible = true;
 
                                                 const seenTitles = new Set();
                                                 const validArticles = [...filteredTrending]
@@ -681,7 +679,7 @@ export default function App() {
                                             .map(a => a.id)
                                     );
 
-                                    const isBannerVisible = activeTab !== 'cricket' && activeTab !== 'fifa' && !(activeTab === 'sports' && (selectedMenuCategory === 'Sports: Football' || selectedMenuCategory === 'Sports: Cricket'));
+                                    const isBannerVisible = true;
 
                                     const seenTitles = new Set();
                                     const validArticles = [...filteredTrending]
@@ -747,7 +745,7 @@ export default function App() {
                                             const isCat = ['Politics'].includes(art.category) && (!searchQuery || (art.title || '').toLowerCase().includes(searchQuery.toLowerCase()));
                                             const activeRegion = selectedMenuCategory.startsWith('Region: ') ? selectedMenuCategory.replace('Region: ', '') : 'All';
                                             return activeRegion === 'All' ? isCat : (isCat && getArticleRegion(art.source) === activeRegion);
-                                        }).slice(0, 10)}
+                                        }).slice(3, 13)}
                                         handleOpenArticle={handleOpenArticle}
                                         toggleBookmark={toggleBookmark}
                                         bookmarks={bookmarks}
@@ -763,7 +761,7 @@ export default function App() {
                                             const isCat = ['Business', 'Finance', 'Markets'].includes(art.category) && (!searchQuery || (art.title || '').toLowerCase().includes(searchQuery.toLowerCase()));
                                             const activeRegion = selectedMenuCategory.startsWith('Region: ') ? selectedMenuCategory.replace('Region: ', '') : 'All';
                                             return activeRegion === 'All' ? isCat : (isCat && getArticleRegion(art.source) === activeRegion);
-                                        }).slice(0, 10)}
+                                        }).slice(3, 13)}
                                         handleOpenArticle={handleOpenArticle}
                                         toggleBookmark={toggleBookmark}
                                         bookmarks={bookmarks}
@@ -779,7 +777,7 @@ export default function App() {
                                             const isCat = ['Entertainment', 'Movie', 'Music'].includes(art.category) && (!searchQuery || (art.title || '').toLowerCase().includes(searchQuery.toLowerCase()));
                                             const activeRegion = selectedMenuCategory.startsWith('Region: ') ? selectedMenuCategory.replace('Region: ', '') : 'All';
                                             return activeRegion === 'All' ? isCat : (isCat && getArticleRegion(art.source) === activeRegion);
-                                        }).slice(0, 10)}
+                                        }).slice(3, 13)}
                                         handleOpenArticle={handleOpenArticle}
                                         toggleBookmark={toggleBookmark}
                                         bookmarks={bookmarks}
@@ -791,7 +789,7 @@ export default function App() {
                                     <ScienceTechPage
                                         theme={portalTheme}
                                         selectedCategoryFromMenu={selectedMenuCategory.startsWith('Science & Tech:') ? selectedMenuCategory.split(':')[1].trim() : 'All'}
-                                        articles={nonGoogleTrending.filter(art => ['Science', 'Technology', 'Science & Tech', 'Computing', 'Space', 'Cybersecurity'].includes(art.category) && (!searchQuery || (art.title || '').toLowerCase().includes(searchQuery.toLowerCase()))).slice(0, 10)}
+                                        articles={nonGoogleTrending.filter(art => ['Science', 'Technology', 'Science & Tech', 'Computing', 'Space', 'Cybersecurity'].includes(art.category) && (!searchQuery || (art.title || '').toLowerCase().includes(searchQuery.toLowerCase()))).slice(3, 13)}
                                         handleOpenArticle={handleOpenArticle}
                                         toggleBookmark={toggleBookmark}
                                         bookmarks={bookmarks}

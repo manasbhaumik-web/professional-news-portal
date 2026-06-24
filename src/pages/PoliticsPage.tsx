@@ -74,7 +74,7 @@ export default function PoliticsPage({ articles, selectedCategoryFromMenu, handl
  category: 'Politics',
  sportName: feed.subCategory,
  source: feed.source,
- publishedAt: item.pubDate ? new Date(item.pubDate).toISOString() : new Date().toISOString(),
+ publishedAt: (item.pubDate && !isNaN(new Date(item.pubDate).getTime())) ? new Date(item.pubDate).toISOString() : new Date().toISOString(),
  timeAgo: item.pubDate ? new Date(item.pubDate).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'Live',
  readTime: '3 min read',
  url: item.link

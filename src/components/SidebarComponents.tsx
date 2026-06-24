@@ -211,33 +211,42 @@ export function TopScorersCard() {
 }
 
 export function ThumbnailNewsCard({ relatedArticles, handleOpenArticle, failedImages = [] }: { relatedArticles: NewsArticle[], handleOpenArticle: (art: NewsArticle) => void, failedImages?: string[] }) {
- const validArticles = [...relatedArticles].filter(a => a.imageUrl && !failedImages.includes(a.id)).slice(0, 10);
+ const validArticles = [...relatedArticles].filter(a => a.imageUrl && !failedImages.includes(a.id)).slice(0, 6);
  if (validArticles.length === 0) return null;
  
+ const heroArticle = validArticles[0];
+ const listArticles = validArticles.slice(1);
+
  return (
  <section className="border p-5 transition-all bg-portal-surface border-portal-border shadow-sm">
- <h3 className="text-xs font-bold font-mono tracking-wider uppercase mb-4 flex items-center space-x-1.5 text-portal-brand">
+ <h3 className="text-xs font-normal font-mono tracking-wider uppercase mb-4 flex items-center space-x-1.5 text-portal-brand border-b border-portal-border/50 pb-2">
  <span className="w-1.5 h-1.5 rounded-full bg-portal-accent"></span>
  <span>HIGHLIGHTS</span>
  </h3>
  <div className="space-y-4">
- {validArticles.map((art) => (
+ {/* Hero Item */}
+ {heroArticle && (
  <div 
- key={art.id} 
- onClick={() => handleOpenArticle(art)}
- className="flex items-center gap-3 cursor-pointer group"
+ key={heroArticle.id} 
+ onClick={() => handleOpenArticle(heroArticle)}
+ className="relative cursor-pointer group rounded overflow-hidden h-48 shadow-md"
  >
- <div className="w-16 h-16 shrink-0 overflow-hidden rounded relative">
- <img 
- src={art.imageUrl} 
- alt="" 
- className="w-full h-full object-cover aspect-square grayscale opacity-80 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-500 group-hover:scale-105" 
- />
- <div className="absolute inset-0 ring-1 ring-inset ring-black/10"></div>
+ <img src={heroArticle.imageUrl} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" alt="" />
+ <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent"></div>
+ <div className="absolute bottom-0 left-0 p-4 w-full">
+ <span className="text-[10px] font-bold font-mono text-[#c9a84c] mb-1 tracking-wider uppercase inline-block">{heroArticle.category}</span>
+ <h4 className="text-sm font-serif font-bold leading-tight text-white line-clamp-2">
+ {heroArticle.title}
+ </h4>
  </div>
+ </div>
+ )}
+ {/* Sub Items */}
+ {listArticles.map((art, idx) => (
+ <div key={art.id} onClick={() => handleOpenArticle(art)} className="flex items-center gap-4 cursor-pointer group border-t border-portal-border/30 pt-4">
+ <div className="text-2xl font-serif font-black text-portal-text-muted/20 w-4 shrink-0 text-center">{idx + 2}</div>
  <div className="flex flex-col flex-grow min-w-0">
- <span className="text-[10px] font-mono text-portal-brand mb-1 tracking-wider uppercase">{art.category}</span>
- <h4 className="text-xs font-bold leading-tight group-hover:text-portal-brand transition-colors text-portal-text-main line-clamp-2">
+ <h4 className="text-xs font-normal leading-tight group-hover:text-portal-brand transition-colors text-portal-text-main line-clamp-2">
  {art.title}
  </h4>
  </div>
@@ -249,30 +258,34 @@ export function ThumbnailNewsCard({ relatedArticles, handleOpenArticle, failedIm
 }
 
 export function TrendingTopicsCard({ relatedArticles, handleOpenArticle, failedImages = [] }: { relatedArticles: NewsArticle[], handleOpenArticle: (art: NewsArticle) => void, failedImages?: string[] }) {
+ const trendArticles = relatedArticles.filter(art => !art.imageUrl || failedImages.includes(art.id)).slice(0, 4);
+ 
+ if (trendArticles.length === 0) return null;
+
  return (
- <section id="trending-topics-card" className="border-2 p-5 transition-all bg-portal-surface border-portal-brand/30 shadow-lg shadow-portal-brand/10 relative overflow-hidden">
- <div className="absolute -bottom-10 -right-10 w-40 h-40 bg-portal-brand/5 blur-2xl pointer-events-none"></div>
- <h3 className="text-xs font-bold font-mono tracking-wider uppercase mb-4 text-portal-brand relative z-10 flex items-center">
- <span className="w-1.5 h-4 bg-portal-brand mr-2"></span>
- OTHERS IN TREND
- </h3>
- <div className="space-y-3 relative z-10">
- {relatedArticles
- .filter(art => !art.imageUrl || failedImages.includes(art.id))
- .slice(0, 4)
- .map((art, idx) => (
- <div
- key={art.id}
- onClick={() => handleOpenArticle(art)}
- className="group cursor-pointer border-l-4 border-portal-brand/30 pl-3 py-2.5 -ml-2 hover:bg-portal-brand/5 hover:border-portal-brand transition-all border border-transparent hover:border-y-portal-brand/10 hover:border-r-portal-brand/10 hover:shadow-sm"
- >
- <div className="text-[10px] font-mono text-portal-brand mb-0.5 font-bold tracking-widest">{art.category}</div>
- <div className="text-[13px] font-normal group-hover:text-portal-brand transition-colors text-portal-text-main line-clamp-2">{art.title}</div>
- <div className="text-[10px] italic mt-1 text-portal-text-muted opacity-80">{art.date} • {art.readTime}</div>
- </div>
- ))}
- </div>
- </section>
+  <section id="trending-topics-card" className="border p-5 transition-all bg-portal-surface border-portal-border shadow-sm">
+   <h3 className="text-xs font-bold font-mono tracking-wider uppercase mb-4 flex items-center space-x-2 text-[#ef4444] border-b border-portal-border/50 pb-2">
+     <span className="w-2 h-2 rounded-full bg-[#ef4444] animate-pulse"></span>
+     <span>OTHERS IN TREND</span>
+   </h3>
+   <div className="relative pl-3 space-y-5">
+     <div className="absolute left-[3.5px] top-2 bottom-2 w-px bg-portal-border/60"></div>
+     {trendArticles.map((art) => (
+       <div key={art.id} onClick={() => handleOpenArticle(art)} className="relative cursor-pointer group pl-5">
+         <div className="absolute left-[-4.5px] top-1.5 w-2 h-2 rounded-full bg-portal-surface border border-[#ef4444] group-hover:bg-[#ef4444] transition-colors shadow-[0_0_8px_rgba(239,68,68,0.5)]"></div>
+         <div className="flex flex-col flex-grow min-w-0">
+           <div className="flex items-center gap-2 mb-1.5">
+             <span className="text-[9px] font-bold font-mono text-[#ef4444] tracking-widest uppercase bg-[#ef4444]/10 px-1 py-0.5 rounded-sm">{art.category}</span>
+             <span className="text-[9px] text-portal-text-muted font-mono uppercase tracking-widest">{art.date}</span>
+           </div>
+           <h4 className="text-xs font-normal leading-tight group-hover:text-[#ef4444] transition-colors text-portal-text-main line-clamp-2">
+             {art.title}
+           </h4>
+         </div>
+       </div>
+     ))}
+   </div>
+  </section>
  );
 }
 
@@ -315,29 +328,40 @@ export function ProAdCard() {
 
 export function GoogleNewsPanel({ googleArticles, handleOpenArticle, failedImages = [] }: { googleArticles: NewsArticle[], handleOpenArticle: (art: NewsArticle) => void, failedImages?: string[] }) {
  if (!googleArticles || googleArticles.length === 0) return null;
+ 
  return (
- <section id="google-news-card" className="border-2 p-5 transition-all bg-portal-surface border-green-500/30 shadow-lg shadow-green-500/10 relative overflow-hidden mt-6">
- <div className="absolute -bottom-10 -right-10 w-40 h-40 bg-green-500/5 blur-2xl pointer-events-none"></div>
- <h3 className="text-xs font-bold font-mono tracking-wider uppercase mb-4 text-green-500 relative z-10 flex items-center">
- <span className="w-1.5 h-4 bg-green-500 mr-2"></span>
- GOOGLE NEWS FEEDS
- </h3>
- <div className="space-y-3 relative z-10">
- {googleArticles
- .filter(art => !art.imageUrl || failedImages.includes(art.id))
- .slice(0, 5)
- .map((art, idx) => (
- <div
- key={art.id}
- onClick={() => handleOpenArticle(art)}
- className="group cursor-pointer border-l-4 border-green-500/30 pl-3 py-2.5 -ml-2 hover:bg-green-500/5 hover:border-green-500 transition-all border border-transparent hover:border-y-green-500/10 hover:border-r-green-500/10 hover:shadow-sm"
- >
- <div className="text-[10px] font-mono text-green-500 mb-0.5 font-bold tracking-widest">{art.category}</div>
- <div className="text-[13px] font-normal group-hover:text-green-500 transition-colors text-portal-text-main line-clamp-2">{art.title}</div>
- <div className="text-[10px] italic mt-1 text-portal-text-muted opacity-80">{art.date} • {art.readTime}</div>
- </div>
- ))}
- </div>
- </section>
+  <section id="google-news-card" className="border p-4 transition-all bg-portal-surface border-portal-border shadow-sm rounded-xl mt-6">
+    <h3 className="text-xs font-bold font-mono tracking-wider uppercase mb-2 flex items-center space-x-2 text-[#4285F4] border-b border-portal-border/50 pb-2">
+      <span className="w-1.5 h-4 bg-[#4285F4]"></span>
+      <span>GOOGLE NEWS FEEDS</span>
+    </h3>
+    <div className="space-y-0 divide-y divide-portal-border/30">
+      {googleArticles.slice(0, 5).map((art) => (
+        <div key={art.id} className="group overflow-hidden">
+          <div onClick={() => handleOpenArticle(art)} className="py-3 cursor-pointer flex items-center justify-between hover:text-[#4285F4] transition-colors">
+            <h4 className="text-xs font-normal leading-tight text-portal-text-main group-hover:text-[#4285F4] pr-4 line-clamp-2">{art.title}</h4>
+            <span className="text-portal-text-muted group-hover:text-[#4285F4] shrink-0 text-xs transition-transform group-hover:-rotate-90">↓</span>
+          </div>
+          {/* Expanded content */}
+          <div className="max-h-0 group-hover:max-h-48 opacity-0 group-hover:opacity-100 transition-all duration-500 ease-in-out flex gap-3 pb-0 group-hover:pb-3 cursor-pointer" onClick={() => handleOpenArticle(art)}>
+            <div className="w-16 h-16 bg-[#4285F4]/5 rounded shadow-sm shrink-0 flex items-center justify-center p-2 border border-[#4285F4]/20">
+              <svg viewBox="0 0 24 24" fill="currentColor" className="w-8 h-8">
+                <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
+                <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
+                <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05" />
+                <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
+              </svg>
+            </div>
+            <div className="flex flex-col justify-center">
+               <span className="text-[10px] font-mono text-[#4285F4] tracking-wider uppercase mb-1">{art.category}</span>
+               <span className="text-[10px] text-portal-text-muted line-clamp-2 leading-tight">
+                 Published {art.date}. Click to read full article coverage on Google News.
+               </span>
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  </section>
  );
 }

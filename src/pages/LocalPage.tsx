@@ -101,7 +101,7 @@ export default function LocalPage({
  category: 'Local',
  sportName: feed.name, // using sportName to show source nicely if needed
  source: feed.name,
- publishedAt: item.pubDate ? new Date(item.pubDate).toISOString() : new Date().toISOString(),
+ publishedAt: (item.pubDate && !isNaN(new Date(item.pubDate).getTime())) ? new Date(item.pubDate).toISOString() : new Date().toISOString(),
  timeAgo: item.pubDate ? new Date(item.pubDate).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'Live',
  readTime: '3 min read',
  url: item.link
@@ -250,9 +250,10 @@ export default function LocalPage({
                     setFailedImages={setFailedImages || (() => {})}
                 />
             )}
- </div>
- ) : (
- <div className="space-y-6">
+        </div>
+    </div>
+) : (
+    <div className="space-y-6">
  <div className={`p-6 border-2 border-portal-brand/40 shadow-[0_0_25px_rgba(16,185,129,0.15)] ${cardBgClass} relative overflow-hidden ring-1 ring-portal-brand/20`}>
  <div className="absolute inset-0 bg-gradient-to-br from-portal-brand/5 to-transparent pointer-events-none" />
  <div className="relative z-10 flex items-center justify-between mb-6">

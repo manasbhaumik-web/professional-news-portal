@@ -458,7 +458,7 @@ async function fetchRealTimeNews() {
           content: stripHtml(item.content || item.contentSnippet || "No detailed content available."),
           source: parsed.title || "Global Network",
           date: item.pubDate ? new Date(item.pubDate).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : "Just Now",
-          publishedAt: item.pubDate ? new Date(item.pubDate).toISOString() : new Date().toISOString(),
+          publishedAt: (item.pubDate && !isNaN(new Date(item.pubDate).getTime())) ? new Date(item.pubDate).toISOString() : new Date().toISOString(),
           readTime: "3 min read",
           imageUrl: originalImage || null,
           trendsUp: Math.random() > 0.5,
