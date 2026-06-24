@@ -1,5 +1,5 @@
-import React from 'react';
-import { BookMarked } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { BookMarked, PlayCircle } from 'lucide-react';
 import { NewsArticle } from '../types';
 
 export function SidebarAdvertisement() {
@@ -242,11 +242,13 @@ export function ThumbnailNewsCard({ relatedArticles, handleOpenArticle, failedIm
  </div>
  )}
  {/* Sub Items */}
- {listArticles.map((art, idx) => (
- <div key={art.id} onClick={() => handleOpenArticle(art)} className="flex items-center gap-4 cursor-pointer group border-t border-portal-border/30 pt-4">
- <div className="text-2xl font-serif font-black text-portal-text-muted/20 w-4 shrink-0 text-center">{idx + 2}</div>
+ {listArticles.map((art) => (
+ <div key={art.id} onClick={() => handleOpenArticle(art)} className="flex items-center gap-3 cursor-pointer group border-t border-portal-border/30 pt-4">
+ <div className="w-14 h-14 shrink-0 overflow-hidden rounded shadow-sm border border-portal-border/20">
+ <img src={art.imageUrl} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" alt="" />
+ </div>
  <div className="flex flex-col flex-grow min-w-0">
- <h4 className="text-xs font-normal leading-tight group-hover:text-portal-brand transition-colors text-portal-text-main line-clamp-2">
+ <h4 className="text-xs font-normal leading-snug group-hover:text-portal-brand transition-colors text-portal-text-main line-clamp-3">
  {art.title}
  </h4>
  </div>
@@ -364,4 +366,105 @@ export function GoogleNewsPanel({ googleArticles, handleOpenArticle, failedImage
     </div>
   </section>
  );
+}
+
+export function RecentVideosCard() {
+  const [videos, setVideos] = useState<any[]>([]);
+
+  useEffect(() => {
+    fetch('/api/news/videos')
+      .then(res => res.ok ? res.json() : [])
+      .then(data => {
+        if (Array.isArray(data)) {
+          setVideos(data.slice(0, 4));
+        }
+      })
+      .catch(console.error);
+  }, []);
+
+  if (videos.length === 0) return null;
+
+  const handleVideoClick = (vid: any) => {
+    window.dispatchEvent(new CustomEvent('playGlobalVideo', { detail: vid }));
+  };
+
+  return (
+    <section className="bg-portal-surface border-y sm:border border-portal-border/50 sm:shadow-sm overflow-hidden flex flex-col">
+      <div className="flex items-center justify-between p-3 sm:p-4 border-b border-portal-border/50 bg-portal-surface/50">
+        <div className="flex items-center gap-2 text-portal-text-main font-black uppercase text-[10px] tracking-widest font-sans">
+          <PlayCircle size={14} className="text-portal-brand" />
+          Recent Video Feeds
+        </div>
+      </div>
+      <div className="divide-y divide-portal-border/50 flex-1 overflow-y-auto">
+        {videos.map(vid => (
+          <div key={vid.id} className="p-3 sm:p-4 hover:bg-portal-surface-hover transition-colors group cursor-pointer flex gap-3" onClick={() => handleVideoClick(vid)}>
+            <div className="w-20 h-14 bg-portal-bg shrink-0 relative overflow-hidden border border-portal-border/50">
+               <img src={vid.imageUrl} className="w-full h-full object-cover opacity-80 group-hover:scale-110 transition-transform" />
+               <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/40">
+                  <PlayCircle size={16} className="text-white" />
+               </div>
+            </div>
+            <div className="flex flex-col min-w-0">
+               <h4 className="text-xs font-bold text-portal-text-main group-hover:text-portal-brand transition-colors line-clamp-2 leading-tight mb-1">
+                 {vid.title}
+               </h4>
+               <span className="text-[10px] font-mono text-portal-text-muted">{vid.source} • {vid.duration}</span>
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+export function RecentSportVideosCard() {
+  const [videos, setVideos] = useState<any[]>([]);
+
+  useEffect(() => {
+    fetch('/api/news/videos')
+      .then(res => res.ok ? res.json() : [])
+      .then(data => {
+        if (Array.isArray(data)) {
+          // Just taking a different slice to mock sport related feeds
+          setVideos(data.slice(2, 6));
+        }
+      })
+      .catch(console.error);
+  }, []);
+
+  if (videos.length === 0) return null;
+
+  const handleVideoClick = (vid: any) => {
+    window.dispatchEvent(new CustomEvent('playGlobalVideo', { detail: vid }));
+  };
+
+  return (
+    <section className="bg-portal-surface border-y sm:border border-portal-border/50 sm:shadow-sm overflow-hidden flex flex-col">
+      <div className="flex items-center justify-between p-3 sm:p-4 border-b border-portal-border/50 bg-portal-surface/50">
+        <div className="flex items-center gap-2 text-portal-text-main font-black uppercase text-[10px] tracking-widest font-sans">
+          <PlayCircle size={14} className="text-portal-brand" />
+          Recent Sport Video Feeds
+        </div>
+      </div>
+      <div className="divide-y divide-portal-border/50 flex-1 overflow-y-auto">
+        {videos.map(vid => (
+          <div key={vid.id} className="p-3 sm:p-4 hover:bg-portal-surface-hover transition-colors group cursor-pointer flex gap-3" onClick={() => handleVideoClick(vid)}>
+            <div className="w-20 h-14 bg-portal-bg shrink-0 relative overflow-hidden border border-portal-border/50">
+               <img src={vid.imageUrl} className="w-full h-full object-cover opacity-80 group-hover:scale-110 transition-transform" />
+               <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/40">
+                  <PlayCircle size={16} className="text-white" />
+               </div>
+            </div>
+            <div className="flex flex-col min-w-0">
+               <h4 className="text-xs font-bold text-portal-text-main group-hover:text-portal-brand transition-colors line-clamp-2 leading-tight mb-1">
+                 {vid.title}
+               </h4>
+               <span className="text-[10px] font-mono text-portal-text-muted">{vid.source} • {vid.duration}</span>
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
 }

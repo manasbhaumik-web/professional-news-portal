@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import { MapPin, Users, CloudRain, AlertTriangle, Calendar, ChevronRight, Activity, Clock, MoreHorizontal, Globe, ThumbsUp, MessageCircle, Share2, Rss } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { MapPin, Users, CloudRain, AlertTriangle, Calendar, ChevronRight, Activity, Clock, MoreHorizontal, Globe, ThumbsUp, MessageCircle, Share2, Rss, Sun, Cloud, CloudFog, Snowflake, CloudLightning, Loader2 } from 'lucide-react';
 import ArticleCard from '../components/ArticleCard';
 import { NewsArticle } from '../types';
 import MoreFromWire from '../components/MoreFromWire';
+import CommunityMap from '../components/CommunityMap';
 
 interface LocalPageProps {
  theme: 'dark' | 'light' | 'sepia';
@@ -28,24 +29,46 @@ export default function LocalPage({
  const isDark = theme === 'dark';
  const isSepia = theme === 'sepia';
 
- const [citizenReports, setCitizenReports] = useState<any[]>([]);
- const [isLoading, setIsLoading] = useState(true);
  const [locationName, setLocationName] = useState("San Francisco, CA");
  const [countryName, setCountryName] = useState("United States");
  const [showCommunity, setShowCommunity] = useState(false);
  const [liveArticles, setLiveArticles] = useState<NewsArticle[]>([]);
  const [isLiveLoading, setIsLiveLoading] = useState(false);
+ const [weatherData, setWeatherData] = useState<{temp: string, desc: string, iconType: string} | null>(null);
+ const [alertsData, setAlertsData] = useState<{count: number, text: string}>({count: 0, text: 'No Active Alerts'});
+ const [activeCategory, setActiveCategory] = useState("All");
+ const [coords, setCoords] = useState<{lat: number, lon: number} | null>(null);
+ const [visibleCount, setVisibleCount] = useState(10);
+ const observerTarget = useRef(null);
 
  useEffect(() => {
  if ('geolocation' in navigator) {
  navigator.geolocation.getCurrentPosition(async (position) => {
  try {
+ setCoords({ lat: position.coords.latitude, lon: position.coords.longitude });
  const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${position.coords.latitude}&lon=${position.coords.longitude}`);
  const data = await res.json();
  const country = data.address.country || "United States";
  const state = data.address.state || "";
  setLocationName(`${state ? `${state}, ` : ''}${country}`);
  setCountryName(country);
+
+ const weatherRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${position.coords.latitude}&longitude=${position.coords.longitude}&current_weather=true&temperature_unit=fahrenheit`);
+ const wData = await weatherRes.json();
+ if (wData && wData.current_weather) {
+     const temp = Math.round(wData.current_weather.temperature);
+     const code = wData.current_weather.weathercode;
+     let desc = "Clear";
+     let iconType = "Sun";
+     if (code >= 1 && code <= 3) { desc = "Partly Cloudy"; iconType = "Cloud"; }
+     else if (code >= 45 && code <= 48) { desc = "Fog"; iconType = "CloudFog"; }
+     else if (code >= 51 && code <= 67) { desc = "Rain"; iconType = "CloudRain"; }
+     else if (code >= 71 && code <= 77) { desc = "Snow"; iconType = "Snowflake"; }
+     else if (code >= 80 && code <= 82) { desc = "Showers"; iconType = "CloudLightning"; }
+     else if (code >= 95) { desc = "Thunderstorm"; iconType = "CloudLightning"; }
+     
+     setWeatherData({ temp: `${temp}°F`, desc, iconType });
+ }
  } catch (e) {
  console.error("Location fetch failed", e);
  }
@@ -54,16 +77,6 @@ export default function LocalPage({
  });
  }
 
- fetch('/api/news/reports')
- .then(res => res.json())
- .then(data => {
- setCitizenReports(data);
- setIsLoading(false);
- })
- .catch(err => {
- console.error("Failed to fetch citizen reports:", err);
- setIsLoading(false);
- });
  }, []);
 
  useEffect(() => {
@@ -142,12 +155,6 @@ export default function LocalPage({
  const textPrimaryClass = isDark ? 'text-white' : isSepia ? 'text-[#2C2114]' : 'text-neutral-900';
  const cardBgClass = isDark ? 'bg-[#14161B]' : isSepia ? 'bg-[#FAF6EE]' : 'bg-white';
 
- const localEvents = [
- { title: 'City Council: Zoning Law Revisions', time: 'Today, 6:00 PM', attendees: 120, type: 'Government' },
- { title: 'Downtown Tech Mixer & Startup Pitch', time: 'Tomorrow, 5:30 PM', attendees: 85, type: 'Business' },
- { title: 'Community Park Restoration Drive', time: 'Saturday, 9:00 AM', attendees: 340, type: 'Volunteer' },
- ];
-
  const combinedArticles = [...liveArticles, ...articles.filter(art => art.title.toLowerCase().includes(locationName.toLowerCase()) || art.category === 'Local')];
  const allSorted = combinedArticles.sort((a, b) => {
  const timeA = new Date(a.publishedAt || a.date || Date.now()).getTime();
@@ -155,8 +162,44 @@ export default function LocalPage({
  return timeB - timeA;
  }).filter((art, idx, self) => idx === self.findIndex(a => a.title.toLowerCase().trim() === art.title.toLowerCase().trim()));
 
- const displayArticles = allSorted.slice(0, 10);
- const overflowArticles = allSorted.slice(10);
+ const filteredByCategory = activeCategory === "All" ? allSorted : allSorted.filter(art => {
+     const text = (art.title + " " + (art.summary || "") + " " + (art.content || "")).toLowerCase();
+     if (activeCategory === "Local Politics") return text.includes("mayor") || text.includes("council") || text.includes("election") || text.includes("vote") || text.includes("government") || text.includes("policy");
+     if (activeCategory === "Crime & Safety") return text.includes("police") || text.includes("crime") || text.includes("arrest") || text.includes("fire") || text.includes("safety") || text.includes("crash");
+     if (activeCategory === "Real Estate") return text.includes("housing") || text.includes("estate") || text.includes("property") || text.includes("development") || text.includes("rent") || text.includes("market");
+     if (activeCategory === "Events") return text.includes("festival") || text.includes("concert") || text.includes("event") || text.includes("market") || text.includes("community") || text.includes("weekend");
+     return true;
+ });
+
+ const displayArticles = filteredByCategory.slice(0, visibleCount);
+
+ useEffect(() => {
+   const observer = new IntersectionObserver(
+     entries => {
+       if (entries[0].isIntersecting) {
+         setVisibleCount(prev => prev + 10);
+       }
+     },
+     { threshold: 0.1 }
+   );
+   if (observerTarget.current) {
+     observer.observe(observerTarget.current);
+   }
+   return () => {
+     if (observerTarget.current) {
+       observer.unobserve(observerTarget.current);
+     }
+   };
+ }, [observerTarget, displayArticles]);
+
+ const WeatherIcon = weatherData?.iconType === "Sun" ? Sun :
+                     weatherData?.iconType === "Cloud" ? Cloud :
+                     weatherData?.iconType === "CloudFog" ? CloudFog :
+                     weatherData?.iconType === "CloudRain" ? CloudRain :
+                     weatherData?.iconType === "Snowflake" ? Snowflake :
+                     weatherData?.iconType === "CloudLightning" ? CloudLightning : CloudRain;
+
+ const categories = ["All", "Local Politics", "Crime & Safety", "Real Estate", "Events"];
 
  return (
  <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -176,19 +219,21 @@ export default function LocalPage({
  <div className={`p-5 border ${borderClass} ${cardBgClass} flex items-center justify-between`}>
  <div>
  <div className={`text-[10px] font-mono tracking-widest font-bold uppercase mb-1 ${textMutedClass}`}>Weather Conditions</div>
- <div className={`text-xl font-serif font-black ${textPrimaryClass}`}>64°F / Light Rain</div>
+ <div className={`text-xl font-serif font-black ${textPrimaryClass}`}>
+    {weatherData ? `${weatherData.temp} / ${weatherData.desc}` : 'Loading...'}
+ </div>
  </div>
  <div className={`p-3 ${isDark ? 'bg-cyan-900/30 text-cyan-400' : 'bg-cyan-50 text-cyan-600'}`}>
- <CloudRain size={24} />
+ <WeatherIcon size={24} />
  </div>
  </div>
 
  <div className={`p-5 border ${borderClass} ${cardBgClass} flex items-center justify-between`}>
  <div>
  <div className={`text-[10px] font-mono tracking-widest font-bold uppercase mb-1 ${textMutedClass}`}>Active Alerts</div>
- <div className={`text-xl font-serif font-black text-red-500`}>1 Traffic Advisory</div>
+ <div className={`text-xl font-serif font-black ${alertsData.count > 0 ? 'text-red-500' : 'text-emerald-500'}`}>{alertsData.text}</div>
  </div>
- <div className="p-3 bg-red-50 text-red-600 dark:bg-red-900/30 dark:text-red-400">
+ <div className={`p-3 ${alertsData.count > 0 ? 'bg-red-50 text-red-600 dark:bg-red-900/30 dark:text-red-400' : 'bg-emerald-50 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400'}`}>
  <AlertTriangle size={24} />
  </div>
  </div>
@@ -210,6 +255,20 @@ export default function LocalPage({
  </button>
  </div>
 
+ {!showCommunity && (
+   <div className="flex items-center gap-2 overflow-x-auto pb-4 no-scrollbar mb-4">
+     {categories.map(cat => (
+       <button
+         key={cat}
+         onClick={() => setActiveCategory(cat)}
+         className={`px-4 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-colors border ${activeCategory === cat ? 'bg-portal-text-main text-portal-bg border-portal-text-main' : `bg-portal-surface text-portal-text-muted hover:text-portal-text-main border-portal-border`}`}
+       >
+         {cat}
+       </button>
+     ))}
+   </div>
+ )}
+
  <div className="w-full">
  {!showCommunity ? (
  <div className="space-y-6">
@@ -221,9 +280,16 @@ export default function LocalPage({
  </div>
  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 auto-rows-auto">
  {isLiveLoading && displayArticles.length === 0 ? (
- <div className={`p-8 text-center border border-dashed ${borderClass} ${textMutedClass} font-mono text-xs uppercase tracking-widest col-span-full`}>
- Fetching local dispatch...
- </div>
+   Array.from({ length: 4 }).map((_, i) => (
+     <div key={i} className={`p-5 border ${borderClass} ${cardBgClass} flex flex-col sm:flex-row gap-5 animate-pulse`}>
+       <div className={`w-full sm:w-36 h-28 shrink-0 bg-neutral-200 dark:bg-zinc-800`}></div>
+       <div className="flex-1 space-y-4 py-2 w-full">
+         <div className={`h-4 w-1/4 rounded bg-neutral-200 dark:bg-zinc-800`}></div>
+         <div className={`h-5 w-full rounded bg-neutral-200 dark:bg-zinc-800`}></div>
+         <div className={`h-4 w-3/4 rounded bg-neutral-200 dark:bg-zinc-800`}></div>
+       </div>
+     </div>
+   ))
  ) : (
  displayArticles.map((art, idx) => (
  <ArticleCard
@@ -239,123 +305,31 @@ export default function LocalPage({
  ))
  )}
  </div>
-
-            {overflowArticles.length > 0 && (
-                <MoreFromWire
-                    articles={overflowArticles}
-                    handleOpenArticle={handleOpenArticle}
-                    toggleBookmark={toggleBookmark}
-                    bookmarks={bookmarks}
-                    failedImages={failedImages || []}
-                    setFailedImages={setFailedImages || (() => {})}
-                />
-            )}
-        </div>
-    </div>
-) : (
-    <div className="space-y-6">
- <div className={`p-6 border-2 border-portal-brand/40 shadow-[0_0_25px_rgba(16,185,129,0.15)] ${cardBgClass} relative overflow-hidden ring-1 ring-portal-brand/20`}>
- <div className="absolute inset-0 bg-gradient-to-br from-portal-brand/5 to-transparent pointer-events-none" />
- <div className="relative z-10 flex items-center justify-between mb-6">
- <h3 className={`font-serif font-black text-2xl flex items-center gap-2 ${textPrimaryClass}`}>
- <Activity className="text-portal-brand" /> Live Citizen Intel
- </h3>
- <span className={`text-[10px] font-mono tracking-widest uppercase font-bold px-2 py-1 bg-portal-brand/10 text-portal-brand border border-portal-brand/20`}>Real-Time Feed</span>
- </div>
-
- <div className="space-y-4">
- {isLoading ? (
- <div className={`p-8 text-center border border-dashed ${borderClass} ${textMutedClass} font-mono text-xs uppercase tracking-widest`}>
- Syncing local reports...
- </div>
- ) : citizenReports.length === 0 ? (
- <div className={`p-8 text-center border border-dashed ${borderClass} ${textMutedClass} font-mono text-xs flex flex-col items-center`}>
- <AlertTriangle size={32} className="mb-4 opacity-50" />
- <span className="uppercase tracking-widest mb-2 font-bold">No incidents detected</span>
- <p className="opacity-70 normal-case tracking-normal">The grid is quiet. Be the first to report an event from your sector.</p>
- </div>
+ 
+             {filteredByCategory.length > visibleCount && (
+                <div ref={observerTarget} className="col-span-full h-20 flex items-center justify-center mt-4">
+                  <Loader2 className="animate-spin text-portal-brand" size={24} />
+                </div>
+             )}
+         </div>
+     </div>
  ) : (
- citizenReports.map((report) => (
- <div key={report.id} className={`relative z-10 flex flex-col p-4 sm:p-5 border border-portal-border shadow-sm transition-all bg-portal-surface`}>
- {/* Facebook Post Header */}
- <div className="flex items-start justify-between mb-3">
- <div className="flex items-center gap-3">
- <div className="w-10 h-10 bg-gradient-to-tr from-portal-brand to-portal-accent p-0.5 shrink-0">
- <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${report.id}`} alt="User Avatar" className="w-full h-full bg-white object-cover" />
- </div>
- <div>
- <h4 className={`font-bold text-sm leading-none hover:underline cursor-pointer ${textPrimaryClass}`}>
- Anonymous Resident
- </h4>
- <div className={`flex items-center gap-1 mt-1 text-[11px] ${textMutedClass}`}>
- <span>{new Date(report.timestamp).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
- <span>·</span>
- <Globe size={10} />
- <span>·</span>
- <span className="font-semibold text-portal-brand">{report.location}</span>
- </div>
- </div>
- </div>
- <button className={`p-1.5 hover:bg-portal-surface-hover transition-colors ${textMutedClass}`}>
- <MoreHorizontal size={16} />
- </button>
- </div>
-
- {/* Post Content */}
- <div className="mb-3">
- <div className={`text-[10px] font-mono tracking-widest font-bold uppercase mb-2 ${report.category === 'Alert' ? 'text-red-500' : 'text-portal-brand'}`}>
- {report.category}
- </div>
- <h4 className={`font-bold text-base mb-1 ${textPrimaryClass}`}>
- {report.headline}
- </h4>
- <p className={`text-sm whitespace-pre-wrap leading-relaxed ${textPrimaryClass}`}>
- {report.details}
- </p>
- </div>
-
- {/* Attached Media (if any) */}
- {report.mediaUrl && (
- <div className="mb-3 -mx-4 sm:-mx-5 border-y border-portal-border bg-black">
- <img src={report.mediaUrl} alt="Report media" className="w-full h-auto object-contain max-h-96 mx-auto" onError={(e) => (e.currentTarget.style.display = 'none')} />
- </div>
- )}
-
- {/* Engagement Stats */}
- <div className={`flex items-center justify-between text-[11px] py-2 border-b border-portal-border ${textMutedClass}`}>
- <div className="flex items-center gap-1">
- <div className="w-4 h-4 bg-portal-brand flex items-center justify-center">
- <ThumbsUp size={8} className="text-white fill-current" />
- </div>
- <span>12</span>
- </div>
- <div className="flex gap-3 hover:underline cursor-pointer">
- <span>4 Comments</span>
- <span>2 Shares</span>
- </div>
- </div>
-
- {/* Facebook Actions */}
- <div className="flex items-center justify-between pt-1">
- <button className={`flex-1 flex items-center justify-center gap-2 py-1.5 hover:bg-portal-surface-hover transition-colors text-sm font-semibold ${textMutedClass}`}>
- <ThumbsUp size={18} /> Like
- </button>
- <button className={`flex-1 flex items-center justify-center gap-2 py-1.5 hover:bg-portal-surface-hover transition-colors text-sm font-semibold ${textMutedClass}`}>
- <MessageCircle size={18} /> Comment
- </button>
- <button className={`flex-1 flex items-center justify-center gap-2 py-1.5 hover:bg-portal-surface-hover transition-colors text-sm font-semibold ${textMutedClass}`}>
- <Share2 size={18} /> Share
- </button>
- </div>
- </div>
- ))
+     <div className="space-y-6">
+         <div className={`p-6 border ${borderClass} ${cardBgClass}`}>
+             <h3 className={`font-serif font-black text-2xl flex items-center gap-2 mb-6 ${textPrimaryClass}`}>
+                 <Globe className="text-portal-brand" /> Interactive Community Map
+             </h3>
+             {coords ? (
+                 <CommunityMap lat={coords.lat} lon={coords.lon} />
+             ) : (
+                 <div className="h-[600px] flex items-center justify-center border border-dashed border-portal-border bg-portal-bg/50">
+                     <span className={`${textMutedClass}`}>Awaiting location data...</span>
+                 </div>
+             )}
+         </div>
+     </div>
  )}
  </div>
- </div>
- </div>
- )}
- </div>
-
  </div>
  );
 }

@@ -44,7 +44,11 @@ export default React.memo(function ArticleCard({
  ? 'https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80' 
  : 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=800&q=80';
  
- const displayImage = hasMissingImage ? defaultSportsImg : art.imageUrl;
+ const defaultLocalImg = 'https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?auto=format&fit=crop&w=800&q=80';
+
+ const displayImage = hasMissingImage 
+   ? (isCountryOrLocal ? defaultLocalImg : defaultSportsImg) 
+   : art.imageUrl;
 
  let bentoClass = 'flex-col sm:flex-row';
  let imageClass = 'w-full sm:w-36 h-28 ';

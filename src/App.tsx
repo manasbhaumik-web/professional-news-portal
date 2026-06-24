@@ -337,31 +337,34 @@ export default function App() {
 
     return (
         <div id="news-portal-root" className={`min-h-screen theme-${portalTheme} bg-portal-bg text-portal-text-main font-sans flex flex-col antialiased selection:bg-portal-brand selection:text-white transition-colors duration-300`}>
-            <div className="sticky top-0 z-50 flex flex-col w-full shadow-md drop-shadow-md bg-portal-bg">
-                <Header
-                    activeTab={activeTab}
-                    setActiveTab={setActiveTab}
-                    searchQuery={searchQuery}
-                    setSearchQuery={setSearchQuery}
-                    portalTheme={portalTheme}
-                    setPortalTheme={setPortalTheme}
-                    selectedCategories={preferences.selectedCategories}
-                    handleNotificationRead={handleNotificationRead}
-                />
+            <div className="sticky top-0 z-50 flex flex-col w-full">
+                <div className="relative z-10 flex flex-col w-full shadow-md drop-shadow-md bg-portal-bg">
+                    <Header
+                        activeTab={activeTab}
+                        setActiveTab={setActiveTab}
+                        searchQuery={searchQuery}
+                        setSearchQuery={setSearchQuery}
+                        portalTheme={portalTheme}
+                        setPortalTheme={setPortalTheme}
+                        selectedCategories={preferences.selectedCategories}
+                        handleNotificationRead={handleNotificationRead}
+                    />
 
-                <ChannelsNav
-                    selectedMenuCategory={selectedMenuCategory}
-                    setSelectedMenuCategory={setSelectedMenuCategory}
-                    activeTab={activeTab}
-                    setActiveTab={setActiveTab}
-                    selectedCountry={selectedCountry}
-                    setSelectedCountry={setSelectedCountry}
-                />
-            </div>
+                    <MarketTicker theme={portalTheme} />
 
-            <div className="flex flex-col w-full">
-                <MarketTicker theme={portalTheme} />
-                <BreakingNewsTicker relatedArticles={nonGoogleTrending} handleOpenArticle={handleOpenArticle} />
+                    <ChannelsNav
+                        selectedMenuCategory={selectedMenuCategory}
+                        setSelectedMenuCategory={setSelectedMenuCategory}
+                        activeTab={activeTab}
+                        setActiveTab={setActiveTab}
+                        selectedCountry={selectedCountry}
+                        setSelectedCountry={setSelectedCountry}
+                    />
+                </div>
+
+                <div className="relative z-0">
+                    <BreakingNewsTicker relatedArticles={nonGoogleTrending} handleOpenArticle={handleOpenArticle} />
+                </div>
             </div>
 
             {errorFeedback && (
@@ -385,19 +388,7 @@ export default function App() {
                             <Trophy size={220} strokeWidth={1} />
                         </div>
 
-                        <div className="flex flex-col sm:flex-row w-full items-start sm:items-center justify-between relative z-10 border-b border-[#c9a84c]/10 pb-4 gap-4">
-                            <div className="flex items-center gap-3 text-[#c9a84c] font-black uppercase text-sm tracking-widest font-sans drop-shadow-md">
-                                <div className="p-2 bg-[#c9a84c]/10 rounded-none ring-1 ring-[#c9a84c]/30">
-                                    <Trophy size={16} />
-                                </div>
-                                <span>FIFA World Cup 2026 <span className="opacity-60 font-medium">|</span> Match Results</span>
-                            </div>
-                            <div className="flex items-center">
-                                <button onClick={() => setActiveTab('fifaAllScores')} className="text-[#c9a84c] text-xs font-bold tracking-widest uppercase flex items-center gap-2 hover:text-white hover:bg-[#c9a84c]/20 px-4 py-2 rounded-lg transition-all group">
-                                    View All Match Scores <span className="group-hover:translate-x-1 transition-transform">→</span>
-                                </button>
-                            </div>
-                        </div>
+
 
                         {fifaLoading && fifaScores.length === 0 ? (
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 w-full relative z-10">
@@ -412,7 +403,7 @@ export default function App() {
                                 ))}
                             </div>
                         ) : (
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 w-full relative z-10">
+                            <div className="flex flex-col lg:flex-row w-full bg-[#111827] border border-white/10 rounded-none overflow-hidden divide-y lg:divide-y-0 lg:divide-x divide-white/10 shadow-2xl relative z-10">
                                 {(fifaScores.length > 0 ? fifaScores : [
                                     { team1: 'Japan', flag1: null, crest1: 'https://flagcdn.com/jp.svg', score1: 3, team2: 'Senegal', flag2: null, crest2: 'https://flagcdn.com/sn.svg', score2: 1, status: 'FULL TIME', date: 'JUN 15', goals: [{ minute: 14, scorer: 'Mitoma' }, { minute: 38, scorer: 'Dia' }, { minute: 67, scorer: 'Kubo' }, { minute: 82, scorer: 'Doan' }] },
                                     { team1: 'Australia', flag1: null, crest1: 'https://flagcdn.com/au.svg', score1: 2, team2: 'Türkiye', flag2: null, crest2: 'https://flagcdn.com/tr.svg', score2: 0, status: 'FULL TIME', date: 'JUN 14', goals: [{ minute: 31, scorer: 'Duke' }, { minute: 78, scorer: 'Irvine' }] },
@@ -422,58 +413,45 @@ export default function App() {
                                 ]).slice(0, 4).map((game: any, idx: number) => {
                                     const img1 = game.flag1 && game.flag1.startsWith('http') ? game.flag1 : (game.crest1 || `https://flagcdn.com/${game.flag1}.svg`);
                                     const img2 = game.flag2 && game.flag2.startsWith('http') ? game.flag2 : (game.crest2 || `https://flagcdn.com/${game.flag2}.svg`);
-                                    const statusLabel = game.status === 'FT' ? 'FULL TIME' : game.status;
                                     return (
-                                        <div key={game.id || idx} className="flex flex-col justify-between bg-white/5 hover:bg-white/10 p-4 rounded-none border border-white/10 hover:border-[#c9a84c]/40 shadow-lg hover:shadow-[0_8px_30px_rgba(201,168,76,0.15)] transition-all duration-300 backdrop-blur-md h-full w-full group/card relative overflow-hidden">
+                                        <div key={idx} className="flex-1 flex flex-col p-4 hover:bg-white/5 transition-colors cursor-pointer justify-center group relative overflow-hidden">
                                             {/* Top accent line */}
-                                            <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-[#c9a84c]/50 to-transparent opacity-0 group-hover/card:opacity-100 transition-opacity" />
+                                            <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-[#c9a84c]/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                                             
-                                            <div className="flex items-center justify-between gap-3 w-full relative z-10">
-                                                {/* Team 1 */}
-                                                <div className="text-center flex flex-col items-center w-16 shrink-0 transform group-hover/card:scale-105 transition-transform">
-                                                    <div className="relative">
-                                                        <div className="absolute inset-0 bg-white/20 blur-md rounded-full opacity-0 group-hover/card:opacity-100 transition-opacity" />
-                                                        <img src={img1} alt={game.team1} className="w-10 h-10 rounded-full object-cover border-2 border-white/10 group-hover/card:border-[#c9a84c]/50 shadow-md mb-2 relative z-10 bg-black/50" onError={e => { (e.target as HTMLImageElement).style.opacity = '0.3'; }} />
-                                                    </div>
-                                                    <h3 className="font-bold text-white text-[11px] text-center w-full truncate">{game.team1}</h3>
+                                            <div className="flex items-center justify-between">
+                                                <div className="flex items-center gap-2">
+                                                    <img src={img1} alt="" className="w-5 h-5 rounded-sm shadow-md object-cover" />
+                                                    <span className="text-white text-sm font-medium">{game.team1}</span>
                                                 </div>
-                                                
-                                                {/* Score */}
-                                                <div className="flex flex-col items-center flex-1 shrink-0 px-2">
-                                                    <div className="text-3xl font-black font-sans text-white tracking-widest flex items-center justify-center drop-shadow-[0_2px_10px_rgba(0,0,0,0.5)] whitespace-nowrap mb-1">
-                                                        {game.score1} <span className="mx-2 text-[#c9a84c]/50">-</span> {game.score2}
-                                                    </div>
-                                                    <div className="text-[9px] uppercase tracking-widest text-[#c9a84c] font-bold bg-[#c9a84c]/10 px-2 py-0.5 rounded-none ring-1 ring-[#c9a84c]/30">
-                                                        {statusLabel}
-                                                    </div>
-                                                    <div className="text-[10px] text-white/50 mt-1.5 font-medium tracking-widest uppercase">
-                                                        {game.date}
-                                                    </div>
+                                                <span className="text-white text-lg font-bold">{game.score1}</span>
+                                            </div>
+                                            <div className="flex items-center justify-between mt-2">
+                                                <div className="flex items-center gap-2">
+                                                    <img src={img2} alt="" className="w-5 h-5 rounded-sm shadow-md object-cover" />
+                                                    <span className="text-white text-sm font-medium">{game.team2}</span>
                                                 </div>
-
-                                                {/* Team 2 */}
-                                                <div className="text-center flex flex-col items-center w-16 shrink-0 transform group-hover/card:scale-105 transition-transform">
-                                                    <div className="relative">
-                                                        <div className="absolute inset-0 bg-white/20 blur-md rounded-full opacity-0 group-hover/card:opacity-100 transition-opacity" />
-                                                        <img src={img2} alt={game.team2} className="w-10 h-10 rounded-full object-cover border-2 border-white/10 group-hover/card:border-[#c9a84c]/50 shadow-md mb-2 relative z-10 bg-black/50" onError={e => { (e.target as HTMLImageElement).style.opacity = '0.3'; }} />
-                                                    </div>
-                                                    <h3 className="font-bold text-white text-[11px] text-center w-full truncate">{game.team2}</h3>
-                                                </div>
+                                                <span className="text-white text-lg font-bold">{game.score2}</span>
+                                            </div>
+                                            <div className="text-[9px] text-white/40 uppercase tracking-widest mt-3 flex justify-between items-center">
+                                                <span>{game.status === 'FT' ? 'FULL TIME' : game.status}</span>
+                                                <span>{game.date}</span>
                                             </div>
                                             
                                             {/* Scorers */}
-                                            <div className="mt-4 text-[10px] text-white/40 border-t border-white/5 pt-3 text-center truncate px-2 font-mono group-hover/card:text-white/70 transition-colors flex justify-center items-center h-4">
-                                                {game.goals && game.goals.length > 0 ? (
-                                                    <span className="flex items-center justify-center gap-1.5">
-                                                        <Trophy size={10} className="text-[#c9a84c]/60" />
+                                            {game.goals && game.goals.length > 0 ? (
+                                                <div className="mt-3 text-[9px] text-white/30 border-t border-white/5 pt-2 text-left font-mono group-hover:text-white/60 transition-colors flex items-start gap-1">
+                                                    <Trophy size={10} className="text-[#c9a84c]/40 group-hover:text-[#c9a84c]/80 shrink-0 mt-0.5" />
+                                                    <span className="line-clamp-2">
                                                         {game.goals.map((g: any) => `${g.scorer} (${g.minute}')`).join(', ')}
                                                     </span>
-                                                ) : (
-                                                    <span className="opacity-0">No goals</span>
-                                                )}
-                                            </div>
+                                                </div>
+                                            ) : (
+                                                <div className="mt-3 text-[9px] text-white/30 border-t border-white/5 pt-2 text-left font-mono opacity-0 h-[26px]">
+                                                    No goals
+                                                </div>
+                                            )}
                                         </div>
-                                    );
+                                    )
                                 })}
                             </div>
                         )}
@@ -833,6 +811,7 @@ export default function App() {
                         setSearchQuery={setSearchQuery}
                         failedImages={failedImages}
                         googleArticles={googleTrending}
+                        selectedMenuCategory={selectedMenuCategory}
                     />
                 </div>
             </main>

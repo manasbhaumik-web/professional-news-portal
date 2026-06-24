@@ -26,9 +26,24 @@ export default function GlobalPage({ theme }: GlobalPageProps) {
  const textMutedClass = isDark ? "text-zinc-400" : isSepia ? "text-[#5C4D3E]" : "text-neutral-500";
 
  const [globalVideos, setGlobalVideos] = useState<VideoData[]>([]);
- const [activeVideo, setActiveVideo] = useState<VideoData | null>(null);
+ const [activeVideo, setActiveVideo] = useState<VideoData | null>(() => {
+   try {
+     const saved = localStorage.getItem('horizon_tv_active_video');
+     if (saved) return JSON.parse(saved);
+   } catch (e) {
+     console.error('Failed to load active video from storage', e);
+   }
+   return null;
+ });
  const [isPlaying, setIsPlaying] = useState(false);
  const [loading, setLoading] = useState(true);
+ const [visibleCount, setVisibleCount] = useState(12);
+
+ useEffect(() => {
+   if (activeVideo) {
+     localStorage.setItem('horizon_tv_active_video', JSON.stringify(activeVideo));
+   }
+ }, [activeVideo]);
 
  const LIVE_BROADCASTS: VideoData[] = [
  {
@@ -78,14 +93,14 @@ export default function GlobalPage({ theme }: GlobalPageProps) {
  if (data && data.length > 0) {
  const combined = [...LIVE_BROADCASTS, ...data];
  setGlobalVideos(combined);
- setActiveVideo(combined[0]);
+ setActiveVideo(prev => prev || combined[0]);
  } else {
  setGlobalVideos(LIVE_BROADCASTS);
- setActiveVideo(LIVE_BROADCASTS[0]);
+ setActiveVideo(prev => prev || LIVE_BROADCASTS[0]);
  }
  } else {
  setGlobalVideos(LIVE_BROADCASTS);
- setActiveVideo(LIVE_BROADCASTS[0]);
+ setActiveVideo(prev => prev || LIVE_BROADCASTS[0]);
  }
  } catch (err) {
  console.error("Failed to fetch videos:", err);
@@ -94,6 +109,16 @@ export default function GlobalPage({ theme }: GlobalPageProps) {
  }
  };
  fetchVideos();
+ }, []);
+
+ useEffect(() => {
+   const handler = (e: CustomEvent) => {
+     setActiveVideo(e.detail);
+     setIsPlaying(true);
+     window.scrollTo({ top: 0, behavior: 'smooth' });
+   };
+   window.addEventListener('playGlobalVideo', handler as EventListener);
+   return () => window.removeEventListener('playGlobalVideo', handler as EventListener);
  }, []);
 
  if (loading) {
@@ -115,129 +140,148 @@ export default function GlobalPage({ theme }: GlobalPageProps) {
  }
 
  return (
- <div id="global-video-panel" className="grid grid-cols-1 lg:grid-cols-3 gap-6">
- {/* Featured Top Player (Left Side) */}
- <div className="lg:col-span-2">
- <div
- className={` overflow-hidden border relative flex flex-col ${isDark ? 'border-zinc-800 bg-[#0F1115]' : isSepia ? 'border-[#CDBC9D] bg-[#FAF6EE]' : 'border-neutral-200 bg-white'
- }`}
- >
- {/* MAIN VIDEO WRAPPER */}
- <div className="bg-black w-full flex justify-center border-b border-neutral-800/50">
- <div className="w-full aspect-video relative flex items-center justify-center">
- {isPlaying && activeVideo ? (
- <iframe
- width="100%"
- height="100%"
- src={`https://www.youtube.com/embed/${activeVideo.id}${activeVideo.id.includes('?') ? '&' : '?'}autoplay=1`}
- title={activeVideo.title}
- frameBorder="0"
- allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
- allowFullScreen
- className="absolute inset-0 shadow-2xl"
- ></iframe>
- ) : (
- <div className="w-full h-full relative cursor-pointer group overflow-hidden shadow-2xl" onClick={() => setIsPlaying(true)}>
- <img
- src={activeVideo?.imageUrl}
- alt="Main Featured Stream"
- className="w-full h-full object-cover opacity-70 group-hover:opacity-90 transition-opacity"
- />
- <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent" />
- <button className="absolute inset-0 m-auto w-16 h-16 bg-red-600 hover:bg-red-500 text-white shadow-lg shadow-red-900/50 transform group-hover:scale-110 transition-transform flex items-center justify-center">
- <PlayCircle size={32} />
- </button>
- {activeVideo?.isLive && (
- <div className="absolute top-4 left-4 bg-red-600 text-white text-[10px] font-bold px-2 py-1 flex items-center space-x-1 uppercase tracking-wider animate-pulse">
- <Radio size={12} />
- <span>LIVE</span>
- </div>
- )}
- </div>
- )}
- </div>
- </div>
+    <div className="flex flex-col gap-8 w-full pb-10 font-sans">
+      
+      {/* Featured Active Player */}
+      {activeVideo && (
+        <div className={`w-full rounded-2xl overflow-hidden border transition-colors ${
+          isDark ? 'bg-[#0F1115] border-white/10' : 
+          isSepia ? 'bg-[#FAF6EE] border-[#CDBC9D]' : 
+          'bg-white border-neutral-200 shadow-sm'
+        }`}>
+          {/* Video Player */}
+          <div className="w-full aspect-video bg-black relative group/player">
+            {isPlaying && activeVideo ? (
+              <iframe
+                width="100%"
+                height="100%"
+                src={`https://www.youtube.com/embed/${activeVideo.id}${activeVideo.id.includes('?') ? '&' : '?'}autoplay=1`}
+                title={activeVideo.title}
+                frameBorder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+                className="absolute inset-0"
+              ></iframe>
+            ) : (
+              <div className="w-full h-full relative cursor-pointer" onClick={() => setIsPlaying(true)}>
+                <img
+                  src={activeVideo?.imageUrl}
+                  alt="Main Featured Stream"
+                  className="w-full h-full object-cover opacity-90 group-hover/player:opacity-100 transition-opacity"
+                />
+                <div className="absolute inset-0 bg-black/30 group-hover/player:bg-transparent transition-colors duration-300" />
+                <button className="absolute inset-0 m-auto w-16 h-16 bg-red-600 hover:bg-red-500 text-white rounded-full flex items-center justify-center transform group-hover/player:scale-110 transition-transform shadow-lg">
+                  <PlayCircle size={32} className="pl-1" />
+                </button>
+              </div>
+            )}
+          </div>
 
- {/* BOTTOM TITLE, DESCRIPTION & DATE */}
- <div className="p-5 sm:p-6 pt-5">
- <div className="flex justify-between items-center mb-3">
- <div className={`text-[10px] font-mono tracking-widest font-bold uppercase ${isDark ? 'text-blue-500' : isSepia ? 'text-[#8C6239]' : 'text-blue-600'
- }`}>
- {activeVideo?.source}
- </div>
- <div className={`text-[10px] font-mono font-medium px-2 py-0.5 border ${isDark ? 'border-zinc-700 text-zinc-400 bg-zinc-800/50' : isSepia ? 'border-[#CDBC9D] text-[#8C6239] bg-[#FAF6EE]' : 'border-neutral-200 text-neutral-500 bg-neutral-50'
- }`}>
- {activeVideo?.region}
- </div>
- </div>
+          {/* Active Video Info */}
+          <div className="p-4 sm:p-6">
+            <h1 className={`text-xl sm:text-2xl font-bold mb-3 ${isDark ? 'text-white' : isSepia ? 'text-[#2C2114]' : 'text-neutral-900'}`}>
+              {activeVideo.title}
+            </h1>
+            <div className={`flex flex-wrap items-center gap-3 text-sm font-medium mb-4 ${textMutedClass}`}>
+              <div className="flex items-center gap-2">
+                {activeVideo.isLive && (
+                  <span className="bg-red-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-sm flex items-center gap-1 uppercase tracking-wider animate-pulse">
+                    <Radio size={12} /> LIVE
+                  </span>
+                )}
+                <span>{activeVideo.source}</span>
+              </div>
+              <span className="opacity-50">•</span>
+              <span>{activeVideo.region}</span>
+              <span className="opacity-50">•</span>
+              <span className="flex items-center gap-1"><Eye size={14} /> {activeVideo.views}</span>
+              {activeVideo.date && (
+                <>
+                  <span className="opacity-50">•</span>
+                  <span>{activeVideo.date}</span>
+                </>
+              )}
+            </div>
+            {activeVideo.description && (
+              <p className={`text-sm leading-relaxed ${isDark ? 'text-zinc-300' : isSepia ? 'text-[#5C4D3E]' : 'text-neutral-600'}`}>
+                {activeVideo.description}
+              </p>
+            )}
+          </div>
+        </div>
+      )}
 
- <h4 className={`text-2xl sm:text-3xl font-serif font-black leading-tight mb-3 ${isDark ? 'text-white' : isSepia ? 'text-[#2C2114]' : 'text-neutral-950'
- }`}>
- {activeVideo?.title}
- </h4>
+      {/* Video Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-4 gap-y-8">
+        {globalVideos.filter(vid => vid.id !== activeVideo?.id).slice(0, visibleCount).map((vid) => (
+          <div
+            key={vid.id}
+            className="flex flex-col gap-3 group cursor-pointer"
+            onClick={() => {
+              setActiveVideo(vid);
+              setIsPlaying(true);
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }}
+          >
+            {/* Thumbnail */}
+            <div className="w-full aspect-video rounded-xl overflow-hidden relative bg-black/10">
+              <img 
+                src={vid.imageUrl} 
+                alt={vid.title}
+                className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-300"
+              />
+              <div className="absolute inset-0 bg-black/10 group-hover:bg-transparent transition-colors" />
+              <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                <PlayCircle size={40} className="text-white drop-shadow-md" />
+              </div>
+              <span className="absolute bottom-2 right-2 bg-black/80 backdrop-blur-sm text-white text-xs font-mono px-1.5 py-0.5 rounded shadow-sm">
+                {vid.duration}
+              </span>
+            </div>
 
- <p className={`text-sm sm:text-base leading-relaxed mb-4 ${isDark ? 'text-zinc-300' : isSepia ? 'text-[#5C4D3E]' : 'text-neutral-600'
- }`}>
- {activeVideo?.description}
- </p>
- <div className={`text-[11px] font-mono flex flex-wrap items-center gap-4 ${textMutedClass}`}>
- <span className="flex items-center space-x-1 font-bold">
- <span>{activeVideo?.date}</span>
- </span>
- <span className="flex items-center space-x-1">
- <Eye size={12} />
- <span>{activeVideo?.views}</span>
- </span>
- </div>
- </div>
- </div>
- </div>
+            {/* Video Info */}
+            <div className="flex gap-3 px-1">
+              {/* Optional Channel Avatar Placeholder */}
+              <div className={`w-9 h-9 rounded-full shrink-0 flex items-center justify-center font-bold text-xs ${
+                isDark ? 'bg-zinc-800 text-zinc-400' : isSepia ? 'bg-[#CDBC9D] text-[#5C4D3E]' : 'bg-neutral-200 text-neutral-500'
+              }`}>
+                {vid.source.charAt(0)}
+              </div>
+              
+              <div className="flex flex-col min-w-0">
+                <h3 className={`font-semibold text-sm leading-snug line-clamp-2 mb-1 group-hover:text-blue-500 transition-colors ${
+                  isDark ? 'text-white' : isSepia ? 'text-[#2C2114]' : 'text-neutral-900'
+                }`}>
+                  {vid.title}
+                </h3>
+                <div className={`text-[12px] flex flex-col ${textMutedClass}`}>
+                  <span>{vid.source}</span>
+                  <div className="flex items-center gap-1">
+                    <span>{vid.views}</span>
+                    <span className="opacity-50">•</span>
+                    <span>{vid.region}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
 
- {/* Secondary Clip List (Right Side) */}
- <div className="lg:col-span-1 flex flex-col space-y-3 overflow-y-auto max-h-[85vh] pr-2" style={{ scrollbarWidth: 'thin' }}>
- <h3 className={`font-serif font-bold text-lg mb-2 flex items-center space-x-2 ${isDark ? 'text-white' : isSepia ? 'text-[#2C2114]' : 'text-neutral-900'}`}>
- <PlayCircle size={18} />
- <span>Up Next</span>
- </h3>
- {globalVideos.filter(vid => vid.id !== activeVideo?.id).map((vid) => (
- <div
- key={vid.id}
- className={`cursor-pointer group flex flex-col transition-opacity hover:opacity-80`}
- onClick={() => {
- setActiveVideo(vid);
- setIsPlaying(true);
- window.scrollTo({ top: 0, behavior: 'smooth' });
- }}
- >
- <div className="w-full aspect-video relative bg-zinc-900 overflow-hidden shrink-0 mb-2">
- <img
- src={vid.imageUrl}
- alt={vid.title}
- className="w-full h-full object-cover"
- />
- <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
- <div className="bg-black/50 p-2 backdrop-blur-sm shadow-xl">
- <PlayCircle size={20} className="text-white" />
- </div>
- </div>
- <span className="absolute bottom-1 right-1 bg-black/80 text-white text-[10px] font-mono px-1 py-0.5 shadow-sm">
- {vid.duration}
- </span>
- </div>
- <div className="flex flex-col px-1">
- <h5 className={`font-serif font-bold text-xs leading-snug line-clamp-2 mb-1 ${isDark ? 'text-slate-200' : isSepia ? 'text-[#2C2114]' : 'text-neutral-900'
- }`}>
- {vid.title}
- </h5>
- <div className={`text-[10px] font-mono flex items-center gap-1.5 ${textMutedClass}`}>
- <span>{vid.source}</span>
- <span className="opacity-50">•</span>
- <span>{vid.views}</span>
- </div>
- </div>
- </div>
- ))}
- </div>
- </div>
- );
+      {globalVideos.filter(vid => vid.id !== activeVideo?.id).length > visibleCount && (
+        <div className="flex justify-center mt-6">
+          <button
+            onClick={() => setVisibleCount(prev => prev + 12)}
+            className={`px-8 py-3 rounded-full font-bold uppercase tracking-wide text-xs transition-all ${
+              isDark ? 'bg-zinc-800 hover:bg-zinc-700 text-white' : 
+              isSepia ? 'bg-[#CDBC9D] hover:bg-[#BCA988] text-[#2C2114]' : 
+              'bg-gray-100 hover:bg-gray-200 text-gray-800'
+            }`}
+          >
+            Load More Videos
+          </button>
+        </div>
+      )}
+    </div>
+  );
 }

@@ -13,10 +13,11 @@ interface SystemSidebarProps {
   activeTab?: string;
   failedImages?: string[];
   googleArticles?: NewsArticle[];
+  selectedMenuCategory?: string;
 }
 
 import MatchResultsPanel from './MatchResultsPanel';
-import { SidebarAdvertisement, OngoingIccSeriesCard, BookmarkedArticlesCard, UpcomingFixturesCard, TopScorersCard, ThumbnailNewsCard, TrendingTopicsCard, ProAdCard, GoogleNewsPanel } from './SidebarComponents';
+import { SidebarAdvertisement, OngoingIccSeriesCard, BookmarkedArticlesCard, UpcomingFixturesCard, TopScorersCard, ThumbnailNewsCard, TrendingTopicsCard, ProAdCard, GoogleNewsPanel, RecentVideosCard, RecentSportVideosCard } from './SidebarComponents';
 
 export default React.memo(function SystemSidebar({
   bookmarks,
@@ -28,7 +29,8 @@ export default React.memo(function SystemSidebar({
   setSearchQuery,
   activeTab,
   failedImages = [],
-  googleArticles = []
+  googleArticles = [],
+  selectedMenuCategory
 }: SystemSidebarProps) {
   const [cricketMatches, setCricketMatches] = useState<any[]>([]);
   const [cricketIsMock, setCricketIsMock] = useState(true);
@@ -43,21 +45,23 @@ export default React.memo(function SystemSidebar({
       .catch(err => console.error('Failed to fetch cricket live data', err));
   }, []);
 
-  const context = (activeTab === 'sports' || activeTab === 'cricket') ? 'sports' :
-                  (activeTab === 'fifa' || activeTab === 'fifaAllScores') ? 'fifa' :
+  const isFootballCategory = selectedMenuCategory === 'Sports: Football' || selectedMenuCategory === 'Football';
+  
+  const context = (activeTab === 'fifa' || activeTab === 'fifaAllScores' || isFootballCategory) ? 'fifa' :
+                  (activeTab === 'sports' || activeTab === 'cricket') ? 'sports' :
                   'news';
 
   const [activeSidebarTab, setActiveSidebarTab] = useState('Highlights');
 
   useEffect(() => {
     if (context === 'sports') setActiveSidebarTab('Live');
-    else if (context === 'fifa') setActiveSidebarTab('Matches');
+    else if (context === 'fifa') setActiveSidebarTab('Live');
     else setActiveSidebarTab('Highlights');
   }, [context]);
 
-  let tabs = [];
+  let tabs: string[] = [];
   if (context === 'sports') tabs = ['Live', 'Upcoming', 'Saved'];
-  else if (context === 'fifa') tabs = ['Matches', 'Stats', 'Saved'];
+  else if (context === 'fifa') tabs = ['Live', 'Upcoming', 'Results', 'Stats'];
   else tabs = ['Highlights', 'Trending', 'Saved'];
 
   const filteredForSidebar = React.useMemo(() => {
@@ -101,8 +105,14 @@ export default React.memo(function SystemSidebar({
           <UpcomingFixturesCard />
         )}
 
-        {activeSidebarTab === 'Matches' && context === 'fifa' && (
-          <MatchResultsPanel setActiveTab={setActiveTab} activeTab={activeTab} />
+        {activeSidebarTab === 'Live' && context === 'fifa' && (
+          <MatchResultsPanel setActiveTab={setActiveTab} activeTab={activeTab} type="live" />
+        )}
+        {activeSidebarTab === 'Upcoming' && context === 'fifa' && (
+          <MatchResultsPanel setActiveTab={setActiveTab} activeTab={activeTab} type="upcoming" />
+        )}
+        {activeSidebarTab === 'Results' && context === 'fifa' && (
+          <MatchResultsPanel setActiveTab={setActiveTab} activeTab={activeTab} type="results" />
         )}
         {activeSidebarTab === 'Stats' && context === 'fifa' && (
           <TopScorersCard />
@@ -110,12 +120,24 @@ export default React.memo(function SystemSidebar({
 
         {activeSidebarTab === 'Highlights' && context === 'news' && (
           <>
-            <ThumbnailNewsCard relatedArticles={filteredForSidebar} handleOpenArticle={handleOpenArticle} failedImages={failedImages} />
-            <GoogleNewsPanel googleArticles={googleArticles} handleOpenArticle={handleOpenArticle} failedImages={failedImages} />
+            {activeTab === 'globalTv' ? (
+              <RecentVideosCard />
+            ) : (
+              <>
+                <ThumbnailNewsCard relatedArticles={filteredForSidebar} handleOpenArticle={handleOpenArticle} failedImages={failedImages} />
+                <GoogleNewsPanel googleArticles={googleArticles} handleOpenArticle={handleOpenArticle} failedImages={failedImages} />
+              </>
+            )}
           </>
         )}
         {activeSidebarTab === 'Trending' && context === 'news' && (
-          <TrendingTopicsCard relatedArticles={filteredForSidebar} handleOpenArticle={handleOpenArticle} failedImages={failedImages} />
+          <>
+            {activeTab === 'globalTv' ? (
+              <RecentSportVideosCard />
+            ) : (
+              <TrendingTopicsCard relatedArticles={filteredForSidebar} handleOpenArticle={handleOpenArticle} failedImages={failedImages} />
+            )}
+          </>
         )}
 
         {activeSidebarTab === 'Saved' && (
