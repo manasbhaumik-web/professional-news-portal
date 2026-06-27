@@ -145,6 +145,76 @@ export default function App() {
         return () => clearInterval(interval);
     }, [selectedMenuCategory, fetchFifaScores]);
 
+    // FIFA World Cup 2026 news feeds for Main Ad Banner
+    const [fifaNewsArticles, setFifaNewsArticles] = useState<NewsArticle[]>([]);
+
+    const FIFA_NEWS_FEEDS = useMemo(() => [
+        { name: 'BBC Sport - Football', flag: '🇬🇧', url: '/api/news/proxy?url=' + encodeURIComponent('http://feeds.bbci.co.uk/sport/football/rss.xml') },
+        { name: 'ESPN FC', flag: '🇺🇸', url: '/api/news/proxy?url=' + encodeURIComponent('https://www.espn.com/espn/rss/soccer/news') },
+        { name: 'Goal.com', flag: '⚽', url: '/api/news/proxy?url=' + encodeURIComponent('https://www.goal.com/feeds/en/news') },
+        { name: 'Reuters Sports', flag: '🌍', url: '/api/news/proxy?url=' + encodeURIComponent('https://feeds.reuters.com/reuters/sportsNews') },
+        { name: 'Sky Sports Football', flag: '🇬🇧', url: '/api/news/proxy?url=' + encodeURIComponent('https://www.skysports.com/rss/12040') },
+    ], []);
+
+    const FIFA_FALLBACK_ARTICLES: NewsArticle[] = useMemo(() => [
+        { id: 'fifa-hl-1', title: 'FIFA World Cup 2026: Everything You Need To Know', category: 'Sports', summary: 'The 2026 FIFA World Cup will be hosted jointly by the United States, Canada, and Mexico — the first World Cup with three host nations. 48 teams will compete for the title.', content: '', source: 'FIFA Official', date: 'Today', readTime: '3 min read', imageUrl: 'https://images.unsplash.com/photo-1522778119026-d647f0596c20?w=800&q=80', views: 5200, publishedAt: new Date().toISOString(), sportName: 'Football' },
+        { id: 'fifa-hl-2', title: 'USA, Canada & Mexico Prepare for Historic Joint World Cup 2026', category: 'Sports', summary: 'North America gears up for the largest World Cup in history, with 48 nations competing across 16 host cities in three countries for the first time ever.', content: '', source: 'ESPN', date: 'Today', readTime: '4 min read', imageUrl: 'https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?w=800&q=80', views: 4100, publishedAt: new Date(Date.now() - 3600000).toISOString(), sportName: 'Football' },
+        { id: 'fifa-hl-3', title: 'World Cup 2026 Group Stage: Shocking Results and Top Performers', category: 'Sports', summary: 'The group stage has produced upsets, drama and outstanding individual performances. Here are the key takeaways from the opening rounds.', content: '', source: 'BBC Sport', date: 'Today', readTime: '5 min read', imageUrl: 'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=800&q=80', views: 3800, publishedAt: new Date(Date.now() - 7200000).toISOString(), sportName: 'Football' },
+        { id: 'fifa-hl-4', title: 'Top Scorers & Stats at FIFA World Cup 2026', category: 'Sports', summary: "Who's leading the Golden Boot race? We break down the top scorers, assists, and key statistics from the group stages.", content: '', source: 'Goal.com', date: 'Today', readTime: '3 min read', imageUrl: 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=800&q=80', views: 3200, publishedAt: new Date(Date.now() - 10800000).toISOString(), sportName: 'Football' },
+        { id: 'fifa-hl-5', title: 'World Cup 2026: Bracket, Schedule & All Results', category: 'Sports', summary: 'Complete FIFA World Cup 2026 bracket, schedule, and live results — from the group stage through to the final in MetLife Stadium.', content: '', source: 'Sky Sports', date: 'Today', readTime: '4 min read', imageUrl: 'https://images.unsplash.com/photo-1555952497-c1285f3a0f2b?w=800&q=80', views: 2900, publishedAt: new Date(Date.now() - 14400000).toISOString(), sportName: 'Football' },
+    ], []);
+
+    const fetchFifaNews = useCallback(async () => {
+        const fifaKeywords = ['world cup', 'fifa', '2026', 'soccer', 'football championship', 'group stage', 'knockout', 'goal', 'match', 'squad'];
+        const allArticles: NewsArticle[] = [];
+
+        await Promise.allSettled(
+            FIFA_NEWS_FEEDS.map(async (feed) => {
+                try {
+                    const res = await fetch(feed.url);
+                    const data = await res.json();
+                    if (data.status === 'ok' && data.items) {
+                        const filtered = data.items.filter((item: any) => {
+                            const text = ((item.title || '') + ' ' + (item.description || '')).toLowerCase();
+                            return fifaKeywords.some(kw => text.includes(kw));
+                        });
+                        const items = filtered.length > 0 ? filtered : data.items.slice(0, 3);
+                        items.slice(0, 5).forEach((item: any, idx: number) => {
+                            allArticles.push({
+                                id: `fifa-feed-${feed.name}-${idx}-${Date.now()}`,
+                                title: item.title || 'No Title',
+                                category: 'Sports',
+                                summary: (item.description || item.content || '').replace(/<[^>]+>/g, '').substring(0, 200),
+                                content: item.content || item.description || '',
+                                source: feed.name,
+                                date: item.pubDate ? new Date(item.pubDate).toLocaleDateString() : 'Today',
+                                readTime: '3 min read',
+                                imageUrl: item.enclosure?.link || item.thumbnail || 'https://images.unsplash.com/photo-1522778119026-d647f0596c20?w=800&q=80',
+                                views: Math.floor(Math.random() * 3000) + 500,
+                                publishedAt: item.pubDate || new Date().toISOString(),
+                                originalUrl: item.link || '#',
+                                sportName: 'Football',
+                            });
+                        });
+                    }
+                } catch { /* silent fail for individual feeds */ }
+            })
+        );
+
+        if (allArticles.length > 0) {
+            allArticles.sort((a, b) => new Date(b.publishedAt || '').getTime() - new Date(a.publishedAt || '').getTime());
+            setFifaNewsArticles(allArticles);
+        } else {
+            setFifaNewsArticles(FIFA_FALLBACK_ARTICLES);
+        }
+    }, [FIFA_NEWS_FEEDS, FIFA_FALLBACK_ARTICLES]);
+
+    useEffect(() => {
+        if (activeTab === 'fifa' && fifaNewsArticles.length === 0) {
+            fetchFifaNews();
+        }
+    }, [activeTab, fifaNewsArticles.length, fetchFifaNews]);
+
     // Cricket API data for main app banner
     const [cricketMatches, setCricketMatches] = useState<any[]>([]);
     const [cricketLoading, setCricketLoading] = useState(false);
@@ -171,6 +241,7 @@ export default function App() {
     }, [selectedMenuCategory, activeTab, fetchCricketScores]);
 
     const [trendingArticles, setTrendingArticles] = useState<NewsArticle[]>([]);
+    const [categoryArticles, setCategoryArticles] = useState<NewsArticle[] | null>(null);
     const [personalizedBriefing, setPersonalizedBriefing] = useState<string>('');
     const [personalizedArticles, setPersonalizedArticles] = useState<NewsArticle[]>([]);
 
@@ -218,9 +289,39 @@ export default function App() {
         }
     }, []);
 
+    const fetchTopicNews = useCallback(async (topic: string) => {
+        setIsLoadingArticles(true);
+        setErrorFeedback(null);
+        try {
+            const res = await fetch(`/api/news/topic?q=${encodeURIComponent(topic)}`);
+            if (!res.ok) throw new Error("Failed to load topic stories");
+            const data = await res.json();
+            setCategoryArticles(data);
+        } catch (e: any) {
+            setErrorFeedback(e.message || "Failed to establish secure index connection.");
+            setCategoryArticles(null);
+        } finally {
+            setIsLoadingArticles(false);
+        }
+    }, []);
+
     useEffect(() => {
         fetchTrendingNews();
     }, [fetchTrendingNews]);
+
+    useEffect(() => {
+        if (selectedMenuCategory === 'All') {
+            setCategoryArticles(null);
+        } else {
+            let query = selectedMenuCategory;
+            if (query.startsWith('Region: ')) {
+                query = query.replace('Region: ', '');
+            }
+            // Temporarily clear old category articles to avoid flash of old content
+            setCategoryArticles(null);
+            fetchTopicNews(query);
+        }
+    }, [selectedMenuCategory, fetchTopicNews]);
 
     const handleGeneratePersonalFeed = useCallback(async () => {
         setIsGeneratingBriefing(true);
@@ -299,27 +400,31 @@ export default function App() {
     const googleTrending = useMemo(() => trendingArticles.filter(a => a.source?.toLowerCase().includes('google') || (a.originalUrl && a.originalUrl.includes('google.com'))), [trendingArticles]);
 
     const filteredTrending = useMemo(() => {
-        let list = nonGoogleTrending;
-        if (selectedMenuCategory.startsWith('Region:')) {
-            const region = selectedMenuCategory.split(':')[1].trim();
-            list = list.filter(art =>
-                art.title.toLowerCase().includes(region.toLowerCase()) ||
-                art.summary.toLowerCase().includes(region.toLowerCase()) ||
-                art.category.toLowerCase().includes(region.toLowerCase())
-            );
-        } else if (selectedMenuCategory === 'Global') {
-            const worldRegions = ['North America', 'Latin America', 'Europe', 'Arab', 'Sub-Saharan Africa', 'South Asia', 'South East Asia', 'East Asia', 'Oceania', 'Global'];
-            list = list.filter(art => worldRegions.includes(art.category));
-        } else if (selectedMenuCategory !== 'All') {
-            list = list.filter(art => art.category.toLowerCase() === selectedMenuCategory.toLowerCase());
+        let list = categoryArticles || nonGoogleTrending;
+        
+        if (!categoryArticles) {
+            if (selectedMenuCategory.startsWith('Region:')) {
+                const region = selectedMenuCategory.split(':')[1].trim();
+                list = list.filter(art =>
+                    art.title.toLowerCase().includes(region.toLowerCase()) ||
+                    art.summary.toLowerCase().includes(region.toLowerCase()) ||
+                    art.category.toLowerCase().includes(region.toLowerCase())
+                );
+            } else if (selectedMenuCategory === 'Global') {
+                const worldRegions = ['North America', 'Latin America', 'Europe', 'Arab', 'Sub-Saharan Africa', 'South Asia', 'South East Asia', 'East Asia', 'Oceania', 'Global'];
+                list = list.filter(art => worldRegions.includes(art.category));
+            } else if (selectedMenuCategory !== 'All') {
+                list = list.filter(art => art.category.toLowerCase() === selectedMenuCategory.toLowerCase());
+            }
         }
+
         if (!searchQuery) return list;
         return list.filter(art =>
             art.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
             art.summary.toLowerCase().includes(searchQuery.toLowerCase()) ||
             art.category.toLowerCase().includes(searchQuery.toLowerCase())
         );
-    }, [trendingArticles, selectedMenuCategory, searchQuery]);
+    }, [trendingArticles, categoryArticles, selectedMenuCategory, searchQuery]);
 
     const filteredPersonalized = useMemo(() => {
         let list = personalizedArticles;
@@ -456,14 +561,14 @@ export default function App() {
                             </div>
                         )}
                     </section>
-                ) : activeTab === 'cricket' || activeTab === 'fifa' || (activeTab === 'sports' && selectedMenuCategory === 'Sports: Cricket') ? (
+                ) : activeTab === 'cricket' || (activeTab === 'sports' && selectedMenuCategory === 'Sports: Cricket') ? (
                     <IccCricketBanner
                         activeTab={activeTab}
                         setActiveTab={setActiveTab}
                         cricketLoading={cricketLoading}
                         cricketMatches={cricketMatches}
                     />
-                ) : !['foryou', 'cricket', 'fifa', 'report'].includes(activeTab) ? (
+                ) : !['foryou', 'cricket', 'report'].includes(activeTab) ? (
                     (() => {
                         let catArticles = filteredTrending;
                         if (activeTab === 'business') catArticles = filteredTrending.filter(a => ['Business', 'Finance', 'Markets'].includes(a.category));
@@ -471,6 +576,9 @@ export default function App() {
                         if (activeTab === 'sports') catArticles = filteredTrending.filter(a => ['Sports', 'Athletics'].includes(a.category));
                         if (activeTab === 'scienceTech') catArticles = filteredTrending.filter(a => ['Technology', 'Science', 'Innovation', 'Tech'].includes(a.category));
                         if (activeTab === 'entertainment') catArticles = filteredTrending.filter(a => ['Entertainment', 'Culture', 'Arts', 'Lifestyle'].includes(a.category));
+                        if (activeTab === 'fifa') {
+                            catArticles = fifaNewsArticles.length > 0 ? fifaNewsArticles : FIFA_FALLBACK_ARTICLES;
+                        }
                         
                         const finalBanner = catArticles.length > 2 ? catArticles : filteredTrending;
                         return (

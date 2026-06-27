@@ -499,6 +499,70 @@ app.get("/api/news/trending", async (req, res) => {
   res.json(news);
 });
 
+// GET specific topic news (Google News Search RSS)
+app.get("/api/news/topic", async (req, res) => {
+  const topic = req.query.q as string;
+  if (!topic) return res.status(400).json({ error: "Missing topic query parameter" });
+
+  try {
+    const rssUrl = `https://news.google.com/rss/search?q=${encodeURIComponent(topic)}+news&hl=en-US&gl=US&ceid=US:en`;
+    const parsed = await parser.parseURL(rssUrl);
+    
+    // Define stripHtml locally just in case it wasn't extracted properly or we need it here
+    const localStripHtml = (html: string) => {
+      if (!html) return '';
+      return html.replace(/<[^>]*>?/gm, '').replace(/&nbsp;/g, ' ').replace(/&quot;/g, '"').replace(/&amp;/g, '&').replace(/&#147;/g, '"').replace(/&#148;/g, '"').replace(/&apos;/g, "'").trim();
+    };
+
+    const articles = parsed.items.slice(0, 30).map((item: any, idx) => {
+      let originalImage = null;
+      const isImageUrl = (url: string) => url && /\.(jpe?g|png|gif|webp)(\?.*)?$/i.test(url);
+      
+      if (item.mediaContent && item.mediaContent.$ && item.mediaContent.$.url) {
+        originalImage = item.mediaContent.$.url;
+      } else if (item.mediaContent && typeof item.mediaContent === 'string' && isImageUrl(item.mediaContent)) {
+        originalImage = item.mediaContent;
+      } else if (item.mediaThumbnail && item.mediaThumbnail.$ && item.mediaThumbnail.$.url) {
+        originalImage = item.mediaThumbnail.$.url;
+      } else if (item.mediaThumbnail && typeof item.mediaThumbnail === 'string' && isImageUrl(item.mediaThumbnail)) {
+        originalImage = item.mediaThumbnail;
+      } else if (item.image && item.image.url) {
+        originalImage = item.image.url;
+      }
+
+      if (!originalImage && (item.contentEncoded || item.content)) {
+          const htmlContent = item.contentEncoded || item.content;
+          const imgMatch = htmlContent?.match(/<img[^>]+src=["']([^"'>]+)["']/i);
+          if (imgMatch && imgMatch[1]) {
+            originalImage = imgMatch[1];
+          }
+      }
+
+      return {
+        id: `rss-topic-${Date.now()}-${idx}-${Math.random().toString(36).substr(2, 9)}`,
+        title: item.title || "No Title",
+        category: topic,
+        summary: localStripHtml(item.contentSnippet || item.content || "No summary available."),
+        content: localStripHtml(item.content || item.contentSnippet || "No detailed content available."),
+        source: parsed.title || "Global Network",
+        date: item.pubDate ? new Date(item.pubDate).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : "Just Now",
+        publishedAt: (item.pubDate && !isNaN(new Date(item.pubDate).getTime())) ? new Date(item.pubDate).toISOString() : new Date().toISOString(),
+        readTime: "3 min read",
+        imageUrl: originalImage || "https://images.unsplash.com/photo-1495020689067-958852a7765e?auto=format&fit=crop&w=800&q=80",
+        trendsUp: Math.random() > 0.5,
+        views: Math.floor(Math.random() * 8000) + 1200,
+        isAiGenerated: false,
+        originalUrl: item.link || undefined
+      };
+    });
+
+    res.json(articles);
+  } catch (error) {
+    console.error(`Error fetching topic ${topic}:`, error);
+    res.status(500).json({ error: "Failed to fetch topic news" });
+  }
+});
+
 // YouTube Video Caching
 let cachedVideos: any[] = [];
 let lastVideoFetchTime = 0;

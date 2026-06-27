@@ -243,8 +243,8 @@ export default function FifaWorldCupPage() {
                         key={src}
                         onClick={() => setActiveFilter(src)}
                         className={`px-3 py-1 text-[11px] font-mono font-bold uppercase tracking-wider transition-all border ${activeFilter === src
-                                ? 'bg-[#c9a84c] text-[#1a1a2e] border-[#c9a84c] shadow-[0_0_12px_rgba(201,168,76,0.4)]'
-                                : 'border-portal-border text-portal-text-muted hover:border-[#c9a84c]/50 hover:text-[#c9a84c]'
+                            ? 'bg-[#c9a84c] text-[#1a1a2e] border-[#c9a84c] shadow-[0_0_12px_rgba(201,168,76,0.4)]'
+                            : 'border-portal-border text-portal-text-muted hover:border-[#c9a84c]/50 hover:text-[#c9a84c]'
                             }`}
                     >
                         {src === 'All' ? `All Sources (${articles.length})` : src}
@@ -361,8 +361,8 @@ export default function FifaWorldCupPage() {
                 <div className="flex flex-wrap gap-3">
                     {FIFA_FEEDS.map(feed => (
                         <div key={feed.name} className={`flex items-center gap-2 text-[11px] font-mono px-3 py-1.5 border ${loadedSources.includes(feed.name)
-                                ? 'border-green-500/30 bg-green-500/5 text-green-500'
-                                : 'border-portal-border text-portal-text-muted'
+                            ? 'border-green-500/30 bg-green-500/5 text-green-500'
+                            : 'border-portal-border text-portal-text-muted'
                             }`}>
                             <span>{feed.flag}</span>
                             <span>{feed.name}</span>
