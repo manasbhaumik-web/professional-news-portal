@@ -2,6 +2,7 @@ import React from 'react';
 import { NewsArticle } from '../types';
 import ArticleCard from '../components/ArticleCard';
 import MoreFromWire from '../components/MoreFromWire';
+import GoogleNewsSection from '../components/GoogleNewsSection';
 import { Flame } from 'lucide-react';
 
 interface PoliticsPageProps {
@@ -17,23 +18,20 @@ interface PoliticsPageProps {
 
 const POLITICS_FEEDS: Record<string, { source: string; url: string; subCategory: string }[]> = {
  All: [
- { source: 'Google News', url: 'https://news.google.com/rss/headlines/section/topic/NATION?hl=en-US&gl=US&ceid=US:en', subCategory: 'General' },
  { source: 'BBC Politics', url: 'http://feeds.bbci.co.uk/news/politics/rss.xml', subCategory: 'Global Politics' },
  { source: 'NYT Politics', url: 'https://rss.nytimes.com/services/xml/rss/nyt/Politics.xml', subCategory: 'General' }
  ],
  'Global Politics': [
- { source: 'BBC Politics', url: 'http://feeds.bbci.co.uk/news/politics/rss.xml', subCategory: 'Global Politics' },
- { source: 'Google News Global Politics', url: 'https://news.google.com/rss/search?q=Global+Politics', subCategory: 'Global Politics' }
+ { source: 'BBC Politics', url: 'http://feeds.bbci.co.uk/news/politics/rss.xml', subCategory: 'Global Politics' }
  ],
  'Local Politics': [
- { source: 'Google News Local Politics', url: 'https://news.google.com/rss/headlines/section/topic/NATION?hl=en-US&gl=US&ceid=US:en', subCategory: 'Local Politics' },
  { source: 'NYT Politics', url: 'https://rss.nytimes.com/services/xml/rss/nyt/Politics.xml', subCategory: 'Local Politics' }
  ],
  Elections: [
- { source: 'Google News Elections', url: 'https://news.google.com/rss/search?q=Elections', subCategory: 'Elections' }
+ // No direct RSS found, relying on curated feed 
  ],
  Policy: [
- { source: 'Google News Policy', url: 'https://news.google.com/rss/search?q=Public+Policy', subCategory: 'Policy' }
+ // No direct RSS found, relying on curated feed
  ]
 };
 
@@ -54,9 +52,7 @@ export default function PoliticsPage({ articles, selectedCategoryFromMenu, handl
  const fetchCategoryFeed = async () => {
  setIsLoading(true);
  try {
- const feedsToFetch = POLITICS_FEEDS[selectedCategoryFromMenu] || [
- { source: 'Google News', url: `https://news.google.com/rss/search?q=${encodeURIComponent(selectedCategoryFromMenu + ' Politics')}`, subCategory: selectedCategoryFromMenu }
- ];
+ const feedsToFetch = POLITICS_FEEDS[selectedCategoryFromMenu] || [];
 
  const fetchPromises = feedsToFetch.map(async (feed) => {
  try {
@@ -129,8 +125,13 @@ export default function PoliticsPage({ articles, selectedCategoryFromMenu, handl
         return timeB - timeA;
     }).filter((art, idx, self) => idx === self.findIndex(a => a.title.toLowerCase().trim() === art.title.toLowerCase().trim()));
 
-    const displayArticles = allSorted.slice(0, 10);
-    const overflowArticles = allSorted.slice(10);
+    const isGoogle = (art: NewsArticle) => art.source?.toLowerCase().includes('google') || art.url?.includes('news.google.com');
+    const nonGoogle = allSorted.filter(art => !isGoogle(art));
+    const googleArticles = allSorted.filter(art => isGoogle(art));
+
+    const displayArticles = nonGoogle.slice(0, 10);
+    const overflowArticles = nonGoogle.slice(43);
+    const displayGoogleArticles = googleArticles.slice(0, 40);
 
     return (
  <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -176,10 +177,23 @@ export default function PoliticsPage({ articles, selectedCategoryFromMenu, handl
                     handleOpenArticle={handleOpenArticle}
                     toggleBookmark={toggleBookmark}
                     bookmarks={bookmarks}
-                    failedImages={failedImages}
-                    setFailedImages={setFailedImages}
+                    failedImages={failedImages || []}
+                    setFailedImages={setFailedImages || (() => {})}
+                />
+            )}
+
+            {nonGoogle.length === 0 && displayGoogleArticles.length > 0 && (
+                <GoogleNewsSection
+                    articles={displayGoogleArticles}
+                    handleOpenArticle={handleOpenArticle}
+                    toggleBookmark={toggleBookmark}
+                    bookmarks={bookmarks}
+                    failedImages={failedImages || []}
+                    setFailedImages={setFailedImages || (() => {})}
                 />
             )}
         </div>
     );
 }
+
+

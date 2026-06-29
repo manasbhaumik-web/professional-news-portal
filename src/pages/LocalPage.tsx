@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { MapPin, Users, CloudRain, AlertTriangle, Calendar, ChevronRight, Activity, Clock, MoreHorizontal, Globe, ThumbsUp, MessageCircle, Share2, Rss, Sun, Cloud, CloudFog, Snowflake, CloudLightning, Loader2 } from 'lucide-react';
+import { MapPin, Users, CloudRain, AlertTriangle, Calendar, ChevronRight, Activity, Clock, MoreHorizontal, Globe, ThumbsUp, MessageCircle, Share2, Rss, Sun, Cloud, CloudFog, Snowflake, CloudLightning, Loader2, Map } from 'lucide-react';
 import ArticleCard from '../components/ArticleCard';
 import { NewsArticle } from '../types';
 import MoreFromWire from '../components/MoreFromWire';
 import CommunityMap from '../components/CommunityMap';
+import GoogleNewsSection from '../components/GoogleNewsSection';
 
 interface LocalPageProps {
  theme: 'dark' | 'light' | 'sepia';
@@ -115,7 +116,7 @@ export default function LocalPage({
  sportName: feed.name, // using sportName to show source nicely if needed
  source: feed.name,
  publishedAt: (item.pubDate && !isNaN(new Date(item.pubDate).getTime())) ? new Date(item.pubDate).toISOString() : new Date().toISOString(),
- timeAgo: item.pubDate ? new Date(item.pubDate).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'Live',
+ timeAgo: (item.pubDate && !isNaN(new Date(item.pubDate).getTime())) ? new Date(item.pubDate).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'Live',
  readTime: '3 min read',
  url: item.link
  }));
@@ -156,11 +157,7 @@ export default function LocalPage({
  const cardBgClass = isDark ? 'bg-[#14161B]' : isSepia ? 'bg-[#FAF6EE]' : 'bg-white';
 
  const combinedArticles = [...liveArticles, ...articles.filter(art => art.title.toLowerCase().includes(locationName.toLowerCase()) || art.category === 'Local')];
- const allSorted = combinedArticles.sort((a, b) => {
- const timeA = new Date(a.publishedAt || a.date || Date.now()).getTime();
- const timeB = new Date(b.publishedAt || b.date || Date.now()).getTime();
- return timeB - timeA;
- }).filter((art, idx, self) => idx === self.findIndex(a => a.title.toLowerCase().trim() === art.title.toLowerCase().trim()));
+ const allSorted = combinedArticles.filter((art, idx, self) => idx === self.findIndex(a => a.title.toLowerCase().trim() === art.title.toLowerCase().trim()));
 
  const filteredByCategory = activeCategory === "All" ? allSorted : allSorted.filter(art => {
      const text = (art.title + " " + (art.summary || "") + " " + (art.content || "")).toLowerCase();
@@ -171,26 +168,13 @@ export default function LocalPage({
      return true;
  });
 
- const displayArticles = filteredByCategory.slice(0, visibleCount);
+    const isGoogle = (art: NewsArticle) => art.source?.toLowerCase().includes('google') || art.url?.includes('news.google.com');
+    const nonGoogle = filteredByCategory.filter(art => !isGoogle(art));
+    const googleArticles = filteredByCategory.filter(art => isGoogle(art));
 
- useEffect(() => {
-   const observer = new IntersectionObserver(
-     entries => {
-       if (entries[0].isIntersecting) {
-         setVisibleCount(prev => prev + 10);
-       }
-     },
-     { threshold: 0.1 }
-   );
-   if (observerTarget.current) {
-     observer.observe(observerTarget.current);
-   }
-   return () => {
-     if (observerTarget.current) {
-       observer.unobserve(observerTarget.current);
-     }
-   };
- }, [observerTarget, displayArticles]);
+    const mainDisplayArticles = nonGoogle.slice(0, 10);
+    const overflowArticles = nonGoogle.slice(43);
+    const displayGoogleArticles = googleArticles.slice(0, 40);
 
  const WeatherIcon = weatherData?.iconType === "Sun" ? Sun :
                      weatherData?.iconType === "Cloud" ? Cloud :
@@ -279,7 +263,7 @@ export default function LocalPage({
  </h3>
  </div>
  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 auto-rows-auto">
- {isLiveLoading && displayArticles.length === 0 ? (
+ {isLiveLoading && mainDisplayArticles.length === 0 ? (
    Array.from({ length: 4 }).map((_, i) => (
      <div key={i} className={`p-5 border ${borderClass} ${cardBgClass} flex flex-col sm:flex-row gap-5 animate-pulse`}>
        <div className={`w-full sm:w-36 h-28 shrink-0 bg-neutral-200 dark:bg-zinc-800`}></div>
@@ -291,26 +275,46 @@ export default function LocalPage({
      </div>
    ))
  ) : (
- displayArticles.map((art, idx) => (
- <ArticleCard
- key={art.id}
- index={idx}
- art={art}
- handleOpenArticle={handleOpenArticle}
- toggleBookmark={toggleBookmark}
- isBookmarked={bookmarks.includes(art.id)}
- failedImages={failedImages}
- setFailedImages={setFailedImages}
- />
- ))
- )}
- </div>
- 
-             {filteredByCategory.length > visibleCount && (
-                <div ref={observerTarget} className="col-span-full h-20 flex items-center justify-center mt-4">
-                  <Loader2 className="animate-spin text-portal-brand" size={24} />
+  mainDisplayArticles.map((art, idx) => (
+  <ArticleCard
+  key={art.id}
+  index={idx}
+  art={art}
+  handleOpenArticle={handleOpenArticle}
+  toggleBookmark={toggleBookmark}
+  isBookmarked={bookmarks.includes(art.id)}
+  failedImages={failedImages}
+  setFailedImages={setFailedImages}
+  />
+  ))
+  )}
+  </div>
+  
+            {overflowArticles.length > 0 && (
+                <div className="mt-8">
+                    <MoreFromWire 
+                        articles={overflowArticles} 
+                        handleOpenArticle={handleOpenArticle}
+                        toggleBookmark={toggleBookmark}
+                        bookmarks={bookmarks}
+                        failedImages={failedImages || []}
+                        setFailedImages={setFailedImages || (() => {})}
+                    />
                 </div>
-             )}
+            )}
+
+            {nonGoogle.length === 0 && displayGoogleArticles.length > 0 && (
+                <div className="mt-8">
+                    <GoogleNewsSection
+                        articles={displayGoogleArticles}
+                        handleOpenArticle={handleOpenArticle}
+                        toggleBookmark={toggleBookmark}
+                        bookmarks={bookmarks}
+                        failedImages={failedImages || []}
+                        setFailedImages={setFailedImages || (() => {})}
+                    />
+                </div>
+            )}
          </div>
      </div>
  ) : (
@@ -333,3 +337,5 @@ export default function LocalPage({
  </div>
  );
 }
+
+

@@ -36,66 +36,49 @@ export default React.memo(function IccCricketBanner({
  let team2Name = "Team 2";
  let team2Score = "-";
 
- if (game.score) {
- const parts = game.score.split(/ - | v /);
- if (parts.length === 2) {
- const t1 = parts[0].trim();
- const t2 = parts[1].trim();
-
- const p1 = t1.lastIndexOf(' ');
- if (p1 > 0) {
- team1Name = t1.substring(0, p1);
- team1Score = t1.substring(p1 + 1);
- } else {
- team1Name = t1;
- team1Score = "";
- }
-
- const p2 = t2.lastIndexOf(' ');
- if (p2 > 0) {
- team2Name = t2.substring(0, p2);
- team2Score = t2.substring(p2 + 1);
- } else {
- team2Name = t2;
- team2Score = "";
- }
- } else {
- team1Name = game.score;
- team1Score = "";
- team2Name = "";
- team2Score = "";
- }
- } else {
- team1Name = "Score not available";
- team1Score = "";
- team2Name = "";
- team2Score = "";
- }
+  if (game.score && Array.isArray(game.score)) {
+   if (game.score.length > 0) {
+     team1Name = game.score[0].team || "Team 1";
+     team1Score = game.score[0].score || "-";
+   }
+   if (game.score.length > 1) {
+     team2Name = game.score[1].team || "Team 2";
+     team2Score = game.score[1].score || "-";
+   }
+  } else {
+   team1Name = "Score not available";
+   team1Score = "";
+   team2Name = "";
+   team2Score = "";
+  }
 
  return (
- <div key={idx} className="flex flex-col bg-portal-bg p-3.5 border border-portal-border shadow-sm min-w-[280px]">
- <div className="flex flex-col w-full">
- <div className="flex items-center gap-1.5 mb-2 border-b border-portal-border/40 pb-1.5">
- {game.matchType && <span className="text-[9px] font-bold text-portal-text-main bg-portal-surface px-1.5 py-0.5 uppercase">{game.matchType}</span>}
- <span className="text-[10px] text-portal-text-muted font-mono line-clamp-1">{game.title}</span>
+ <div key={idx} className="flex flex-col bg-white p-2.5 sm:p-3 rounded-lg shadow-sm min-w-[260px] border border-gray-100 hover:border-gray-200 transition-colors">
+ <div className="flex items-center justify-between mb-1.5">
+ <span className="text-[9px] text-gray-500 font-mono tracking-tight line-clamp-1 pr-2">{game.title}</span>
+ {game.matchType && (
+ <span className="text-[8px] font-bold text-indigo-600 bg-indigo-50 px-1.5 py-0.5 rounded uppercase tracking-wider">
+ {game.matchType}
+ </span>
+ )}
  </div>
 
- <div className="flex flex-col gap-2 py-1.5">
+ <div className="flex flex-col gap-1 my-1">
  <div className="flex justify-between items-center w-full">
- <span className="font-bold text-[13px] text-portal-text-main">{team1Name}</span>
- <span className="font-bold text-[13px] text-portal-text-main">{team1Score}</span>
+ <span className="font-bold text-[11px] text-gray-800 line-clamp-1 pr-2">{team1Name}</span>
+ <span className="font-bold text-[12px] text-blue-600 font-mono shrink-0">{team1Score}</span>
  </div>
+ 
  {(team2Name || team2Score) && (
  <div className="flex justify-between items-center w-full">
- <span className="font-bold text-[13px] text-portal-text-main">{team2Name}</span>
- <span className="font-bold text-[13px] text-portal-text-main">{team2Score}</span>
+ <span className="font-bold text-[11px] text-gray-800 line-clamp-1 pr-2">{team2Name}</span>
+ <span className="font-bold text-[12px] text-orange-500 font-mono shrink-0">{team2Score}</span>
  </div>
  )}
  </div>
 
- <div className="mt-2 text-[11px] font-bold text-blue-500 w-full pt-1.5 border-t border-portal-border/40">
- {game.status}
- </div>
+ <div className="text-[9px] font-bold text-gray-600 w-full mt-1.5 pt-1.5 border-t border-gray-100 flex items-center justify-between">
+ <span className="line-clamp-1 text-indigo-500">{game.status}</span>
  </div>
  </div>
  );

@@ -39,7 +39,7 @@ export default function ChannelsNav({
     };
 
     return (
-        <div id="channels-navigation-menu" className="border-b transition-all py-2.5 px-4 sm:px-8 bg-portal-bg/95 border-portal-border/50 text-portal-text-main">
+        <nav id="channels-navigation-menu" className="border-b transition-all py-2.5 px-4 sm:px-8 bg-portal-bg/95 border-portal-border/50 text-portal-text-main" aria-label="Main Channel Navigation">
             <div className="flex items-center justify-between max-w-7xl mx-auto w-full">
                 <div className="flex flex-wrap items-center gap-y-3 gap-x-2 w-full">
 
@@ -56,7 +56,7 @@ export default function ChannelsNav({
                         {/* Mega Dropdown */}
                         <div className={`absolute left-0 top-[120%] w-[1100px] max-w-[95vw] bg-portal-bg/95 backdrop-blur-xl border border-portal-border/50 rounded-none shadow-[0_8px_30px_rgb(0,0,0,0.12)] transition-all duration-300 origin-top-left overflow-hidden z-50 ${!forceClose ? 'opacity-0 scale-95 invisible group-hover/allchannels:opacity-100 group-hover/allchannels:scale-100 group-hover/allchannels:visible' : 'opacity-0 scale-95 invisible'}`}>
                             <div className="p-6 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 xl:gap-6">
-                                
+
                                 {/* Regions Column */}
                                 <div className="flex flex-col">
                                     <div className="px-1 py-2 text-[10px] font-mono tracking-widest uppercase text-portal-text-muted mb-2 flex items-center gap-2 border-b border-portal-border/30">
@@ -116,15 +116,15 @@ export default function ChannelsNav({
                     <div className="flex flex-wrap items-center gap-1.5 flex-1">
                     </div>
 
-                    {/* FIFA Link on right side */}
+                    {/* FIFA Link on right side (Promotional Shortcut) */}
                     <button
-                        onClick={() => { setActiveTab('fifa'); setSelectedMenuCategory('All'); }}
-                        className={`px-4 py-1.5 text-[13px] font-normal rounded-none transition-all duration-300 flex items-center gap-2 cursor-pointer ${activeTab === 'fifa'
-                            ? 'bg-gradient-to-r from-[#c9a84c] to-[#e6cf8b] text-black transform scale-105'
-                            : 'bg-portal-surface hover:bg-[#c9a84c]/10 text-portal-text-main hover:text-[#c9a84c] border border-portal-border hover:border-[#c9a84c]/50'
+                        onClick={() => { setActiveTab('sports'); setSelectedMenuCategory('Sports: Football'); }}
+                        className={`px-4 py-1.5 text-[13px] font-normal rounded-none transition-all duration-300 flex items-center gap-2 cursor-pointer ${(activeTab === 'sports' && selectedMenuCategory === 'Sports: Football') || activeTab === 'fifa'
+                                ? 'bg-gradient-to-r from-[#c9a84c] to-[#e6cf8b] text-black transform scale-105'
+                                : 'bg-portal-surface hover:bg-[#c9a84c]/10 text-portal-text-main hover:text-[#c9a84c] border border-portal-border hover:border-[#c9a84c]/50'
                             }`}
                     >
-                        <Trophy size={14} className={activeTab === 'fifa' ? 'text-black' : 'text-[#c9a84c]'} />
+                        <Trophy size={14} className={((activeTab === 'sports' && selectedMenuCategory === 'Sports: Football') || activeTab === 'fifa') ? 'text-black' : 'text-[#c9a84c]'} />
                         FIFA 2026
                     </button>
 
@@ -161,6 +161,6 @@ export default function ChannelsNav({
                     </div>
                 </div>
             </div>
-        </div>
+        </nav>
     );
 }

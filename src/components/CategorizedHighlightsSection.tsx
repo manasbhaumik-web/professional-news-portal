@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { NewsArticle } from '../types';
 import { Landmark, Briefcase, Activity, Rocket } from 'lucide-react';
+import { BrandLogoPlaceholder } from './BrandLogoPlaceholder';
 
 interface CategorizedHighlightsSectionProps {
     articles: NewsArticle[];
@@ -15,6 +16,8 @@ const CATEGORIES = [
 ];
 
 export default function CategorizedHighlightsSection({ articles, handleOpenArticle }: CategorizedHighlightsSectionProps) {
+    const [failedImages, setFailedImages] = useState<string[]>([]);
+    
     if (!articles || articles.length === 0) return null;
 
     // Find the top article for each category
@@ -57,13 +60,21 @@ export default function CategorizedHighlightsSection({ articles, handleOpenArtic
                                 {category.id}
                             </div>
                             
-                            <div className="h-28 w-full overflow-hidden relative bg-portal-bg shrink-0">
-                                <img 
-                                    src={article.imageUrl || 'https://images.unsplash.com/photo-1588681664899-f142ff2dc9b1?w=800&q=80'} 
-                                    alt={article.title}
-                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                                    onError={(e) => { (e.target as HTMLImageElement).style.opacity = '0.3'; }}
-                                />
+                            <div className="h-28 w-full overflow-hidden relative bg-portal-bg shrink-0 flex items-center justify-center">
+                                {article.imageUrl && !failedImages.includes(article.id) ? (
+                                    <img 
+                                        src={article.imageUrl} 
+                                        alt={article.title}
+                                        referrerPolicy="no-referrer"
+                                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                        onError={(e) => { 
+                                            (e.target as HTMLImageElement).style.opacity = '0.3';
+                                            if (setFailedImages) setFailedImages((prev: string[]) => [...prev, article.id]);
+                                        }}
+                                    />
+                                ) : (
+                                    <BrandLogoPlaceholder article={article} iconSizeClass="w-12 h-12" textSizeClass="text-3xl" textMarginClass="mt-1" />
+                                )}
                                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent pointer-events-none"></div>
                             </div>
                             

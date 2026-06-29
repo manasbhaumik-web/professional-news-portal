@@ -54,24 +54,40 @@ export function OngoingIccSeriesCard({ cricketIsMock, cricketMatches }: { cricke
  </span>
  </div>
  )}
- {cricketMatches.map((series, idx) => (
- <div key={idx} className="flex gap-3 cursor-pointer group p-2 -m-2 hover:bg-blue-500/5 transition-colors border border-transparent hover:border-blue-500/10">
- <div className="mt-1 shrink-0 w-1.5 h-1.5 bg-blue-500"></div>
- <div className="text-xs w-full pr-2">
- <p className="font-semibold leading-snug text-portal-text-main group-hover:text-blue-500 transition-colors">{series.title}</p>
- {series.score && (
- <p className="text-[11px] font-mono text-blue-400 mt-1 mb-0.5 font-bold tracking-tight">{series.score}</p>
+ {cricketMatches.length === 0 ? (
+  <div className="text-center py-6 text-[10px] font-mono text-portal-text-muted/60 border border-dashed border-blue-500/20 m-2">
+   No live cricket matches right now.
+  </div>
+ ) : (
+  cricketMatches.map((series, idx) => (
+  <div key={idx} className="flex gap-3 cursor-pointer group p-2 -m-2 hover:bg-blue-500/5 transition-colors border border-transparent hover:border-blue-500/10">
+  <div className="mt-1 shrink-0 w-1.5 h-1.5 bg-blue-500"></div>
+  <div className="text-xs w-full pr-2">
+  <p className="font-semibold leading-snug text-portal-text-main group-hover:text-blue-500 transition-colors">{series.title}</p>
+  {series.score && Array.isArray(series.score) && series.score.length > 0 && (
+  <div className="text-[11px] font-mono text-blue-400 mt-1 mb-0.5 font-bold tracking-tight space-y-0.5">
+    {series.score.map((s: any, i: number) => (
+      <div key={i} className="flex justify-between">
+        <span>{s.team}</span>
+        <span>{s.score}</span>
+      </div>
+    ))}
+  </div>
+  )}
+  <p className="text-[10px] font-mono text-portal-text-muted mt-0.5">{series.matchType || series.matches} • <span className="text-portal-text-main/70">{series.status}</span></p>
+  </div>
+  </div>
+  ))
  )}
- <p className="text-[10px] font-mono text-portal-text-muted mt-0.5">{series.matches} • <span className="text-portal-text-main/70">{series.status}</span></p>
- </div>
- </div>
- ))}
  </div>
  </section>
  );
 }
 
 export function BreakingNewsTicker({ relatedArticles, handleOpenArticle }: { relatedArticles: NewsArticle[], handleOpenArticle: (art: NewsArticle) => void }) {
+ const breakingArticles = relatedArticles.filter(art => art.is_breaking).slice(0, 10);
+ if (breakingArticles.length === 0) return null;
+
  return (
  <div id="breaking-news-ticker-fullwidth" className="w-full flex border-b border-red-500/20 bg-portal-surface overflow-hidden relative h-12 group">
   <div className="absolute top-0 right-0 w-32 h-32 bg-red-500/5 blur-2xl -mr-10 -mt-10 pointer-events-none"></div>
@@ -85,21 +101,7 @@ export function BreakingNewsTicker({ relatedArticles, handleOpenArticle }: { rel
         <div className="flex-grow relative z-10 h-12 overflow-hidden flex items-center group/ticker bg-red-500/5">
             <div className="animate-horizontal-ticker group-hover/ticker:pause">
                 {/* Duplicate the list to create a seamless loop */}
-                {[...relatedArticles
-                    .filter(art => {
-                        if (!art.publishedAt) return true;
-                        const diff = Date.now() - new Date(art.publishedAt).getTime();
-                        return diff <= 3 * 60 * 60 * 1000;
-                    })
-                    .slice(0, 10),
-                 ...relatedArticles
-                    .filter(art => {
-                        if (!art.publishedAt) return true;
-                        const diff = Date.now() - new Date(art.publishedAt).getTime();
-                        return diff <= 3 * 60 * 60 * 1000;
-                    })
-                    .slice(0, 10)
-                ].map((art, i) => (
+                {[...breakingArticles, ...breakingArticles].map((art, i) => (
                     <div
                         key={`${art.id}-${i}`}
                         onClick={() => handleOpenArticle(art)}
@@ -157,6 +159,17 @@ export function BookmarkedArticlesCard({
 }
 
 export function UpcomingFixturesCard() {
+ const [fixtures, setFixtures] = useState<any[]>([]);
+ 
+ useEffect(() => {
+  fetch('/api/cricket/fixtures')
+   .then(res => res.json())
+   .then(data => {
+     setFixtures(data.matches?.slice(0, 4) || []);
+   })
+   .catch(err => console.error(err));
+ }, []);
+
  return (
  <section id="upcoming-matches-card" className="border-2 p-5 transition-all bg-portal-surface border-blue-500/30 shadow-lg shadow-blue-500/10 relative overflow-hidden">
  <div className="absolute -bottom-10 -right-10 w-40 h-40 bg-blue-500/5 blur-2xl pointer-events-none"></div>
@@ -165,57 +178,78 @@ export function UpcomingFixturesCard() {
  UPCOMING FIXTURES
  </h3>
  <div className="space-y-3 relative z-10">
- {[
- { team1: 'IND', team2: 'SL', date: 'Tomorrow, 14:00 GMT', format: '3rd T20I' },
- { team1: 'SA', team2: 'WI', date: 'Jun 16, 10:00 GMT', format: '1st ODI' },
- { team1: 'ENG', team2: 'PAK', date: 'Jun 18, 18:30 GMT', format: '1st T20I' },
- { team1: 'AUS', team2: 'NZ', date: 'Jun 20, 00:30 GMT', format: '2nd Test' }
- ].map((match, idx) => (
- <div key={idx} className="group cursor-pointer border-l-4 border-blue-500/30 pl-3 py-2.5 -ml-2 hover:bg-blue-500/5 hover:border-blue-500 transition-all border border-transparent hover:border-y-blue-500/10 hover:border-r-blue-500/10 hover:shadow-sm">
- <div className="text-[10px] font-mono text-blue-500 mb-0.5 font-bold tracking-widest">{match.format}</div>
- <div className="text-xs font-semibold group-hover:text-blue-500 transition-colors text-portal-text-main">{match.team1} vs {match.team2}</div>
- <div className="text-[10px] italic mt-1 text-portal-text-muted opacity-80">{match.date}</div>
- </div>
- ))}
+  {fixtures.length === 0 ? (
+   <div className="text-center py-6 text-[10px] font-mono text-portal-text-muted/60 border border-dashed border-blue-500/20">
+    No upcoming fixtures available.
+   </div>
+  ) : (
+   fixtures.map((match: any, idx: number) => (
+   <div key={idx} className="group cursor-pointer border-l-4 border-blue-500/30 pl-3 py-2.5 -ml-2 hover:bg-blue-500/5 hover:border-blue-500 transition-all border border-transparent hover:border-y-blue-500/10 hover:border-r-blue-500/10 hover:shadow-sm">
+   <div className="text-[10px] font-mono text-blue-500 mb-0.5 font-bold tracking-widest">{match.matchType || match.format}</div>
+   <div className="text-xs font-semibold group-hover:text-blue-500 transition-colors text-portal-text-main">{match.title || `${match.team1} vs ${match.team2}`}</div>
+   <div className="text-[10px] italic mt-1 text-portal-text-muted opacity-80">{match.date}</div>
+   </div>
+   ))
+  )}
  </div>
  </section>
  );
 }
 
 export function TopScorersCard() {
+ const [scorers, setScorers] = React.useState<any[]>([]);
+ const [isMock, setIsMock] = React.useState(false);
+ const [isLoading, setIsLoading] = React.useState(true);
+
+ React.useEffect(() => {
+  fetch('/api/football/wc2026/scorers')
+   .then(res => res.json())
+   .then(data => {
+     setScorers(data.scorers?.slice(0, 4) || []);
+     setIsMock(data.isMock || false);
+   })
+   .catch(err => console.error('Failed to fetch top scorers', err))
+   .finally(() => setIsLoading(false));
+ }, []);
+
  return (
  <section id="top-scorers-card" className="border-2 p-5 transition-all bg-portal-surface border-[#c9a84c]/30 shadow-lg shadow-[#c9a84c]/10 relative overflow-hidden">
  <div className="absolute -bottom-10 -right-10 w-40 h-40 bg-[#c9a84c]/5 blur-2xl pointer-events-none"></div>
- <h3 className="text-xs font-bold font-mono tracking-wider uppercase mb-4 text-[#c9a84c] relative z-10 flex items-center">
- <span className="w-1.5 h-4 bg-[#c9a84c] mr-2"></span>
- TOP GOAL SCORERS
- </h3>
+ <div className="flex justify-between items-center mb-4 relative z-10">
+  <h3 className="text-xs font-bold font-mono tracking-wider uppercase text-[#c9a84c] flex items-center">
+  <span className="w-1.5 h-4 bg-[#c9a84c] mr-2"></span>
+  TOP GOAL SCORERS
+  </h3>
+  {isMock && !isLoading && (
+      <span className="text-[9px] uppercase tracking-widest font-mono bg-yellow-500/20 text-yellow-500 px-1.5 py-0.5 border border-yellow-500/30">Mock</span>
+  )}
+ </div>
  <div className="space-y-3 relative z-10">
- {[
- { name: 'Kylian Mbappé', team: 'France', goals: 8, flag: 'fr' },
- { name: 'Lionel Messi', team: 'Argentina', goals: 7, flag: 'ar' },
- { name: 'Julián Álvarez', team: 'Argentina', goals: 4, flag: 'ar' },
- { name: 'Olivier Giroud', team: 'France', goals: 4, flag: 'fr' }
- ].map((scorer, idx) => (
- <div key={idx} className="group flex items-center justify-between border-l-4 border-[#c9a84c]/30 pl-3 py-2.5 -ml-2 hover:bg-[#c9a84c]/5 hover:border-[#c9a84c] transition-all border border-transparent hover:border-y-[#c9a84c]/10 hover:border-r-[#c9a84c]/10 hover:shadow-sm">
- <div>
- <div className="text-[10px] font-mono text-[#c9a84c] mb-0.5 font-bold tracking-widest">{idx + 1} • {scorer.team}</div>
- <div className="text-xs font-semibold group-hover:text-[#c9a84c] transition-colors text-portal-text-main">{scorer.name}</div>
- </div>
- <div className="text-lg font-black font-mono text-[#c9a84c]">{scorer.goals}</div>
- </div>
- ))}
+ {scorers.length > 0 ? (
+  scorers.map((scorer, idx) => (
+  <div key={idx} className="group flex items-center justify-between border-l-4 border-[#c9a84c]/30 pl-3 py-2.5 -ml-2 hover:bg-[#c9a84c]/5 hover:border-[#c9a84c] transition-all border border-transparent hover:border-y-[#c9a84c]/10 hover:border-r-[#c9a84c]/10 hover:shadow-sm">
+  <div>
+  <div className="text-[10px] font-mono text-[#c9a84c] mb-0.5 font-bold tracking-widest">{idx + 1} • {scorer.team}</div>
+  <div className="text-xs font-semibold group-hover:text-[#c9a84c] transition-colors text-portal-text-main">{scorer.name}</div>
+  </div>
+  <div className="text-lg font-black font-mono text-[#c9a84c]">{scorer.goals}</div>
+  </div>
+  ))
+ ) : !isLoading ? (
+  <div className="text-center py-6 text-xs font-mono text-portal-text-muted/60 border border-dashed border-[#c9a84c]/20">
+   No stats available yet.
+  </div>
+ ) : null}
  </div>
  </section>
  );
 }
 
+import { BrandLogoPlaceholder } from './BrandLogoPlaceholder';
+
 export function ThumbnailNewsCard({ relatedArticles, handleOpenArticle, failedImages = [] }: { relatedArticles: NewsArticle[], handleOpenArticle: (art: NewsArticle) => void, failedImages?: string[] }) {
- const validArticles = [...relatedArticles].filter(a => a.imageUrl && !failedImages.includes(a.id)).slice(0, 6);
+ const validArticles = [...relatedArticles].slice(0, 12);
  if (validArticles.length === 0) return null;
- 
- const heroArticle = validArticles[0];
- const listArticles = validArticles.slice(1);
 
  return (
  <section className="border p-5 transition-all bg-portal-surface border-portal-border shadow-sm">
@@ -224,69 +258,82 @@ export function ThumbnailNewsCard({ relatedArticles, handleOpenArticle, failedIm
  <span>HIGHLIGHTS</span>
  </h3>
  <div className="space-y-4">
- {/* Hero Item */}
- {heroArticle && (
- <div 
- key={heroArticle.id} 
- onClick={() => handleOpenArticle(heroArticle)}
- className="relative cursor-pointer group rounded overflow-hidden h-48 shadow-md"
- >
- <img src={heroArticle.imageUrl} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" alt="" />
- <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent"></div>
- <div className="absolute bottom-0 left-0 p-4 w-full">
- <span className="text-[10px] font-bold font-mono text-[#c9a84c] mb-1 tracking-wider uppercase inline-block">{heroArticle.category}</span>
- <h4 className="text-sm font-serif font-bold leading-tight text-white line-clamp-2">
- {heroArticle.title}
- </h4>
- </div>
- </div>
- )}
- {/* Sub Items */}
- {listArticles.map((art) => (
- <div key={art.id} onClick={() => handleOpenArticle(art)} className="flex items-center gap-3 cursor-pointer group border-t border-portal-border/30 pt-4">
- <div className="w-14 h-14 shrink-0 overflow-hidden rounded shadow-sm border border-portal-border/20">
- <img src={art.imageUrl} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" alt="" />
- </div>
- <div className="flex flex-col flex-grow min-w-0">
- <h4 className="text-xs font-normal leading-snug group-hover:text-portal-brand transition-colors text-portal-text-main line-clamp-3">
- {art.title}
- </h4>
- </div>
- </div>
- ))}
+ {validArticles.map((art, index) => {
+   if (index % 3 === 0) {
+     return (
+       <div key={art.id} className={index > 0 ? "border-t border-portal-border/30 pt-4" : ""}>
+         <div 
+           onClick={() => handleOpenArticle(art)}
+           className="relative cursor-pointer group rounded overflow-hidden h-48 shadow-md"
+         >
+           {art.imageUrl && !failedImages.includes(art.id) ? (
+             <img src={art.imageUrl} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" alt="" />
+           ) : (
+             <BrandLogoPlaceholder article={art} iconSizeClass="w-20 h-20" textSizeClass="text-5xl" />
+           )}
+           <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent"></div>
+           <div className="absolute bottom-0 left-0 p-4 w-full">
+             <span className="text-[10px] font-bold font-mono text-[#c9a84c] mb-1 tracking-wider uppercase inline-block">{art.category}</span>
+             <h4 className="text-sm font-serif font-bold leading-tight text-white line-clamp-2">
+               {art.title}
+             </h4>
+           </div>
+         </div>
+       </div>
+     );
+   } else {
+     return (
+       <div key={art.id} onClick={() => handleOpenArticle(art)} className="flex items-center gap-3 cursor-pointer group border-t border-portal-border/30 pt-4">
+         <div className="w-14 h-14 shrink-0 overflow-hidden rounded shadow-sm border border-portal-border/20">
+           {art.imageUrl && !failedImages.includes(art.id) ? (
+             <img src={art.imageUrl} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" alt="" />
+           ) : (
+             <BrandLogoPlaceholder article={art} iconSizeClass="w-8 h-8" textSizeClass="text-2xl" textMarginClass="mt-0 hidden" />
+           )}
+         </div>
+         <div className="flex flex-col flex-grow min-w-0">
+           <h4 className="text-xs font-normal leading-snug group-hover:text-portal-brand transition-colors text-portal-text-main line-clamp-3">
+             {art.title}
+           </h4>
+         </div>
+       </div>
+     );
+   }
+ })}
  </div>
  </section>
  );
 }
 
 export function TrendingTopicsCard({ relatedArticles, handleOpenArticle, failedImages = [] }: { relatedArticles: NewsArticle[], handleOpenArticle: (art: NewsArticle) => void, failedImages?: string[] }) {
- const trendArticles = relatedArticles.filter(art => !art.imageUrl || failedImages.includes(art.id)).slice(0, 4);
+ const trendArticles = relatedArticles.filter(art => !art.imageUrl || failedImages.includes(art.id)).slice(0, 5);
  
  if (trendArticles.length === 0) return null;
 
  return (
-  <section id="trending-topics-card" className="border p-5 transition-all bg-portal-surface border-portal-border shadow-sm">
-   <h3 className="text-xs font-bold font-mono tracking-wider uppercase mb-4 flex items-center space-x-2 text-[#ef4444] border-b border-portal-border/50 pb-2">
-     <span className="w-2 h-2 rounded-full bg-[#ef4444] animate-pulse"></span>
-     <span>OTHERS IN TREND</span>
-   </h3>
-   <div className="relative pl-3 space-y-5">
-     <div className="absolute left-[3.5px] top-2 bottom-2 w-px bg-portal-border/60"></div>
-     {trendArticles.map((art) => (
-       <div key={art.id} onClick={() => handleOpenArticle(art)} className="relative cursor-pointer group pl-5">
-         <div className="absolute left-[-4.5px] top-1.5 w-2 h-2 rounded-full bg-portal-surface border border-[#ef4444] group-hover:bg-[#ef4444] transition-colors shadow-[0_0_8px_rgba(239,68,68,0.5)]"></div>
-         <div className="flex flex-col flex-grow min-w-0">
-           <div className="flex items-center gap-2 mb-1.5">
-             <span className="text-[9px] font-bold font-mono text-[#ef4444] tracking-widest uppercase bg-[#ef4444]/10 px-1 py-0.5 rounded-sm">{art.category}</span>
-             <span className="text-[9px] text-portal-text-muted font-mono uppercase tracking-widest">{art.date}</span>
-           </div>
-           <h4 className="text-xs font-normal leading-tight group-hover:text-[#ef4444] transition-colors text-portal-text-main line-clamp-2">
-             {art.title}
-           </h4>
-         </div>
-       </div>
-     ))}
-   </div>
+  <section id="trending-topics-card" className="border p-5 transition-all bg-portal-surface border-portal-border shadow-sm mt-6">
+    <h3 className="text-xs font-bold font-mono tracking-wider uppercase mb-4 flex items-center space-x-2 text-portal-brand border-b border-portal-border/50 pb-2">
+      <span className="w-1.5 h-4 bg-portal-brand"></span>
+      <span>OTHERS IN TREND</span>
+    </h3>
+    <div className="space-y-4 mt-4">
+      {trendArticles.map((art, index) => (
+        <div key={art.id} onClick={() => handleOpenArticle(art)} className="group cursor-pointer flex items-start gap-4">
+          <div className="text-3xl font-black text-portal-text-muted/30 group-hover:text-portal-brand transition-colors leading-none w-6 shrink-0 text-right font-serif italic">
+            {index + 1}
+          </div>
+          <div className="flex flex-col gap-1 mt-0.5">
+            <h4 className="text-xs sm:text-[13px] font-bold leading-snug text-portal-text-main group-hover:text-portal-brand transition-colors line-clamp-2">
+              {art.title}
+            </h4>
+            <div className="flex items-center gap-2 mt-1">
+               <span className="text-[9px] font-mono text-portal-brand font-bold tracking-widest uppercase">{art.category}</span>
+               <span className="text-[9px] text-portal-text-muted/60 font-mono tracking-tighter">• {art.date}</span>
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
   </section>
  );
 }
@@ -359,6 +406,43 @@ export function GoogleNewsPanel({ googleArticles, handleOpenArticle, failedImage
                <span className="text-[10px] text-portal-text-muted line-clamp-2 leading-tight">
                  Published {art.date}. Click to read full article coverage on Google News.
                </span>
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  </section>
+ );
+}
+
+export function TrendNewsPanel({ trendArticles, handleOpenArticle, failedImages = [] }: { trendArticles: NewsArticle[], handleOpenArticle: (art: NewsArticle) => void, failedImages?: string[] }) {
+ if (!trendArticles || trendArticles.length === 0) return null;
+ 
+ return (
+  <section id="trend-news-card" className="mt-6 mb-8">
+    <div className="space-y-3.5">
+      {trendArticles.slice(0, 10).map((art, index) => (
+        <div 
+          key={art.id} 
+          onClick={() => handleOpenArticle(art)} 
+          className="group cursor-pointer flex items-center gap-3.5 p-3 sm:p-3.5 bg-portal-surface border border-portal-border/60 shadow-sm hover:shadow-[0_8px_20px_-4px_rgba(0,0,0,0.1)] hover:border-portal-brand/40 transition-all duration-300 transform hover:-translate-y-0.5"
+        >
+          {art.imageUrl && !failedImages.includes(art.id) ? (
+             <div className="w-12 h-12 shrink-0 overflow-hidden shadow-sm bg-portal-bg">
+                <img src={art.imageUrl} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+             </div>
+          ) : (
+             <div className="w-12 h-12 shrink-0 overflow-hidden shadow-sm bg-portal-bg border border-portal-border/50">
+                <BrandLogoPlaceholder article={art} iconSizeClass="w-6 h-6" textSizeClass="text-xl" textMarginClass="mt-0 hidden" />
+             </div>
+          )}
+          <div className="flex flex-col min-w-0 flex-1 justify-center">
+            <h4 className="text-[12px] sm:text-[13px] font-semibold leading-snug text-portal-text-main group-hover:text-portal-brand transition-colors line-clamp-2">
+              {art.title}
+            </h4>
+            <div className="flex items-center gap-2 mt-1.5">
+               <span className="text-[9px] font-bold text-portal-brand uppercase tracking-wider">{art.category}</span>
+               <span className="text-[9px] text-portal-text-muted/70 font-mono tracking-tighter">{art.date}</span>
             </div>
           </div>
         </div>

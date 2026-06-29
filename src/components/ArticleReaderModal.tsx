@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { ArrowLeft, Maximize2, Minimize2, X, Feather, RefreshCw, Sparkles, BookMarked, Share2, ExternalLink, ShieldCheck, Globe } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Helmet } from 'react-helmet-async';
 import { NewsArticle } from '../types';
+import { BrandLogoPlaceholder } from './BrandLogoPlaceholder';
 
 interface ArticleReaderModalProps {
  selectedArticle: NewsArticle;
@@ -50,6 +53,22 @@ export default function ArticleReaderModal({
  const [showPerspectives, setShowPerspectives] = useState(false);
  const [fullContent, setFullContent] = useState<string | null>(null);
  const [isScraping, setIsScraping] = useState(false);
+ const [scrollProgress, setScrollProgress] = useState(0);
+ const [reactions, setReactions] = useState<{ [key: string]: number }>({});
+
+ const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+  const target = e.currentTarget;
+  const scrollHeight = target.scrollHeight - target.clientHeight;
+  if (scrollHeight > 0) {
+   setScrollProgress((target.scrollTop / scrollHeight) * 100);
+  } else {
+   setScrollProgress(0);
+  }
+ };
+
+ const handleReaction = (emoji: string) => {
+   setReactions(prev => ({ ...prev, [emoji]: (prev[emoji] || 0) + 1 }));
+ };
 
  const closeReader = () => {
  setSelectedArticle(null);
@@ -88,8 +107,18 @@ export default function ArticleReaderModal({
  }, [selectedArticle.id, selectedArticle.originalUrl]);
 
  return (
- <div id="article-reader-root-modal" className="fixed inset-0 bg-portal-bg bg-opacity-95 z-50 flex flex-col overflow-y-auto antialiased">
- <nav id="reader-sticky-controls" className="sticky top-0 z-50 h-16 bg-portal-surface border-b border-portal-border flex items-center justify-between px-4 sm:px-8 shrink-0">
+ <div id="article-reader-root-modal" className="fixed inset-0 bg-portal-bg bg-opacity-95 z-50 flex flex-col overflow-y-auto antialiased" onScroll={handleScroll}>
+    <Helmet>
+        <title>{`${selectedArticle.title} | Horizon`}</title>
+        <meta name="description" content={selectedArticle.summary || "Read this article on Horizon Professional News Portal"} />
+        <meta property="og:title" content={selectedArticle.title} />
+        {selectedArticle.imageUrl && <meta property="og:image" content={selectedArticle.imageUrl} />}
+    </Helmet>
+ <nav id="reader-sticky-controls" className="sticky top-0 z-50 bg-portal-surface border-b border-portal-border flex flex-col shrink-0">
+  <div className="h-1 w-full bg-portal-border/30">
+    <div className="h-full bg-portal-brand transition-all duration-75" style={{ width: `${scrollProgress}%` }} />
+  </div>
+  <div className="flex items-center justify-between px-4 sm:px-8 h-15 py-3">
  <div className="flex items-center space-x-4">
  <button
  onClick={closeReader}
@@ -161,6 +190,7 @@ export default function ArticleReaderModal({
  <X size={18} />
  </button>
  </div>
+ </div>
  </nav>
 
  <div className={`flex-1 transition-all duration-300 ${isCleanMode
@@ -201,15 +231,19 @@ export default function ArticleReaderModal({
  </div>
  </div>
 
- {selectedArticle.imageUrl && (
- <div className={` overflow-hidden aspect-video max-h-96 w-full mb-8 relative border ${isCleanMode ? 'border-zinc-800 bg-zinc-950' : 'border-portal-border bg-portal-surface'}`}>
- <img src={selectedArticle.imageUrl} alt={selectedArticle.title} className="w-full h-full object-cover" />
- <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent" />
- <span className="absolute bottom-3 left-3 text-[10px] font-mono text-zinc-300 uppercase tracking-widest bg-black/80 px-2 py-0.5 bg-opacity-70">
- Analytical Ledger Plate
- </span>
- </div>
- )}
+  <div className={`overflow-hidden aspect-video max-h-96 w-full mb-8 relative border ${isCleanMode ? 'border-zinc-800 bg-zinc-950' : 'border-portal-border bg-portal-surface'}`}>
+  {selectedArticle.imageUrl ? (
+      <>
+        <img src={selectedArticle.imageUrl} alt={selectedArticle.title} className="w-full h-full object-cover" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent" />
+      </>
+  ) : (
+      <BrandLogoPlaceholder article={selectedArticle} className={isCleanMode ? 'bg-zinc-950' : ''} iconSizeClass="w-32 h-32" textSizeClass="text-8xl" textMarginClass="mt-4" />
+  )}
+  <span className="absolute bottom-3 left-3 text-[10px] font-mono text-zinc-300 uppercase tracking-widest bg-black/80 px-2 py-0.5 bg-opacity-70">
+  Analytical Ledger Plate
+  </span>
+  </div>
 
  <div className={`transition-all duration-300 font-serif leading-relaxed ${cleanFontSize === 'sm' ? 'text-xs sm:text-sm' :
  cleanFontSize === 'md' ? 'text-sm sm:text-base' :
@@ -367,6 +401,20 @@ export default function ArticleReaderModal({
  <Share2 size={13} />
  <span>Transmission link</span>
  </button>
+ </div>
+ <div className="flex items-center space-x-2 hidden sm:flex">
+    {['👍', '🤯', '🔥'].map(emoji => (
+        <motion.button
+            key={emoji}
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9, rotate: -10 }}
+            onClick={() => handleReaction(emoji)}
+            className="flex items-center space-x-1 px-3 py-1 bg-portal-bg border border-portal-border rounded-full hover:bg-portal-surface-hover transition-colors"
+        >
+            <span className="text-lg">{emoji}</span>
+            <span className="text-xs font-bold text-portal-text-main">{reactions[emoji] || 0}</span>
+        </motion.button>
+    ))}
  </div>
  <button
  onClick={closeReader}

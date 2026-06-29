@@ -1,5 +1,6 @@
 import React, {StrictMode} from 'react';
 import {createRoot} from 'react-dom/client';
+import { HelmetProvider } from 'react-helmet-async';
 import App from './App.tsx';
 import './index.css';
 
@@ -26,7 +27,9 @@ class ErrorBoundary extends React.Component<{children: React.ReactNode}, {hasErr
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <ErrorBoundary>
-      <App />
+      <HelmetProvider>
+        <App />
+      </HelmetProvider>
     </ErrorBoundary>
   </StrictMode>,
 );

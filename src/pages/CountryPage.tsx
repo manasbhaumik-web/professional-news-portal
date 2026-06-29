@@ -3,6 +3,7 @@ import { Globe2, Search, Rss, AlertCircle, Users, Map, Cloud, Clock } from 'luci
 import { NewsArticle } from '../types';
 import ArticleCard from '../components/ArticleCard';
 import MoreFromWire from '../components/MoreFromWire';
+import GoogleNewsSection from '../components/GoogleNewsSection';
 import { COUNTRY_FEEDS, FALLBACK_CODES } from '../utils/countryFeeds';
 
 interface CountryPageProps {
@@ -156,7 +157,7 @@ export default function CountryPage({
                             sportName: country,
                             source: feed.name,
                             publishedAt: (item.pubDate && !isNaN(new Date(item.pubDate).getTime())) ? new Date(item.pubDate).toISOString() : new Date().toISOString(),
-                            timeAgo: item.pubDate ? new Date(item.pubDate).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'Recent',
+                            timeAgo: (item.pubDate && !isNaN(new Date(item.pubDate).getTime())) ? new Date(item.pubDate).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'Recent',
                             readTime: '3 min read',
                             url: item.link
                         }));
@@ -191,8 +192,14 @@ export default function CountryPage({
         fetchCountryNews(selectedCountry);
     }, [selectedCountry]);
 
-    const displayArticles = articles.slice(0, 10);
-    const overflowArticles = articles.slice(10);
+    const isGoogle = (art: NewsArticle) => art.source?.toLowerCase().includes('google') || art.url?.includes('news.google.com');
+    const nonGoogle = articles.filter(art => !isGoogle(art));
+    const googleArticles = articles.filter(art => isGoogle(art));
+
+    const displayArticles = nonGoogle.slice(0, 10);
+    const overflowArticles = nonGoogle.slice(43);
+    const displayGoogleArticles = googleArticles.slice(0, 40);
+
 
     return (
         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -252,6 +259,19 @@ export default function CountryPage({
                         setFailedImages={setFailedImages || (() => {})}
                     />
                 )}
+
+                {nonGoogle.length === 0 && displayGoogleArticles.length > 0 && (
+                    <GoogleNewsSection
+                        articles={displayGoogleArticles}
+                        handleOpenArticle={handleOpenArticle}
+                        toggleBookmark={toggleBookmark}
+                        bookmarks={bookmarks}
+                        failedImages={failedImages || []}
+                        setFailedImages={setFailedImages || (() => {})}
+                    />
+                )}
         </div>
     );
 }
+
+

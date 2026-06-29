@@ -1,0 +1,326 @@
+[
+  {
+    "url": "http://feeds.bbci.co.uk/news/world/us_and_canada/rss.xml",
+    "category": "North America",
+    "id": "feed-fevri4h",
+    "enabled": true
+  },
+  {
+    "url": "https://feeds.npr.org/1001/rss.xml",
+    "category": "North America",
+    "id": "feed-axtcggk",
+    "enabled": true
+  },
+  {
+    "url": "https://rss.nytimes.com/services/xml/rss/nyt/US.xml",
+    "category": "North America",
+    "id": "feed-pajj2x3",
+    "enabled": true
+  },
+  {
+    "url": "https://www.cbc.ca/cmlink/rss-topstories",
+    "category": "North America",
+    "id": "feed-elbbl54",
+    "enabled": true
+  },
+  {
+    "url": "http://feeds.bbci.co.uk/news/world/latin_america/rss.xml",
+    "category": "Latin America",
+    "id": "feed-5rcs3e8",
+    "enabled": true
+  },
+  {
+    "url": "https://en.mercopress.com/rss",
+    "category": "Latin America",
+    "id": "feed-ij2s1nc",
+    "enabled": true
+  },
+  {
+    "url": "http://feeds.bbci.co.uk/news/world/europe/rss.xml",
+    "category": "Europe",
+    "id": "feed-spy2mnq",
+    "enabled": true
+  },
+  {
+    "url": "https://rss.dw.com/rdf/rss-en-eu",
+    "category": "Europe",
+    "id": "feed-z7fjs6y",
+    "enabled": true
+  },
+  {
+    "url": "https://www.france24.com/en/europe/rss",
+    "category": "Europe",
+    "id": "feed-vxj59q2",
+    "enabled": true
+  },
+  {
+    "url": "http://feeds.bbci.co.uk/news/world/middle_east/rss.xml",
+    "category": "Arab",
+    "id": "feed-cto9ozm",
+    "enabled": true
+  },
+  {
+    "url": "https://www.aljazeera.com/xml/rss/all.xml",
+    "category": "Arab",
+    "id": "feed-mc0ch2g",
+    "enabled": true
+  },
+  {
+    "url": "https://gulfnews.com/rss/region",
+    "category": "Arab",
+    "id": "feed-jwjfud3",
+    "enabled": true
+  },
+  {
+    "url": "http://feeds.bbci.co.uk/news/world/africa/rss.xml",
+    "category": "Sub-Saharan Africa",
+    "id": "feed-rhvba82",
+    "enabled": true
+  },
+  {
+    "url": "http://feeds.news24.com/articles/news24/Africa/rss",
+    "category": "Sub-Saharan Africa",
+    "id": "feed-mb7f15l",
+    "enabled": true
+  },
+  {
+    "url": "http://feeds.bbci.co.uk/news/world/asia/india/rss.xml",
+    "category": "South Asia",
+    "id": "feed-mpn1d4x",
+    "enabled": true
+  },
+  {
+    "url": "https://www.thehindu.com/news/national/feeder/default.rss",
+    "category": "South Asia",
+    "id": "feed-a61v5tg",
+    "enabled": true
+  },
+  {
+    "url": "https://www.dawn.com/feeds/home/",
+    "category": "South Asia",
+    "id": "feed-rbo7w9q",
+    "enabled": true
+  },
+  {
+    "url": "https://www.channelnewsasia.com/api/v1/rss-outbound-feed?expand=each",
+    "category": "South East Asia",
+    "id": "feed-gwn5gkc",
+    "enabled": true
+  },
+  {
+    "url": "https://www.thestar.com.my/rss/News",
+    "category": "South East Asia",
+    "id": "feed-2i0q4ah",
+    "enabled": true
+  },
+  {
+    "url": "https://www.bangkokpost.com/rss/data/topstories.xml",
+    "category": "South East Asia",
+    "id": "feed-hwxij4v",
+    "enabled": true
+  },
+  {
+    "url": "http://feeds.bbci.co.uk/news/world/asia/rss.xml",
+    "category": "East Asia",
+    "id": "feed-7wn2c26",
+    "enabled": true
+  },
+  {
+    "url": "https://www.scmp.com/rss/2/feed",
+    "category": "East Asia",
+    "id": "feed-c3i1744",
+    "enabled": true
+  },
+  {
+    "url": "https://www.japantimes.co.jp/news/feed/",
+    "category": "East Asia",
+    "id": "feed-8wk58g5",
+    "enabled": true
+  },
+  {
+    "url": "https://news.abs-cbn.com/rss/world",
+    "category": "South East Asia",
+    "id": "feed-p50wo7o",
+    "enabled": true
+  },
+  {
+    "url": "https://www.rnz.co.nz/rss/world.xml",
+    "category": "Oceania",
+    "id": "feed-x5nn2y3",
+    "enabled": true
+  },
+  {
+    "url": "https://www.abc.net.au/news/feed/51120/rss.xml",
+    "category": "Oceania",
+    "id": "feed-gu0ove2",
+    "enabled": true
+  },
+  {
+    "url": "http://feeds.bbci.co.uk/sport/football/rss.xml",
+    "category": "Sports",
+    "sportName": "Football",
+    "id": "feed-5pnmjz8",
+    "enabled": true
+  },
+  {
+    "url": "https://www.espn.com/espn/rss/soccer/news",
+    "category": "Sports",
+    "sportName": "Football",
+    "id": "feed-w44lhoi",
+    "enabled": true
+  },
+  {
+    "url": "http://feeds.bbci.co.uk/sport/tennis/rss.xml",
+    "category": "Sports",
+    "sportName": "Tennis",
+    "id": "feed-1r3n6qv",
+    "enabled": true
+  },
+  {
+    "url": "http://feeds.bbci.co.uk/sport/cricket/rss.xml",
+    "category": "Sports",
+    "sportName": "Cricket",
+    "id": "feed-ufeufla",
+    "enabled": true
+  },
+  {
+    "url": "https://www.skysports.com/rss/12138",
+    "category": "Sports",
+    "sportName": "Golf",
+    "id": "feed-94ggty6",
+    "enabled": true
+  },
+  {
+    "url": "http://feeds.bbci.co.uk/sport/golf/rss.xml",
+    "category": "Sports",
+    "sportName": "Golf",
+    "id": "feed-fdhl1i8",
+    "enabled": true
+  },
+  {
+    "url": "https://www.skysports.com/rss/12183",
+    "category": "Sports",
+    "sportName": "Boxing/MMA",
+    "id": "feed-opipjcy",
+    "enabled": true
+  },
+  {
+    "url": "https://sports.yahoo.com/mma/rss.xml",
+    "category": "Sports",
+    "sportName": "Boxing/MMA",
+    "id": "feed-59nezxx",
+    "enabled": true
+  },
+  {
+    "url": "https://www.skysports.com/rss/12056",
+    "category": "Sports",
+    "sportName": "Rugby",
+    "id": "feed-0aeqblp",
+    "enabled": true
+  },
+  {
+    "url": "http://feeds.bbci.co.uk/sport/rugby-union/rss.xml",
+    "category": "Sports",
+    "sportName": "Rugby",
+    "id": "feed-9angnda",
+    "enabled": true
+  },
+  {
+    "url": "http://feeds.bbci.co.uk/sport/athletics/rss.xml",
+    "category": "Sports",
+    "sportName": "Athletics",
+    "id": "feed-7upmxws",
+    "enabled": true
+  },
+  {
+    "url": "http://feeds.bbci.co.uk/sport/cycling/rss.xml",
+    "category": "Sports",
+    "sportName": "Cycling",
+    "id": "feed-vwyueao",
+    "enabled": true
+  },
+  {
+    "url": "http://feeds.bbci.co.uk/news/politics/rss.xml",
+    "category": "Politics",
+    "id": "feed-puzhq4i",
+    "enabled": true
+  },
+  {
+    "url": "https://rss.nytimes.com/services/xml/rss/nyt/Politics.xml",
+    "category": "Politics",
+    "id": "feed-7dxy7nr",
+    "enabled": true
+  },
+  {
+    "url": "http://feeds.bbci.co.uk/news/business/rss.xml",
+    "category": "Business",
+    "id": "feed-7f3nkn3",
+    "enabled": true
+  },
+  {
+    "url": "https://rss.nytimes.com/services/xml/rss/nyt/Business.xml",
+    "category": "Business",
+    "id": "feed-v8o1qdt",
+    "enabled": true
+  },
+  {
+    "url": "https://search.cnbc.com/rs/search/combinedcms/view.xml?id=10000664",
+    "category": "Business",
+    "id": "feed-w31irpe",
+    "enabled": true
+  },
+  {
+    "url": "http://feeds.bbci.co.uk/news/entertainment_and_arts/rss.xml",
+    "category": "Entertainment",
+    "id": "feed-nc6q1sk",
+    "enabled": true
+  },
+  {
+    "url": "https://rss.nytimes.com/services/xml/rss/nyt/Movies.xml",
+    "category": "Entertainment",
+    "id": "feed-krs9mfq",
+    "enabled": true
+  },
+  {
+    "url": "https://rss.nytimes.com/services/xml/rss/nyt/Music.xml",
+    "category": "Entertainment",
+    "id": "feed-2mfngsz",
+    "enabled": true
+  },
+  {
+    "url": "http://feeds.bbci.co.uk/news/science_and_environment/rss.xml",
+    "category": "Science",
+    "id": "feed-12qsc6s",
+    "enabled": true
+  },
+  {
+    "url": "http://feeds.bbci.co.uk/news/technology/rss.xml",
+    "category": "Technology",
+    "id": "feed-tzdfp81",
+    "enabled": true
+  },
+  {
+    "url": "https://rss.nytimes.com/services/xml/rss/nyt/Technology.xml",
+    "category": "Technology",
+    "id": "feed-4i3ixkr",
+    "enabled": true
+  },
+  {
+    "url": "https://rss.nytimes.com/services/xml/rss/nyt/Space.xml",
+    "category": "Space",
+    "id": "feed-4ziydwt",
+    "enabled": true
+  },
+  {
+    "url": "https://abcnews.go.com/abcnews/topstories",
+    "category": "Breaking News",
+    "id": "feed-break-1",
+    "enabled": true
+  },
+  {
+    "url": "http://rss.cnn.com/rss/cnn_latest.rss",
+    "category": "Breaking News",
+    "id": "feed-break-2",
+    "enabled": true
+  }
+]

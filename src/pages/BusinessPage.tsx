@@ -2,6 +2,7 @@ import React from 'react';
 import { NewsArticle } from '../types';
 import ArticleCard from '../components/ArticleCard';
 import MoreFromWire from '../components/MoreFromWire';
+import GoogleNewsSection from '../components/GoogleNewsSection';
 import { Activity } from 'lucide-react';
 
 interface BusinessPageProps {
@@ -17,28 +18,23 @@ interface BusinessPageProps {
 
 const BUSINESS_FEEDS: Record<string, { source: string; url: string; subCategory: string }[]> = {
     All: [
-        { source: 'Google Business', url: 'https://news.google.com/rss/headlines/section/topic/BUSINESS?hl=en-US&gl=US&ceid=US:en', subCategory: 'General' },
         { source: 'BBC Business', url: 'http://feeds.bbci.co.uk/news/business/rss.xml', subCategory: 'Economy' },
         { source: 'NYT Business', url: 'https://rss.nytimes.com/services/xml/rss/nyt/Business.xml', subCategory: 'Finance' },
         { source: 'CNBC', url: 'https://www.cnbc.com/id/10000664/device/rss/rss.html', subCategory: 'Markets' },
         { source: 'Yahoo Finance', url: 'https://finance.yahoo.com/news/rssindex', subCategory: 'Finance' }
     ],
     Markets: [
-        { source: 'CNBC', url: 'https://www.cnbc.com/id/10000664/device/rss/rss.html', subCategory: 'Markets' },
-        { source: 'Google News Markets', url: 'https://news.google.com/rss/search?q=Financial+Markets&hl=en-US&gl=US&ceid=US:en', subCategory: 'Markets' }
+        { source: 'CNBC', url: 'https://www.cnbc.com/id/10000664/device/rss/rss.html', subCategory: 'Markets' }
     ],
     Finance: [
         { source: 'NYT Business', url: 'https://rss.nytimes.com/services/xml/rss/nyt/Business.xml', subCategory: 'Finance' },
-        { source: 'Google News Finance', url: 'https://news.google.com/rss/search?q=Corporate+Finance&hl=en-US&gl=US&ceid=US:en', subCategory: 'Finance' },
         { source: 'Yahoo Finance', url: 'https://finance.yahoo.com/news/rssindex', subCategory: 'Finance' }
     ],
     Economy: [
-        { source: 'BBC Business', url: 'http://feeds.bbci.co.uk/news/business/rss.xml', subCategory: 'Economy' },
-        { source: 'Google News Economy', url: 'https://news.google.com/rss/search?q=Global+Economy&hl=en-US&gl=US&ceid=US:en', subCategory: 'Economy' }
+        { source: 'BBC Business', url: 'http://feeds.bbci.co.uk/news/business/rss.xml', subCategory: 'Economy' }
     ],
     Startups: [
-        { source: 'TechCrunch', url: 'https://techcrunch.com/category/startups/feed/', subCategory: 'Startups' },
-        { source: 'Google News Startups', url: 'https://news.google.com/rss/search?q=Venture+Capital+Startups&hl=en-US&gl=US&ceid=US:en', subCategory: 'Startups' }
+        { source: 'TechCrunch', url: 'https://techcrunch.com/category/startups/feed/', subCategory: 'Startups' }
     ]
 };
 
@@ -134,8 +130,13 @@ export default function BusinessPage({ articles, selectedCategoryFromMenu, handl
         return timeB - timeA;
     }).filter((art, idx, self) => idx === self.findIndex(a => a.title.toLowerCase().trim() === art.title.toLowerCase().trim()));
 
-    const displayArticles = allSorted.slice(0, 10);
-    const overflowArticles = allSorted.slice(10);
+    const isGoogle = (art: NewsArticle) => art.source?.toLowerCase().includes('google') || art.url?.includes('news.google.com');
+    const nonGoogle = allSorted.filter(art => !isGoogle(art));
+    const googleArticles = allSorted.filter(art => isGoogle(art));
+
+    const displayArticles = nonGoogle.slice(0, 10);
+    const overflowArticles = nonGoogle.slice(43);
+    const displayGoogleArticles = googleArticles.slice(0, 40);
 
     return (
         <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -186,6 +187,19 @@ export default function BusinessPage({ articles, selectedCategoryFromMenu, handl
                     failedImages={failedImages || []}
                     setFailedImages={setFailedImages || (() => {})}
                 />
+            )}
+
+            {nonGoogle.length === 0 && displayGoogleArticles.length > 0 && (
+                <div className="mt-8">
+                    <GoogleNewsSection
+                        articles={displayGoogleArticles}
+                        handleOpenArticle={handleOpenArticle}
+                        toggleBookmark={toggleBookmark}
+                        bookmarks={bookmarks}
+                        failedImages={failedImages || []}
+                        setFailedImages={setFailedImages || (() => {})}
+                    />
+                </div>
             )}
         </div>
     );

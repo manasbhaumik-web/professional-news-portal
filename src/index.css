@@ -144,9 +144,40 @@
 }
 
 /* Global Marquee Animations */
+@keyframes draw-x {
+  0% {
+    stroke-dashoffset: 100;
+    opacity: 0;
+  }
+
+  50% {
+    opacity: 1;
+  }
+
+  100% {
+    stroke-dashoffset: 0;
+    opacity: 1;
+  }
+}
+
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.animate-draw-circle {
+  stroke-dasharray: 100;
+}
+
 @keyframes marquee {
-  0% { transform: translateX(0%); }
-  100% { transform: translateX(-50%); }
+  0% {
+    transform: translateX(0%);
+  }
+
+  100% {
+    transform: translateX(-50%);
+  }
 }
 
 .animate-marquee {
@@ -159,6 +190,7 @@
   width: max-content;
 }
 
-.group-hover\/ticker\:pause:hover, .group:hover .group-hover\/ticker\:pause {
+.group-hover\/ticker\:pause:hover,
+.group:hover .group-hover\/ticker\:pause {
   animation-play-state: paused;
 }

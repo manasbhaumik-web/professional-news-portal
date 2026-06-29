@@ -1,14 +1,16 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import {
-    Newspaper, AlertCircle, RefreshCw, Flame, Sparkles, ChevronDown, ChevronRight, Trophy, Minus, Plus,
+    Newspaper, AlertCircle, RefreshCw, Flame, Sparkles, ChevronDown, ChevronRight, Trophy, Minus, Plus, X,
     Map, MapPin, Globe, Sun, Compass, Globe2, Palmtree, Building2, Anchor,
     Vote, ScrollText, LineChart, DollarSign, PieChart, Rocket,
     Activity, CircleDot, Flag, FlagTriangleRight, Swords, Shield, Timer, Bike,
     Film, Music, Tv, Star, Cpu, Microscope, Monitor, ShieldAlert,
     CarFront, Footprints, Castle, Moon, Tent, Waves, Mountain, Target
 } from 'lucide-react';
-import { NewsArticle, UserPreferences } from './types';
+import { NewsArticle, UserPreferences, UserBehaviorProfile } from './types';
+import { sortArticlesByDate } from './utils/sortArticles';
+import { mixArticlesByCategories } from './utils/mixCategories';
 import MarketTicker from './components/MarketTicker';
 const GlobalPage = React.lazy(() => import('./pages/GlobalPage'));
 const LocalPage = React.lazy(() => import('./pages/LocalPage'));
@@ -19,8 +21,6 @@ const ReportNewsPage = React.lazy(() => import('./pages/ReportNewsPage'));
 const EntertainmentPage = React.lazy(() => import('./pages/EntertainmentPage'));
 const ScienceTechPage = React.lazy(() => import('./pages/ScienceTechPage'));
 const CountryPage = React.lazy(() => import('./pages/CountryPage'));
-const FifaWorldCupPage = React.lazy(() => import('./pages/FifaWorldCupPage'));
-const FifaAllScoresPage = React.lazy(() => import('./pages/FifaAllScoresPage'));
 const CricketLivePage = React.lazy(() => import('./pages/CricketLivePage'));
 
 
@@ -29,15 +29,21 @@ import ChannelsNav from './components/ChannelsNav';
 import MainAdBanner from './components/MainAdBanner';
 import { BreakingNewsTicker } from './components/SidebarComponents';
 import MoreFromWire from './components/MoreFromWire';
+import GoogleNewsSection from './components/GoogleNewsSection';
 
 import IccCricketBanner from './components/IccCricketBanner';
 import FeedConfig from './components/FeedConfig';
+import { Helmet } from 'react-helmet-async';
 import ArticleCard from './components/ArticleCard';
 import SkeletonArticleCard from './components/SkeletonArticleCard';
+import InfiniteScroll from './components/InfiniteScroll';
 import SystemSidebar from './components/SystemSidebar';
+import SearchBar from './components/SearchBar';
 import ArticleReaderModal from './components/ArticleReaderModal';
 import solariaGtAd from '../assets/solaria_gt_advert.png';
-
+import TopNewsSection from './components/TopNewsSection';
+import AdminLoginModal from './components/AdminLoginModal';
+import CmsPage from './pages/CmsPage';
 const FootballIcon = ({ size = 24, className = "" }: { size?: number, className?: string }) => (
     <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
         <circle cx="12" cy="12" r="10" />
@@ -85,15 +91,21 @@ export default function App() {
     const [highlightMatch, setHighlightMatch] = useState<any | null>(null);
     const [highlightMatchList, setHighlightMatchList] = useState<any[]>([]);
     const [searchQuery, setSearchQuery] = useState('');
+    const [filterDate, setFilterDate] = useState('all');
+    const [sortOption, setSortOption] = useState('latest');
     const [selectedMenuCategory, setSelectedMenuCategory] = useState<string>('All');
     const [failedImages, setFailedImages] = useState<string[]>([]);
     const [selectedCountry, setSelectedCountry] = useState<string>("United States");
+
+    // Infinite scroll limits
+    const [trendingLimit, setTrendingLimit] = useState(10);
+    const [foryouLimit, setForyouLimit] = useState(10);
 
     const [scrollDirection, setScrollDirection] = useState<'up' | 'down'>('up');
 
     useEffect(() => {
         let lastScrollY = window.pageYOffset;
-        
+
         const updateScrollDirection = () => {
             const scrollY = window.pageYOffset;
             const direction = scrollY > lastScrollY ? 'down' : 'up';
@@ -105,6 +117,21 @@ export default function App() {
         window.addEventListener('scroll', updateScrollDirection);
         return () => window.removeEventListener('scroll', updateScrollDirection);
     }, [scrollDirection]);
+
+    // CMS States
+    const [showAdminLogin, setShowAdminLogin] = useState(false);
+    const [adminToken, setAdminToken] = useState<string | null>(localStorage.getItem('adminToken'));
+
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 'l') {
+                e.preventDefault();
+                setShowAdminLogin(true);
+            }
+        };
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, []);
 
     // FIFA World Cup 2026 live scores
     const [fifaScores, setFifaScores] = useState<any[]>([]);
@@ -202,10 +229,9 @@ export default function App() {
         );
 
         if (allArticles.length > 0) {
-            allArticles.sort((a, b) => new Date(b.publishedAt || '').getTime() - new Date(a.publishedAt || '').getTime());
-            setFifaNewsArticles(allArticles);
+            setFifaNewsArticles(sortArticlesByDate(allArticles));
         } else {
-            setFifaNewsArticles(FIFA_FALLBACK_ARTICLES);
+            setFifaNewsArticles(sortArticlesByDate(FIFA_FALLBACK_ARTICLES));
         }
     }, [FIFA_NEWS_FEEDS, FIFA_FALLBACK_ARTICLES]);
 
@@ -222,10 +248,10 @@ export default function App() {
     const fetchCricketScores = useCallback(async () => {
         setCricketLoading(true);
         try {
-            const res = await fetch('/api/cricket/results');
+            const res = await fetch('/api/cricket/live');
             const data = await res.json();
             if (res.ok && data.matches) {
-                setCricketMatches(data.matches.slice(0, 6)); // Top 6 results
+                setCricketMatches(data.matches.slice(0, 6)); // Top 6 matches
             }
         } catch {
             console.error("Failed to fetch cricket scores");
@@ -245,6 +271,33 @@ export default function App() {
     const [personalizedBriefing, setPersonalizedBriefing] = useState<string>('');
     const [personalizedArticles, setPersonalizedArticles] = useState<NewsArticle[]>([]);
 
+    const [liveNews, setLiveNews] = useState<NewsArticle | null>(null);
+    const [showLiveToast, setShowLiveToast] = useState(false);
+
+    useEffect(() => {
+        const eventSource = new EventSource('/api/news/live-stream');
+        eventSource.onmessage = (event) => {
+            try {
+                const article: NewsArticle = JSON.parse(event.data);
+                setLiveNews(article);
+                setShowLiveToast(true);
+            } catch (e) {
+                console.error('Failed to parse SSE data', e);
+            }
+        };
+        return () => {
+            eventSource.close();
+        };
+    }, []);
+
+    const handleInjectLiveNews = useCallback(() => {
+        if (liveNews) {
+            setTrendingArticles(prev => [liveNews, ...prev]);
+            setShowLiveToast(false);
+            setLiveNews(null);
+        }
+    }, [liveNews]);
+
     const [isLoadingArticles, setIsLoadingArticles] = useState(false);
     const [isGeneratingBriefing, setIsGeneratingBriefing] = useState(false);
     const [errorFeedback, setErrorFeedback] = useState<string | null>(null);
@@ -257,6 +310,42 @@ export default function App() {
 
     const [tempKeyword, setTempKeyword] = useState('');
 
+    const [behaviorProfile, setBehaviorProfile] = useState<UserBehaviorProfile>(() => {
+        const stored = localStorage.getItem('userBehaviorProfile');
+        if (stored) {
+            try {
+                return JSON.parse(stored);
+            } catch { }
+        }
+        return { categories: {}, keywords: {}, lastUpdated: new Date().toISOString() };
+    });
+
+    const resetBehaviorProfile = useCallback(() => {
+        const reset = { categories: {}, keywords: {}, lastUpdated: new Date().toISOString() };
+        setBehaviorProfile(reset);
+        localStorage.setItem('userBehaviorProfile', JSON.stringify(reset));
+    }, []);
+
+    const updateBehaviorProfile = useCallback((article: NewsArticle, weight: number = 1) => {
+        setBehaviorProfile(prev => {
+            const next = { 
+                ...prev, 
+                categories: { ...prev.categories }, 
+                keywords: { ...prev.keywords }, 
+                lastUpdated: new Date().toISOString() 
+            };
+            if (article.category) {
+                next.categories[article.category] = (next.categories[article.category] || 0) + weight;
+            }
+            const words = article.title.toLowerCase().split(/[\s,.-]+/).filter(w => w.length > 4);
+            words.slice(0, 5).forEach(w => {
+                next.keywords[w] = (next.keywords[w] || 0) + (weight * 0.5);
+            });
+            localStorage.setItem('userBehaviorProfile', JSON.stringify(next));
+            return next;
+        });
+    }, []);
+
     const [selectedArticle, setSelectedArticle] = useState<NewsArticle | null>(null);
     const [isExpandingDeepDive, setIsExpandingDeepDive] = useState(false);
     const [expandedContent, setExpandedContent] = useState<string | null>(null);
@@ -266,6 +355,23 @@ export default function App() {
     const [cleanFontSize, setCleanFontSize] = useState<'sm' | 'md' | 'lg' | 'xl'>('md');
 
     const [portalTheme, setPortalTheme] = useState<'dark' | 'light' | 'sepia'>('light');
+    const [siteConfig, setSiteConfig] = useState<any>({
+        siteTitle: 'The Horizon Post Online',
+        footerText: '© 2026 THE HORIZON POST INC',
+        defaultTheme: 'dark'
+    });
+
+    useEffect(() => {
+        fetch('/api/config')
+            .then(res => res.json())
+            .then(data => {
+                setSiteConfig(data);
+                if (data.defaultTheme) {
+                    setPortalTheme(data.defaultTheme);
+                }
+            })
+            .catch(err => console.error(err));
+    }, []);
 
     const [bookmarks, setBookmarks] = useState<string[]>([]);
     const [isAdMinimized, setIsAdMinimized] = useState(false);
@@ -281,7 +387,7 @@ export default function App() {
             const res = await fetch('/api/news/trending');
             if (!res.ok) throw new Error("Failed to load trending stories");
             const data = await res.json();
-            setTrendingArticles(data);
+            setTrendingArticles(mixArticlesByCategories(data));
         } catch (e: any) {
             setErrorFeedback(e.message || "Failed to establish secure index connection.");
         } finally {
@@ -296,7 +402,7 @@ export default function App() {
             const res = await fetch(`/api/news/topic?q=${encodeURIComponent(topic)}`);
             if (!res.ok) throw new Error("Failed to load topic stories");
             const data = await res.json();
-            setCategoryArticles(data);
+            setCategoryArticles(sortArticlesByDate(data));
         } catch (e: any) {
             setErrorFeedback(e.message || "Failed to establish secure index connection.");
             setCategoryArticles(null);
@@ -310,13 +416,10 @@ export default function App() {
     }, [fetchTrendingNews]);
 
     useEffect(() => {
-        if (selectedMenuCategory === 'All') {
+        if (selectedMenuCategory === 'All' || selectedMenuCategory === 'Global' || selectedMenuCategory.startsWith('Region:')) {
             setCategoryArticles(null);
         } else {
             let query = selectedMenuCategory;
-            if (query.startsWith('Region: ')) {
-                query = query.replace('Region: ', '');
-            }
             // Temporarily clear old category articles to avoid flash of old content
             setCategoryArticles(null);
             fetchTopicNews(query);
@@ -328,12 +431,26 @@ export default function App() {
         setErrorFeedback(null);
         setActiveTab('foryou');
         try {
+            // Merge implicit and explicit preferences
+            const topImplicitCats = Object.entries(behaviorProfile.categories)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 3)
+                .map(e => e[0]);
+            
+            const topImplicitKeywords = Object.entries(behaviorProfile.keywords)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 5)
+                .map(e => e[0]);
+
+            const mergedCategories = Array.from(new Set([...preferences.selectedCategories, ...topImplicitCats]));
+            const mergedKeywords = Array.from(new Set([...preferences.selectedKeywords, ...topImplicitKeywords]));
+
             const res = await fetch('/api/news/personalized', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    selectedCategories: preferences.selectedCategories,
-                    selectedKeywords: preferences.selectedKeywords
+                    selectedCategories: mergedCategories,
+                    selectedKeywords: mergedKeywords
                 })
             });
 
@@ -341,13 +458,13 @@ export default function App() {
             const data = await res.json();
 
             setPersonalizedBriefing(data.briefing || '');
-            setPersonalizedArticles(data.articles || []);
+            setPersonalizedArticles(sortArticlesByDate(data.articles || []));
         } catch (e: any) {
             setErrorFeedback(e.message || "Unable to formulate custom intelligence report. Please try again later.");
         } finally {
             setIsGeneratingBriefing(false);
         }
-    }, [preferences.selectedCategories, preferences.selectedKeywords]);
+    }, [preferences.selectedCategories, preferences.selectedKeywords, behaviorProfile]);
 
     const handleDeepDiveExpand = useCallback(async (title: string) => {
         setIsExpandingDeepDive(true);
@@ -371,7 +488,8 @@ export default function App() {
     const handleOpenArticle = useCallback((art: NewsArticle) => {
         setSelectedArticle(art);
         setExpandedContent(null);
-    }, []);
+        updateBehaviorProfile(art, 1);
+    }, [updateBehaviorProfile]);
 
     const handleNotificationRead = useCallback((articleId: string) => {
         const found = [...trendingArticles, ...personalizedArticles].find(art => art.id === articleId);
@@ -385,31 +503,29 @@ export default function App() {
 
     const toggleBookmark = useCallback((id: string, e: React.MouseEvent) => {
         e.stopPropagation();
-        setBookmarks(prev => prev.includes(id) ? prev.filter(bId => bId !== id) : [...prev, id]);
-    }, []);
-
-    const nonGoogleTrending = useMemo(() => trendingArticles.filter(a => {
-        const isGoogle = a.source?.toLowerCase().includes('google') || (a.originalUrl && a.originalUrl.includes('google.com'));
-        if (isGoogle) {
-            if (!a.imageUrl) return false;
-            if (a.imageUrl.includes('unsplash.com')) return false;
-            return true;
-        }
-        return true;
-    }), [trendingArticles]);
-    const googleTrending = useMemo(() => trendingArticles.filter(a => a.source?.toLowerCase().includes('google') || (a.originalUrl && a.originalUrl.includes('google.com'))), [trendingArticles]);
+        setBookmarks(prev => {
+            const isAdding = !prev.includes(id);
+            if (isAdding) {
+                const art = [...trendingArticles, ...personalizedArticles, ...(categoryArticles || [])].find(a => a.id === id);
+                if (art) updateBehaviorProfile(art, 2);
+            }
+            return isAdding ? [...prev, id] : prev.filter(bId => bId !== id);
+        });
+    }, [trendingArticles, personalizedArticles, categoryArticles, updateBehaviorProfile]);
 
     const filteredTrending = useMemo(() => {
-        let list = categoryArticles || nonGoogleTrending;
-        
+        let list = categoryArticles || trendingArticles;
+
         if (!categoryArticles) {
             if (selectedMenuCategory.startsWith('Region:')) {
                 const region = selectedMenuCategory.split(':')[1].trim();
-                list = list.filter(art =>
-                    art.title.toLowerCase().includes(region.toLowerCase()) ||
-                    art.summary.toLowerCase().includes(region.toLowerCase()) ||
-                    art.category.toLowerCase().includes(region.toLowerCase())
-                );
+                list = list.filter(art => {
+                    const mappedRegion = getArticleRegion(art.source || '');
+                    return mappedRegion.toLowerCase() === region.toLowerCase() ||
+                        (art.title && art.title.toLowerCase().includes(region.toLowerCase())) ||
+                        (art.summary && art.summary.toLowerCase().includes(region.toLowerCase())) ||
+                        (art.category && art.category.toLowerCase().includes(region.toLowerCase()));
+                });
             } else if (selectedMenuCategory === 'Global') {
                 const worldRegions = ['North America', 'Latin America', 'Europe', 'Arab', 'Sub-Saharan Africa', 'South Asia', 'South East Asia', 'East Asia', 'Oceania', 'Global'];
                 list = list.filter(art => worldRegions.includes(art.category));
@@ -418,30 +534,178 @@ export default function App() {
             }
         }
 
-        if (!searchQuery) return list;
-        return list.filter(art =>
-            art.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            art.summary.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            art.category.toLowerCase().includes(searchQuery.toLowerCase())
-        );
-    }, [trendingArticles, categoryArticles, selectedMenuCategory, searchQuery]);
+        let result = [...list];
+
+        // 1. Fuzzy Search
+        if (searchQuery) {
+            const lowerQ = searchQuery.toLowerCase();
+            result = result.filter(art => 
+                (art.title && art.title.toLowerCase().includes(lowerQ)) ||
+                (art.summary && art.summary.toLowerCase().includes(lowerQ)) ||
+                (art.category && art.category.toLowerCase().includes(lowerQ)) ||
+                (art.source && art.source.toLowerCase().includes(lowerQ))
+            );
+        }
+
+        // 2. Date Filter
+        if (filterDate !== 'all') {
+            const now = new Date().getTime();
+            result = result.filter(art => {
+                const artTime = new Date(art.publishedAt || art.date).getTime();
+                if (isNaN(artTime)) return true;
+                const diffHours = (now - artTime) / (1000 * 60 * 60);
+                if (filterDate === '24h') return diffHours <= 24;
+                if (filterDate === 'week') return diffHours <= 24 * 7;
+                return true;
+            });
+        }
+
+        // 3. Sort
+        result.sort((a, b) => {
+            if (sortOption === 'importance') {
+                return (b.importance_score || 0) - (a.importance_score || 0);
+            } else if (sortOption === 'category') {
+                return (a.category || '').localeCompare(b.category || '');
+            } else {
+                const timeA = new Date(a.publishedAt || a.date).getTime();
+                const timeB = new Date(b.publishedAt || b.date).getTime();
+                return (isNaN(timeB) ? 0 : timeB) - (isNaN(timeA) ? 0 : timeA);
+            }
+        });
+
+        return result;
+    }, [trendingArticles, categoryArticles, selectedMenuCategory, searchQuery, filterDate, sortOption]);
 
     const filteredPersonalized = useMemo(() => {
         let list = personalizedArticles;
         if (selectedMenuCategory.startsWith('Region:')) {
             const region = selectedMenuCategory.split(':')[1].trim();
-            list = list.filter(art =>
-                art.title.toLowerCase().includes(region.toLowerCase()) ||
-                art.summary.toLowerCase().includes(region.toLowerCase())
-            );
+            list = list.filter(art => {
+                const mappedRegion = getArticleRegion(art.source || '');
+                return mappedRegion.toLowerCase() === region.toLowerCase() ||
+                    (art.title && art.title.toLowerCase().includes(region.toLowerCase())) ||
+                    (art.summary && art.summary.toLowerCase().includes(region.toLowerCase()));
+            });
         } else if (selectedMenuCategory !== 'All') {
             list = list.filter(art => art.category.toLowerCase() === selectedMenuCategory.toLowerCase());
         }
-        return list;
-    }, [personalizedArticles, selectedMenuCategory]);
+
+        let result = [...list];
+
+        // 1. Fuzzy Search
+        if (searchQuery) {
+            const lowerQ = searchQuery.toLowerCase();
+            result = result.filter(art => 
+                (art.title && art.title.toLowerCase().includes(lowerQ)) ||
+                (art.summary && art.summary.toLowerCase().includes(lowerQ)) ||
+                (art.category && art.category.toLowerCase().includes(lowerQ)) ||
+                (art.source && art.source.toLowerCase().includes(lowerQ))
+            );
+        }
+
+        // 2. Date Filter
+        if (filterDate !== 'all') {
+            const now = new Date().getTime();
+            result = result.filter(art => {
+                const artTime = new Date(art.publishedAt || art.date).getTime();
+                if (isNaN(artTime)) return true;
+                const diffHours = (now - artTime) / (1000 * 60 * 60);
+                if (filterDate === '24h') return diffHours <= 24;
+                if (filterDate === 'week') return diffHours <= 24 * 7;
+                return true;
+            });
+        }
+
+        // 3. Sort
+        result.sort((a, b) => {
+            if (sortOption === 'importance') {
+                return (b.importance_score || 0) - (a.importance_score || 0);
+            } else if (sortOption === 'category') {
+                return (a.category || '').localeCompare(b.category || '');
+            } else {
+                const timeA = new Date(a.publishedAt || a.date).getTime();
+                const timeB = new Date(b.publishedAt || b.date).getTime();
+                return (isNaN(timeB) ? 0 : timeB) - (isNaN(timeA) ? 0 : timeA);
+            }
+        });
+
+        return result;
+    }, [personalizedArticles, selectedMenuCategory, searchQuery, filterDate, sortOption]);
+
+    const topHeadlines = useMemo(() => {
+        let catArticles = categoryArticles && categoryArticles.length > 0 ? categoryArticles : filteredTrending;
+        if (!categoryArticles || categoryArticles.length === 0) {
+            if (activeTab === 'business') catArticles = filteredTrending.filter(a => ['Business', 'Finance', 'Markets'].includes(a.category));
+            if (activeTab === 'politics') catArticles = filteredTrending.filter(a => ['Politics', 'Global Policy'].includes(a.category));
+            if (activeTab === 'sports') catArticles = filteredTrending.filter(a => ['Sports', 'Athletics'].includes(a.category));
+            if (activeTab === 'scienceTech') catArticles = filteredTrending.filter(a => ['Technology', 'Science', 'Innovation', 'Tech'].includes(a.category));
+            if (activeTab === 'entertainment') catArticles = filteredTrending.filter(a => ['Entertainment', 'Culture', 'Arts', 'Lifestyle'].includes(a.category));
+            if (activeTab === 'fifa') {
+                catArticles = fifaNewsArticles.length > 0 ? fifaNewsArticles : FIFA_FALLBACK_ARTICLES;
+            }
+        }
+        const finalBanner = catArticles.length > 2 ? catArticles : filteredTrending;
+
+        const seenTitles = new Set<string>();
+        return [...finalBanner]
+            .filter(art => {
+                if (!art.imageUrl || failedImages.includes(art.id)) return false;
+                const normTitle = (art.title || '').trim().toLowerCase();
+                if (seenTitles.has(normTitle)) return false;
+                seenTitles.add(normTitle);
+                return true;
+            })
+            .sort((a, b) => {
+                const tb = new Date(b.publishedAt || b.date).getTime();
+                const ta = new Date(a.publishedAt || a.date).getTime();
+                return (isNaN(tb) ? 0 : tb) - (isNaN(ta) ? 0 : ta);
+            })
+            .slice(0, 3);
+    }, [categoryArticles, filteredTrending, activeTab, failedImages, fifaNewsArticles]);
+
+    const topHeadlineIds = useMemo(() => new Set(topHeadlines.map(a => a.id)), [topHeadlines]);
 
     return (
         <div id="news-portal-root" className={`min-h-screen theme-${portalTheme} bg-portal-bg text-portal-text-main font-sans flex flex-col antialiased selection:bg-portal-brand selection:text-white transition-colors duration-300`}>
+            <Helmet>
+                <title>{`${activeTab === 'foryou' ? 'For You' : activeTab.charAt(0).toUpperCase() + activeTab.slice(1)} News | Horizon Portal`}</title>
+                <meta name="description" content="Stay updated with the latest professional news across global, local, politics, and business channels." />
+            </Helmet>
+            <AnimatePresence>
+                {showLiveToast && liveNews && (
+                    <motion.div
+                        initial={{ opacity: 0, y: -50 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -50 }}
+                        className="fixed top-4 left-1/2 -translate-x-1/2 z-[100] bg-red-600 text-white px-4 py-3 rounded-md shadow-2xl flex items-center gap-3 cursor-pointer border border-red-500"
+                        onClick={handleInjectLiveNews}
+                    >
+                        <Flame className="animate-pulse" size={20} />
+                        <div className="flex flex-col">
+                            <span className="text-[10px] font-bold uppercase tracking-wider text-red-200">Live Alert</span>
+                            <span className="text-sm font-semibold truncate max-w-sm">{liveNews.title}</span>
+                        </div>
+                        <button 
+                            className="ml-4 p-1 text-red-300 hover:text-white rounded-full hover:bg-red-700 transition-colors"
+                            onClick={(e) => { e.stopPropagation(); setShowLiveToast(false); }}
+                        >
+                            <X size={16} />
+                        </button>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
+            {showAdminLogin && (
+                <AdminLoginModal
+                    onClose={() => setShowAdminLogin(false)}
+                    onSuccess={(token) => {
+                        setAdminToken(token);
+                        localStorage.setItem('adminToken', token);
+                        setShowAdminLogin(false);
+                        setActiveTab('cms');
+                    }}
+                />
+            )}
             <div className="sticky top-0 z-50 flex flex-col w-full">
                 <div className="relative z-10 flex flex-col w-full shadow-md drop-shadow-md bg-portal-bg">
                     <Header
@@ -453,23 +717,30 @@ export default function App() {
                         setPortalTheme={setPortalTheme}
                         selectedCategories={preferences.selectedCategories}
                         handleNotificationRead={handleNotificationRead}
+                        siteTitle={siteConfig.siteTitle}
                     />
 
-                    <MarketTicker theme={portalTheme} />
+                    {activeTab !== 'cms' && (
+                        <>
+                            <MarketTicker theme={portalTheme} />
 
-                    <ChannelsNav
-                        selectedMenuCategory={selectedMenuCategory}
-                        setSelectedMenuCategory={setSelectedMenuCategory}
-                        activeTab={activeTab}
-                        setActiveTab={setActiveTab}
-                        selectedCountry={selectedCountry}
-                        setSelectedCountry={setSelectedCountry}
-                    />
+                            <ChannelsNav
+                                selectedMenuCategory={selectedMenuCategory}
+                                setSelectedMenuCategory={setSelectedMenuCategory}
+                                activeTab={activeTab}
+                                setActiveTab={setActiveTab}
+                                selectedCountry={selectedCountry}
+                                setSelectedCountry={setSelectedCountry}
+                            />
+                        </>
+                    )}
                 </div>
 
-                <div className="relative z-0">
-                    <BreakingNewsTicker relatedArticles={nonGoogleTrending} handleOpenArticle={handleOpenArticle} />
-                </div>
+                {activeTab !== 'cms' && (
+                    <div className="relative z-0">
+                        <BreakingNewsTicker relatedArticles={trendingArticles} handleOpenArticle={handleOpenArticle} />
+                    </div>
+                )}
             </div>
 
             {errorFeedback && (
@@ -482,119 +753,25 @@ export default function App() {
 
             <main id="news-portal-grid" className="flex-1 max-w-[1400px] w-full mx-auto p-4 sm:p-6 lg:p-8 flex flex-col gap-6">
 
-                {activeTab === 'sports' && selectedMenuCategory === 'Sports: Football' ? (
-                    <section className="mb-6 p-6 sm:p-8 rounded-none border flex flex-col items-start gap-6 shadow-2xl transition-all border-[#c9a84c]/20 bg-gradient-to-br from-[#0B101E] via-[#111827] to-[#0A0D14] relative overflow-hidden group">
-                        {/* Glow effects */}
-                        <div className="absolute -inset-[100%] bg-gradient-to-r from-transparent via-[#c9a84c]/5 to-transparent opacity-0 group-hover:opacity-100 group-hover:animate-[shimmer_2s_infinite] transition-opacity duration-1000 pointer-events-none" style={{ transform: 'skewX(-20deg)' }} />
-                        <div className="absolute top-0 right-0 w-64 h-64 bg-[#c9a84c]/10 blur-3xl -mr-20 -mt-20 pointer-events-none rounded-full" />
-                        <div className="absolute bottom-0 left-0 w-48 h-48 bg-blue-500/10 blur-3xl -ml-20 -mb-20 pointer-events-none rounded-full" />
-                        
-                        <div className="absolute top-1/2 right-4 -translate-y-1/2 opacity-5 pointer-events-none text-[#c9a84c]">
-                            <Trophy size={220} strokeWidth={1} />
-                        </div>
-
-
-
-                        {fifaLoading && fifaScores.length === 0 ? (
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 w-full relative z-10">
-                                {Array.from({ length: 4 }).map((_, i) => (
-                                    <div key={i} className="animate-pulse flex flex-col bg-white/5 p-4 rounded-none border border-white/10 h-32 backdrop-blur-sm">
-                                        <div className="flex justify-between items-center gap-2 h-full">
-                                            <div className="w-10 h-10 rounded-full bg-white/10"></div>
-                                            <div className="flex-1 h-8 bg-white/10 rounded-none"></div>
-                                            <div className="w-10 h-10 rounded-full bg-white/10"></div>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        ) : (
-                            <div className="flex flex-col lg:flex-row w-full bg-[#111827] border border-white/10 rounded-none overflow-hidden divide-y lg:divide-y-0 lg:divide-x divide-white/10 shadow-2xl relative z-10">
-                                {(fifaScores.length > 0 ? fifaScores : [
-                                    { team1: 'Japan', flag1: null, crest1: 'https://flagcdn.com/jp.svg', score1: 3, team2: 'Senegal', flag2: null, crest2: 'https://flagcdn.com/sn.svg', score2: 1, status: 'FULL TIME', date: 'JUN 15', goals: [{ minute: 14, scorer: 'Mitoma' }, { minute: 38, scorer: 'Dia' }, { minute: 67, scorer: 'Kubo' }, { minute: 82, scorer: 'Doan' }] },
-                                    { team1: 'Australia', flag1: null, crest1: 'https://flagcdn.com/au.svg', score1: 2, team2: 'Türkiye', flag2: null, crest2: 'https://flagcdn.com/tr.svg', score2: 0, status: 'FULL TIME', date: 'JUN 14', goals: [{ minute: 31, scorer: 'Duke' }, { minute: 78, scorer: 'Irvine' }] },
-                                    { team1: 'South Korea', flag1: null, crest1: 'https://flagcdn.com/kr.svg', score1: 2, team2: 'Czechia', flag2: null, crest2: 'https://flagcdn.com/cz.svg', score2: 1, status: 'FULL TIME', date: 'JUN 14', goals: [{ minute: 22, scorer: 'Son' }, { minute: 55, scorer: 'Schick' }, { minute: 73, scorer: 'Hwang' }] },
-                                    { team1: 'Mexico', flag1: null, crest1: 'https://flagcdn.com/mx.svg', score1: 2, team2: 'S. Africa', flag2: null, crest2: 'https://flagcdn.com/za.svg', score2: 0, status: 'FULL TIME', date: 'JUN 13', goals: [{ minute: 40, scorer: 'Giménez' }, { minute: 89, scorer: 'Martin' }] },
-                                    { team1: 'USA', flag1: null, crest1: 'https://flagcdn.com/us.svg', score1: 4, team2: 'Paraguay', flag2: null, crest2: 'https://flagcdn.com/py.svg', score2: 1, status: 'FULL TIME', date: 'JUN 12', goals: [{ minute: 10, scorer: 'Pulisic' }, { minute: 28, scorer: 'Balogun' }, { minute: 45, scorer: 'Almirón' }, { minute: 61, scorer: 'Weah' }, { minute: 85, scorer: 'Pepi' }] },
-                                ]).slice(0, 4).map((game: any, idx: number) => {
-                                    const img1 = game.flag1 && game.flag1.startsWith('http') ? game.flag1 : (game.crest1 || `https://flagcdn.com/${game.flag1}.svg`);
-                                    const img2 = game.flag2 && game.flag2.startsWith('http') ? game.flag2 : (game.crest2 || `https://flagcdn.com/${game.flag2}.svg`);
-                                    return (
-                                        <div key={idx} className="flex-1 flex flex-col p-4 hover:bg-white/5 transition-colors cursor-pointer justify-center group relative overflow-hidden">
-                                            {/* Top accent line */}
-                                            <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-[#c9a84c]/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                                            
-                                            <div className="flex items-center justify-between">
-                                                <div className="flex items-center gap-2">
-                                                    <img src={img1} alt="" className="w-5 h-5 rounded-sm shadow-md object-cover" />
-                                                    <span className="text-white text-sm font-medium">{game.team1}</span>
-                                                </div>
-                                                <span className="text-white text-lg font-bold">{game.score1}</span>
-                                            </div>
-                                            <div className="flex items-center justify-between mt-2">
-                                                <div className="flex items-center gap-2">
-                                                    <img src={img2} alt="" className="w-5 h-5 rounded-sm shadow-md object-cover" />
-                                                    <span className="text-white text-sm font-medium">{game.team2}</span>
-                                                </div>
-                                                <span className="text-white text-lg font-bold">{game.score2}</span>
-                                            </div>
-                                            <div className="text-[9px] text-white/40 uppercase tracking-widest mt-3 flex justify-between items-center">
-                                                <span>{game.status === 'FT' ? 'FULL TIME' : game.status}</span>
-                                                <span>{game.date}</span>
-                                            </div>
-                                            
-                                            {/* Scorers */}
-                                            {game.goals && game.goals.length > 0 ? (
-                                                <div className="mt-3 text-[9px] text-white/30 border-t border-white/5 pt-2 text-left font-mono group-hover:text-white/60 transition-colors flex items-start gap-1">
-                                                    <Trophy size={10} className="text-[#c9a84c]/40 group-hover:text-[#c9a84c]/80 shrink-0 mt-0.5" />
-                                                    <span className="line-clamp-2">
-                                                        {game.goals.map((g: any) => `${g.scorer} (${g.minute}')`).join(', ')}
-                                                    </span>
-                                                </div>
-                                            ) : (
-                                                <div className="mt-3 text-[9px] text-white/30 border-t border-white/5 pt-2 text-left font-mono opacity-0 h-[26px]">
-                                                    No goals
-                                                </div>
-                                            )}
-                                        </div>
-                                    )
-                                })}
-                            </div>
-                        )}
-                    </section>
-                ) : activeTab === 'cricket' || (activeTab === 'sports' && selectedMenuCategory === 'Sports: Cricket') ? (
+                {activeTab === 'sports' && selectedMenuCategory === 'Sports: Cricket' ? (
                     <IccCricketBanner
                         activeTab={activeTab}
                         setActiveTab={setActiveTab}
                         cricketLoading={cricketLoading}
                         cricketMatches={cricketMatches}
                     />
-                ) : !['foryou', 'cricket', 'report'].includes(activeTab) ? (
-                    (() => {
-                        let catArticles = filteredTrending;
-                        if (activeTab === 'business') catArticles = filteredTrending.filter(a => ['Business', 'Finance', 'Markets'].includes(a.category));
-                        if (activeTab === 'politics') catArticles = filteredTrending.filter(a => ['Politics', 'Global Policy'].includes(a.category));
-                        if (activeTab === 'sports') catArticles = filteredTrending.filter(a => ['Sports', 'Athletics'].includes(a.category));
-                        if (activeTab === 'scienceTech') catArticles = filteredTrending.filter(a => ['Technology', 'Science', 'Innovation', 'Tech'].includes(a.category));
-                        if (activeTab === 'entertainment') catArticles = filteredTrending.filter(a => ['Entertainment', 'Culture', 'Arts', 'Lifestyle'].includes(a.category));
-                        if (activeTab === 'fifa') {
-                            catArticles = fifaNewsArticles.length > 0 ? fifaNewsArticles : FIFA_FALLBACK_ARTICLES;
-                        }
-                        
-                        const finalBanner = catArticles.length > 2 ? catArticles : filteredTrending;
-                        return (
-                            <MainAdBanner
-                                isAdMinimized={isAdMinimized}
-                                setIsAdMinimized={setIsAdMinimized}
-                                trendingArticles={finalBanner}
-                                handleOpenArticle={handleOpenArticle}
-                            />
-                        );
-                    })()
+                ) : !['foryou', 'cricket', 'report', 'cms'].includes(activeTab) ? (
+                    <MainAdBanner
+                        isAdMinimized={isAdMinimized}
+                        setIsAdMinimized={setIsAdMinimized}
+                        topHeadlines={topHeadlines}
+                        handleOpenArticle={handleOpenArticle}
+                    />
                 ) : null}
 
                 <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6 items-start">
 
-                    <div id="primary-articles-column" className="md:col-span-2 lg:col-span-3 space-y-6">
+                    <div id="primary-articles-column" className={['cms', 'cricket', 'fifa', 'fifaAllScores'].includes(activeTab) ? "md:col-span-3 lg:col-span-4 space-y-6" : "md:col-span-2 lg:col-span-3 space-y-6"}>
 
                         <AnimatePresence mode="wait">
                             {activeTab === 'foryou' && (
@@ -613,10 +790,24 @@ export default function App() {
                                         isGeneratingBriefing={isGeneratingBriefing}
                                         handleGeneratePersonalFeed={handleGeneratePersonalFeed}
                                         CATEGORY_PRESETS={CATEGORY_PRESETS}
+                                        behaviorProfile={behaviorProfile}
+                                        resetBehaviorProfile={resetBehaviorProfile}
                                     />
                                 </motion.div>
                             )}
                         </AnimatePresence>
+
+                        {/* Search & Discovery Bar */}
+                        {['trending', 'foryou', 'sports', 'business', 'politics', 'scienceTech', 'entertainment'].includes(activeTab) && (
+                            <SearchBar 
+                                searchQuery={searchQuery}
+                                setSearchQuery={setSearchQuery}
+                                filterDate={filterDate}
+                                setFilterDate={setFilterDate}
+                                sortOption={sortOption}
+                                setSortOption={setSortOption}
+                            />
+                        )}
 
                         <div id="feed-results-container" className="space-y-4">
 
@@ -662,6 +853,7 @@ export default function App() {
                                 </div>
                             )}
 
+
                             <div id="articles-list-flow" className="grid grid-cols-1 md:grid-cols-2 gap-4 auto-rows-auto">
                                 <AnimatePresence>
                                     {activeTab === 'trending' && (
@@ -672,36 +864,21 @@ export default function App() {
                                             </div>
                                         ) : (
                                             (() => {
-                                                const topHeadlineIds = new Set(
-                                                    [...filteredTrending]
-                                                        .filter(art => !!art.imageUrl && !failedImages.includes(art.id))
-                                                        .sort((a, b) => {
-                                                            const tb = new Date(b.publishedAt || b.date).getTime();
-                                                            const ta = new Date(a.publishedAt || a.date).getTime();
-                                                            return (isNaN(tb) ? 0 : tb) - (isNaN(ta) ? 0 : ta);
-                                                        })
-                                                        .slice(0, 3)
-                                                        .map(a => a.id)
-                                                );
-
                                                 const isBannerVisible = true;
 
                                                 const seenTitles = new Set();
                                                 const validArticles = [...filteredTrending]
-                                                    .sort((a, b) => {
-                                                        const tb = new Date(b.publishedAt || b.date).getTime();
-                                                        const ta = new Date(a.publishedAt || a.date).getTime();
-                                                        return (isNaN(tb) ? 0 : tb) - (isNaN(ta) ? 0 : ta);
-                                                    })
                                                     .filter(art => {
-                                                        if (!art.imageUrl || failedImages.includes(art.id)) return false;
+                                                        if (failedImages.includes(art.id)) return false;
                                                         if (seenTitles.has(art.title)) return false;
                                                         seenTitles.add(art.title);
                                                         if (isBannerVisible && topHeadlineIds.has(art.id)) return false;
                                                         return true;
                                                     });
 
-                                                const mainArticles = validArticles.slice(0, 10);
+                                                const isGoogle = (art: NewsArticle) => art.source?.toLowerCase().includes('google') || art.url?.includes('news.google.com');
+                                                const nonGoogle = validArticles.filter(art => !isGoogle(art));
+                                                const mainArticles = nonGoogle.slice(0, trendingLimit);
 
                                                 return mainArticles.map((art, idx) => (
                                                     <ArticleCard
@@ -719,6 +896,13 @@ export default function App() {
                                         )
                                     )}
 
+                                    {activeTab === 'trending' && filteredTrending.length > 0 && (
+                                        <InfiniteScroll 
+                                            onIntersect={() => setTrendingLimit(prev => prev + 10)} 
+                                            hasMore={trendingLimit < filteredTrending.length} 
+                                        />
+                                    )}
+
                                     {activeTab === 'foryou' && (
                                         isGeneratingBriefing ? (
                                             Array.from({ length: 4 }).map((_, i) => (
@@ -733,20 +917,60 @@ export default function App() {
                                                 </p>
                                             </div>
                                         ) : (
-                                            filteredPersonalized.map((art, idx) => (
-                                                <ArticleCard
-                                                    key={art.id}
-                                                    index={idx}
-                                                    art={art}
-                                                    handleOpenArticle={handleOpenArticle}
-                                                    toggleBookmark={toggleBookmark}
-                                                    isBookmarked={bookmarks.includes(art.id)}
-                                                    isCustomFeed
-                                                    failedImages={failedImages}
-                                                    setFailedImages={setFailedImages}
-                                                />
-                                            ))
+                                            (() => {
+                                                const topImplicitKeywords = Object.entries(behaviorProfile.keywords)
+                                                    .sort((a, b) => b[1] - a[1])
+                                                    .slice(0, 5)
+                                                    .map(e => e[0]);
+
+                                                const renderedKeywords = new Set<string>();
+
+                                                return filteredPersonalized.slice(0, foryouLimit).map((art, idx) => {
+                                                    let sectionHeader = null;
+                                                    const text = (art.title + ' ' + art.summary).toLowerCase();
+                                                    const matchedImplicit = topImplicitKeywords.find(kw => text.includes(kw));
+                                                    
+                                                    if (matchedImplicit && !renderedKeywords.has(matchedImplicit)) {
+                                                        renderedKeywords.add(matchedImplicit);
+                                                        sectionHeader = (
+                                                            <div className="col-span-1 md:col-span-2 pt-4 pb-2 border-b border-portal-border/50 mb-2 mt-2 flex items-center gap-2">
+                                                                <Activity size={14} className="text-portal-brand animate-pulse" />
+                                                                <span className="text-xs font-mono text-portal-text-muted uppercase">Based on your interest in <span className="text-portal-text-main font-bold">#{matchedImplicit}</span></span>
+                                                            </div>
+                                                        );
+                                                    } else if (idx === 0 && !matchedImplicit) {
+                                                        sectionHeader = (
+                                                            <div className="col-span-1 md:col-span-2 pt-4 pb-2 border-b border-portal-border/50 mb-2 mt-2 flex items-center gap-2">
+                                                                <Sparkles size={14} className="text-portal-brand animate-pulse" />
+                                                                <span className="text-xs font-mono text-portal-text-muted uppercase">Top Picks For You</span>
+                                                            </div>
+                                                        );
+                                                    }
+
+                                                    return (
+                                                        <React.Fragment key={art.id}>
+                                                            {sectionHeader}
+                                                            <ArticleCard
+                                                                index={idx}
+                                                                art={art}
+                                                                handleOpenArticle={handleOpenArticle}
+                                                                toggleBookmark={toggleBookmark}
+                                                                isBookmarked={bookmarks.includes(art.id)}
+                                                                isCustomFeed
+                                                                setFailedImages={setFailedImages}
+                                                            />
+                                                        </React.Fragment>
+                                                    );
+                                                });
+                                            })()
                                         )
+                                    )}
+
+                                    {activeTab === 'foryou' && filteredPersonalized.length > 0 && !isGeneratingBriefing && (
+                                        <InfiniteScroll 
+                                            onIntersect={() => setForyouLimit(prev => prev + 10)} 
+                                            hasMore={foryouLimit < filteredPersonalized.length} 
+                                        />
                                     )}
                                 </AnimatePresence>
                             </div>
@@ -755,7 +979,7 @@ export default function App() {
                                 (() => {
                                     const topHeadlineIds = new Set(
                                         [...filteredTrending]
-                                            .filter(art => !!art.imageUrl && !failedImages.includes(art.id))
+                                            .filter(art => !failedImages.includes(art.id))
                                             .sort((a, b) => {
                                                 const tb = new Date(b.publishedAt || b.date).getTime();
                                                 const ta = new Date(a.publishedAt || a.date).getTime();
@@ -769,42 +993,56 @@ export default function App() {
 
                                     const seenTitles = new Set();
                                     const validArticles = [...filteredTrending]
-                                        .sort((a, b) => {
-                                            const tb = new Date(b.publishedAt || b.date).getTime();
-                                            const ta = new Date(a.publishedAt || a.date).getTime();
-                                            return (isNaN(tb) ? 0 : tb) - (isNaN(ta) ? 0 : ta);
-                                        })
                                         .filter(art => {
-                                            if (!art.imageUrl || failedImages.includes(art.id)) return false;
+                                            if (failedImages.includes(art.id)) return false;
                                             if (seenTitles.has(art.title)) return false;
                                             seenTitles.add(art.title);
                                             if (isBannerVisible && topHeadlineIds.has(art.id)) return false;
                                             return true;
                                         });
 
-                                    const overflowArticles = validArticles.slice(10);
+                                    const isGoogle = (art: NewsArticle) => art.source?.toLowerCase().includes('google') || art.url?.includes('news.google.com');
+                                    const nonGoogle = validArticles.filter(art => !isGoogle(art));
+                                    const googleArticles = validArticles.filter(art => isGoogle(art));
 
-                                    if (overflowArticles.length === 0) return null;
+                                    const overflowArticles = nonGoogle.slice(43);
+                                    const displayGoogleArticles = googleArticles.slice(0, 40);
+
+                                    if (overflowArticles.length === 0 && displayGoogleArticles.length === 0) return null;
 
                                     return (
-                                        <MoreFromWire
-                                            articles={overflowArticles}
-                                            handleOpenArticle={handleOpenArticle}
-                                            toggleBookmark={toggleBookmark}
-                                            bookmarks={bookmarks}
-                                            failedImages={failedImages}
-                                            setFailedImages={setFailedImages}
-                                        />
+                                        <>
+                                            {overflowArticles.length > 0 && (
+                                                <MoreFromWire
+                                                    articles={overflowArticles}
+                                                    handleOpenArticle={handleOpenArticle}
+                                                    toggleBookmark={toggleBookmark}
+                                                    bookmarks={bookmarks}
+                                                    failedImages={failedImages}
+                                                    setFailedImages={setFailedImages}
+                                                />
+                                            )}
+                                            {nonGoogle.length === 0 && displayGoogleArticles.length > 0 && (
+                                                <GoogleNewsSection
+                                                    articles={displayGoogleArticles}
+                                                    handleOpenArticle={handleOpenArticle}
+                                                    toggleBookmark={toggleBookmark}
+                                                    bookmarks={bookmarks}
+                                                    failedImages={failedImages}
+                                                    setFailedImages={setFailedImages}
+                                                />
+                                            )}
+                                        </>
                                     );
-                                    })()
-                                )}
+                                })()
+                            )}
 
                             <React.Suspense fallback={<div className="p-10 flex justify-center text-portal-brand animate-pulse font-mono tracking-widest text-xs">LOADING PORTAL...</div>}>
                                 {activeTab === 'globalTv' && <GlobalPage theme={portalTheme} />}
                                 {activeTab === 'local' && (
                                     <LocalPage
                                         theme={portalTheme}
-                                        articles={nonGoogleTrending}
+                                        articles={trendingArticles.filter(art => !topHeadlineIds.has(art.id))}
                                         handleOpenArticle={handleOpenArticle}
                                         toggleBookmark={toggleBookmark}
                                         bookmarks={bookmarks}
@@ -827,11 +1065,11 @@ export default function App() {
                                     <PoliticsPage
                                         theme={portalTheme}
                                         selectedCategoryFromMenu={selectedMenuCategory.startsWith('Politics:') ? selectedMenuCategory.split(':')[1].trim() : 'All'}
-                                        articles={nonGoogleTrending.filter(art => {
+                                        articles={trendingArticles.filter(art => {
                                             const isCat = ['Politics'].includes(art.category) && (!searchQuery || (art.title || '').toLowerCase().includes(searchQuery.toLowerCase()));
                                             const activeRegion = selectedMenuCategory.startsWith('Region: ') ? selectedMenuCategory.replace('Region: ', '') : 'All';
-                                            return activeRegion === 'All' ? isCat : (isCat && getArticleRegion(art.source) === activeRegion);
-                                        }).slice(3, 13)}
+                                            return (activeRegion === 'All' ? isCat : (isCat && getArticleRegion(art.source) === activeRegion)) && !topHeadlineIds.has(art.id);
+                                        })}
                                         handleOpenArticle={handleOpenArticle}
                                         toggleBookmark={toggleBookmark}
                                         bookmarks={bookmarks}
@@ -843,11 +1081,11 @@ export default function App() {
                                     <BusinessPage
                                         theme={portalTheme}
                                         selectedCategoryFromMenu={selectedMenuCategory.startsWith('Business:') ? selectedMenuCategory.split(':')[1].trim() : 'All'}
-                                        articles={nonGoogleTrending.filter(art => {
+                                        articles={trendingArticles.filter(art => {
                                             const isCat = ['Business', 'Finance', 'Markets'].includes(art.category) && (!searchQuery || (art.title || '').toLowerCase().includes(searchQuery.toLowerCase()));
                                             const activeRegion = selectedMenuCategory.startsWith('Region: ') ? selectedMenuCategory.replace('Region: ', '') : 'All';
-                                            return activeRegion === 'All' ? isCat : (isCat && getArticleRegion(art.source) === activeRegion);
-                                        }).slice(3, 13)}
+                                            return (activeRegion === 'All' ? isCat : (isCat && getArticleRegion(art.source) === activeRegion)) && !topHeadlineIds.has(art.id);
+                                        })}
                                         handleOpenArticle={handleOpenArticle}
                                         toggleBookmark={toggleBookmark}
                                         bookmarks={bookmarks}
@@ -859,11 +1097,11 @@ export default function App() {
                                     <EntertainmentPage
                                         theme={portalTheme}
                                         selectedCategoryFromMenu={selectedMenuCategory.startsWith('Entertainment:') ? selectedMenuCategory.split(':')[1].trim() : 'All'}
-                                        articles={nonGoogleTrending.filter(art => {
+                                        articles={trendingArticles.filter(art => {
                                             const isCat = ['Entertainment', 'Movie', 'Music'].includes(art.category) && (!searchQuery || (art.title || '').toLowerCase().includes(searchQuery.toLowerCase()));
                                             const activeRegion = selectedMenuCategory.startsWith('Region: ') ? selectedMenuCategory.replace('Region: ', '') : 'All';
-                                            return activeRegion === 'All' ? isCat : (isCat && getArticleRegion(art.source) === activeRegion);
-                                        }).slice(3, 13)}
+                                            return (activeRegion === 'All' ? isCat : (isCat && getArticleRegion(art.source) === activeRegion)) && !topHeadlineIds.has(art.id);
+                                        })}
                                         handleOpenArticle={handleOpenArticle}
                                         toggleBookmark={toggleBookmark}
                                         bookmarks={bookmarks}
@@ -875,7 +1113,7 @@ export default function App() {
                                     <ScienceTechPage
                                         theme={portalTheme}
                                         selectedCategoryFromMenu={selectedMenuCategory.startsWith('Science & Tech:') ? selectedMenuCategory.split(':')[1].trim() : 'All'}
-                                        articles={nonGoogleTrending.filter(art => ['Science', 'Technology', 'Science & Tech', 'Computing', 'Space', 'Cybersecurity'].includes(art.category) && (!searchQuery || (art.title || '').toLowerCase().includes(searchQuery.toLowerCase()))).slice(3, 13)}
+                                        articles={trendingArticles.filter(art => ['Science', 'Technology', 'Science & Tech', 'Computing', 'Space', 'Cybersecurity'].includes(art.category) && (!searchQuery || (art.title || '').toLowerCase().includes(searchQuery.toLowerCase())) && !topHeadlineIds.has(art.id))}
                                         handleOpenArticle={handleOpenArticle}
                                         toggleBookmark={toggleBookmark}
                                         bookmarks={bookmarks}
@@ -887,40 +1125,55 @@ export default function App() {
                                 {activeTab === 'sports' && (
                                     <SportsPage
                                         theme={portalTheme}
-                                        articles={nonGoogleTrending.filter(art => art.category === 'Sports' && (!searchQuery || (art.title || '').toLowerCase().includes(searchQuery.toLowerCase()))).slice(0, 10)}
+                                        articles={trendingArticles.filter(art => ['Sports', 'Athletics'].includes(art.category) && (!searchQuery || (art.title || '').toLowerCase().includes(searchQuery.toLowerCase())) && !topHeadlineIds.has(art.id))}
                                         selectedSportFromMenu={selectedMenuCategory.startsWith('Sports:') ? selectedMenuCategory.split(':')[1].trim() : 'All'}
                                         handleOpenArticle={handleOpenArticle}
                                         toggleBookmark={toggleBookmark}
                                         bookmarks={bookmarks}
                                         failedImages={failedImages}
                                         setFailedImages={setFailedImages}
+                                        setActiveTab={setActiveTab}
                                     />
                                 )}
-                                {activeTab === 'fifa' && <FifaWorldCupPage />}
-                                {activeTab === 'fifaAllScores' && (
-                                    <FifaAllScoresPage
-                                        onBack={() => setActiveTab('fifa')}
-                                    />
-                                )}
+
                                 {activeTab === 'cricket' && <CricketLivePage />}
+                                {activeTab === 'cms' && adminToken && (
+                                    <CmsPage
+                                        theme={portalTheme}
+                                        token={adminToken}
+                                        onLogout={() => {
+                                            setAdminToken(null);
+                                            localStorage.removeItem('adminToken');
+                                            setActiveTab('trending');
+                                        }}
+                                        handleOpenArticle={handleOpenArticle}
+                                    />
+                                )}
+                                {activeTab === 'cms' && !adminToken && (
+                                    <div className="text-center py-20 text-red-500 font-mono">
+                                        Unauthorized access. Please login via Ctrl+Shift+L.
+                                    </div>
+                                )}
                             </React.Suspense>
 
                         </div>
                     </div>
 
-                    <SystemSidebar
-                        activeTab={activeTab}
-                        bookmarks={bookmarks}
-                        trendingArticles={nonGoogleTrending}
-                        personalizedArticles={personalizedArticles}
-                        relatedArticles={filteredTrending}
-                        handleOpenArticle={handleOpenArticle}
-                        setActiveTab={setActiveTab}
-                        setSearchQuery={setSearchQuery}
-                        failedImages={failedImages}
-                        googleArticles={googleTrending}
-                        selectedMenuCategory={selectedMenuCategory}
-                    />
+                    {!['cms', 'cricket', 'fifa', 'fifaAllScores'].includes(activeTab) && (
+                        <SystemSidebar
+                            activeTab={activeTab}
+                            bookmarks={bookmarks}
+                            trendingArticles={trendingArticles}
+                            personalizedArticles={personalizedArticles}
+                            relatedArticles={filteredTrending}
+                            handleOpenArticle={handleOpenArticle}
+                            setActiveTab={setActiveTab}
+                            setSearchQuery={setSearchQuery}
+                            failedImages={failedImages}
+                            selectedMenuCategory={selectedMenuCategory}
+                            topHeadlineIds={topHeadlineIds}
+                        />
+                    )}
                 </div>
             </main>
 
@@ -953,8 +1206,8 @@ export default function App() {
                     </div>
                     <div className="flex items-center space-x-2 text-[10px] text-portal-text-muted font-mono">
                         <span className="w-1.5 h-1.5 bg-emerald-500 animate-pulse"></span>
-                        <span>The Horizon Post Online</span>
-                        <span className="ml-4">© 2026 THE HORIZON POST INC</span>
+                        <span>{siteConfig.siteTitle || 'The Horizon Post Online'}</span>
+                        <span className="ml-4">{siteConfig.footerText || '© 2026 THE HORIZON POST INC'}</span>
                     </div>
                 </div>
                 <div className="w-full text-center mt-2 text-[8px] text-portal-text-muted/60 max-w-4xl mx-auto">

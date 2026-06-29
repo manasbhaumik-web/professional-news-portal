@@ -2,6 +2,7 @@ import React from 'react';
 import { NewsArticle } from '../types';
 import ArticleCard from '../components/ArticleCard';
 import MoreFromWire from '../components/MoreFromWire';
+import GoogleNewsSection from '../components/GoogleNewsSection';
 import { Cpu } from 'lucide-react';
 
 interface ScienceTechPageProps {
@@ -16,60 +17,27 @@ interface ScienceTechPageProps {
 }
 
 export default function ScienceTechPage({ articles, selectedCategoryFromMenu, handleOpenArticle, toggleBookmark, bookmarks, failedImages, setFailedImages }: ScienceTechPageProps) {
- const [liveArticles, setLiveArticles] = React.useState<NewsArticle[]>([]);
- const [isLoading, setIsLoading] = React.useState(false);
+  const combinedArticles = selectedCategoryFromMenu === 'All' 
+  ? articles 
+  : articles.filter(art => 
+  art.title.toLowerCase().includes(selectedCategoryFromMenu.toLowerCase()) || 
+  art.summary?.toLowerCase().includes(selectedCategoryFromMenu.toLowerCase())
+  );
 
- React.useEffect(() => {
- const fetchCategoryFeed = async () => {
- setIsLoading(true);
- try {
- const query = selectedCategoryFromMenu === 'All' ? 'Technology' : selectedCategoryFromMenu;
- const rssUrl = encodeURIComponent(`https://news.google.com/rss/search?q=${query}+Technology`);
- const res = await fetch(`/api/news/proxy?url=${rssUrl}`);
- const data = await res.json();
+  const allSorted = combinedArticles.sort((a, b) => {
+  const timeA = new Date(a.publishedAt || a.date || Date.now()).getTime();
+  const timeB = new Date(b.publishedAt || b.date || Date.now()).getTime();
+  return timeB - timeA;
+  }).filter((art, idx, self) => idx === self.findIndex(a => a.title.toLowerCase().trim() === art.title.toLowerCase().trim()));
 
- if (data.status === 'ok' && data.items) {
- const mapped: NewsArticle[] = data.items.map((item: any, idx: number) => ({
- id: `tech-live-${idx}`,
- title: item.title,
- summary: item.description ? item.description.replace(/<[^>]+>/g, '').substring(0, 150) + '...' : '',
- content: item.content || item.description || '',
- imageUrl: item.enclosure?.link || item.thumbnail || undefined,
- category: 'Technology',
- sportName: selectedCategoryFromMenu,
- source: 'Google News Feed',
- publishedAt: (item.pubDate && !isNaN(new Date(item.pubDate).getTime())) ? new Date(item.pubDate).toISOString() : new Date().toISOString(),
- timeAgo: item.pubDate ? new Date(item.pubDate).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'Live',
- readTime: '3 min read',
- url: item.link
- }));
- setLiveArticles(mapped);
- }
- } catch (err) {
- console.error('Failed to fetch live tech feed', err);
- } finally {
- setIsLoading(false);
- }
- };
+  const isGoogle = (art: NewsArticle) => art.source?.toLowerCase().includes('google') || art.url?.includes('news.google.com');
+  const nonGoogle = allSorted.filter(art => !isGoogle(art));
+  const googleArticles = allSorted.filter(art => isGoogle(art));
 
- fetchCategoryFeed();
- }, [selectedCategoryFromMenu]);
+  const displayArticles = nonGoogle.slice(0, 10);
+  const overflowArticles = nonGoogle.slice(43);
+    const displayGoogleArticles = googleArticles.slice(0, 40);
 
- const combinedArticles = selectedCategoryFromMenu === 'All' 
- ? [...liveArticles, ...articles] 
- : [...liveArticles, ...articles.filter(art => 
- art.title.toLowerCase().includes(selectedCategoryFromMenu.toLowerCase()) || 
- art.summary?.toLowerCase().includes(selectedCategoryFromMenu.toLowerCase())
- )];
-
- const allSorted = combinedArticles.sort((a, b) => {
- const timeA = new Date(a.publishedAt || a.date || Date.now()).getTime();
- const timeB = new Date(b.publishedAt || b.date || Date.now()).getTime();
- return timeB - timeA;
- }).filter((art, idx, self) => idx === self.findIndex(a => a.title.toLowerCase().trim() === art.title.toLowerCase().trim()));
-
- const displayArticles = allSorted.slice(0, 10);
- const overflowArticles = allSorted.slice(10);
 
  return (
  <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -79,7 +47,7 @@ export default function ScienceTechPage({ articles, selectedCategoryFromMenu, ha
  {selectedCategoryFromMenu === 'All' ? 'Science & Technology' : `${selectedCategoryFromMenu} Feed`}
  </h3>
  <span className="text-[10px] font-mono px-2 py-0.5 uppercase bg-portal-surface text-portal-text-muted border border-portal-border/50">
- {isLoading ? 'Loading...' : `${allSorted.length} updates`}
+ {`${allSorted.length} updates`}
  </span>
  </div>
  <div className="text-xs flex items-center space-x-1 select-none font-mono text-portal-text-muted">
@@ -119,6 +87,19 @@ export default function ScienceTechPage({ articles, selectedCategoryFromMenu, ha
                     setFailedImages={setFailedImages || (() => {})}
                 />
             )}
+
+            {nonGoogle.length === 0 && displayGoogleArticles.length > 0 && (
+                <GoogleNewsSection
+                    articles={displayGoogleArticles}
+                    handleOpenArticle={handleOpenArticle}
+                    toggleBookmark={toggleBookmark}
+                    bookmarks={bookmarks}
+                    failedImages={failedImages || []}
+                    setFailedImages={setFailedImages || (() => {})}
+                />
+            )}
  </div>
  );
 }
+
+

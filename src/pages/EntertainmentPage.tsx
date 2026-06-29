@@ -2,6 +2,8 @@ import React from 'react';
 import { NewsArticle } from '../types';
 import ArticleCard from '../components/ArticleCard';
 import MoreFromWire from '../components/MoreFromWire';
+import GoogleNewsSection from '../components/GoogleNewsSection';
+import { Film } from 'lucide-react';
 import { Sparkles } from 'lucide-react';
 
 interface EntertainmentPageProps {
@@ -25,32 +27,27 @@ export default function EntertainmentPage({ articles, selectedCategoryFromMenu, 
       try {
         const categoryFeeds: Record<string, {name: string, url: string}[]> = {
           'All': [
-            { name: 'Google News', url: 'https://news.google.com/rss/search?q=Entertainment' },
             { name: 'TMZ', url: 'https://www.tmz.com/rss.xml' },
             { name: 'Variety', url: 'https://variety.com/feed/' },
             { name: 'E! News', url: 'https://www.eonline.com/syndication/feeds/rssfeeds/topstories.xml' },
             { name: 'Deadline', url: 'https://deadline.com/feed/' }
           ],
           'Movies': [
-            { name: 'Google News', url: 'https://news.google.com/rss/search?q=Movies+Film' },
             { name: 'Variety Film', url: 'https://variety.com/v/film/feed/' },
             { name: 'Deadline Film', url: 'https://deadline.com/v/film/feed/' },
             { name: 'IndieWire Film', url: 'https://www.indiewire.com/v/film/feed/' }
           ],
           'Music': [
-            { name: 'Google News', url: 'https://news.google.com/rss/search?q=Music' },
             { name: 'Billboard', url: 'https://www.billboard.com/feed/' },
             { name: 'Rolling Stone', url: 'https://www.rollingstone.com/feed/' },
             { name: 'Pitchfork', url: 'https://pitchfork.com/rss/news/' }
           ],
           'Television': [
-            { name: 'Google News', url: 'https://news.google.com/rss/search?q=Television+TV+Shows' },
             { name: 'Variety TV', url: 'https://variety.com/v/tv/feed/' },
             { name: 'Deadline TV', url: 'https://deadline.com/v/tv/feed/' },
             { name: 'TVLine', url: 'https://tvline.com/feed/' }
           ],
           'Celebrity': [
-            { name: 'Google News', url: 'https://news.google.com/rss/search?q=Celebrity+Gossip' },
             { name: 'TMZ', url: 'https://www.tmz.com/rss.xml' },
             { name: 'E! News', url: 'https://www.eonline.com/syndication/feeds/rssfeeds/topstories.xml' },
             { name: 'People', url: 'https://people.com/feed/' }
@@ -114,8 +111,13 @@ export default function EntertainmentPage({ articles, selectedCategoryFromMenu, 
  return timeB - timeA;
  }).filter((art, idx, self) => idx === self.findIndex(a => (a.title || '').toLowerCase().trim() === (art.title || '').toLowerCase().trim()));
 
- const displayArticles = allSorted.slice(0, 10);
- const overflowArticles = allSorted.slice(10);
+    const isGoogle = (art: NewsArticle) => art.source?.toLowerCase().includes('google') || art.url?.includes('news.google.com');
+    const nonGoogle = allSorted.filter(art => !isGoogle(art));
+    const googleArticles = allSorted.filter(art => isGoogle(art));
+
+    const displayArticles = nonGoogle.slice(0, 10);
+    const overflowArticles = nonGoogle.slice(43);
+    const displayGoogleArticles = googleArticles.slice(0, 40);
 
  return (
  <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -165,6 +167,19 @@ export default function EntertainmentPage({ articles, selectedCategoryFromMenu, 
                     setFailedImages={setFailedImages || (() => {})}
                 />
             )}
+
+            {nonGoogle.length === 0 && displayGoogleArticles.length > 0 && (
+                <GoogleNewsSection
+                    articles={displayGoogleArticles}
+                    handleOpenArticle={handleOpenArticle}
+                    toggleBookmark={toggleBookmark}
+                    bookmarks={bookmarks}
+                    failedImages={failedImages || []}
+                    setFailedImages={setFailedImages || (() => {})}
+                />
+            )}
  </div>
  );
 }
+
+

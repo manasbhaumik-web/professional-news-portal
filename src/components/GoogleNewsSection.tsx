@@ -1,10 +1,10 @@
-import React, { useEffect, useRef } from 'react';
+import React from 'react';
 import { motion } from 'framer-motion';
-import { Globe, ChevronRight } from 'lucide-react';
+import { Search, ChevronRight } from 'lucide-react';
 import { NewsArticle } from '../types';
 import ArticleCard from './ArticleCard';
 
-interface MoreFromWireProps {
+interface GoogleNewsSectionProps {
     articles: NewsArticle[];
     handleOpenArticle: (art: NewsArticle) => void;
     toggleBookmark: (id: string, e: React.MouseEvent) => void;
@@ -13,31 +13,14 @@ interface MoreFromWireProps {
     setFailedImages: (f: any) => void;
 }
 
-export default function MoreFromWire({
+export default function GoogleNewsSection({
     articles,
     handleOpenArticle,
     toggleBookmark,
     bookmarks,
     failedImages,
     setFailedImages
-}: MoreFromWireProps) {
-    const scrollContainerRef = useRef<HTMLDivElement>(null);
-
-    useEffect(() => {
-        if (!articles || articles.length === 0) return;
-        const interval = setInterval(() => {
-            if (scrollContainerRef.current) {
-                const container = scrollContainerRef.current;
-                if (container.scrollLeft + container.clientWidth >= container.scrollWidth - 50) {
-                    container.scrollTo({ left: 0, behavior: 'smooth' });
-                } else {
-                    container.scrollBy({ left: 350, behavior: 'smooth' });
-                }
-            }
-        }, 5000);
-        return () => clearInterval(interval);
-    }, [articles]);
-
+}: GoogleNewsSectionProps) {
     if (!articles || articles.length === 0) return null;
 
     return (
@@ -48,24 +31,24 @@ export default function MoreFromWire({
         >
             <div className="flex items-center justify-between border-b border-portal-border pb-3 mb-5">
                 <h3 className="text-portal-text-main font-serif font-black text-xl flex items-center gap-2">
-                    <Globe size={18} className="text-portal-brand" /> Global Intelligence Feed
+                    <Search size={18} className="text-blue-500" /> Google News Feeds
                 </h3>
                 <div className="flex items-center gap-2">
                     <button
                         className="bg-portal-surface border border-portal-border hover:bg-portal-surface-hover text-portal-text-main p-2 transition-colors disabled:opacity-30"
-                        onClick={() => { scrollContainerRef.current?.scrollBy({ left: -350, behavior: 'smooth' }) }}
+                        onClick={(e) => { e.currentTarget.parentElement?.parentElement?.nextElementSibling?.scrollBy({ left: -350, behavior: 'smooth' }) }}
                     >
                         <ChevronRight size={18} className="rotate-180" />
                     </button>
                     <button
                         className="bg-portal-surface border border-portal-border hover:bg-portal-surface-hover text-portal-text-main p-2 transition-colors disabled:opacity-30"
-                        onClick={() => { scrollContainerRef.current?.scrollBy({ left: 350, behavior: 'smooth' }) }}
+                        onClick={(e) => { e.currentTarget.parentElement?.parentElement?.nextElementSibling?.scrollBy({ left: 350, behavior: 'smooth' }) }}
                     >
                         <ChevronRight size={18} />
                     </button>
                 </div>
             </div>
-            <div ref={scrollContainerRef} className="flex overflow-x-auto gap-4 snap-x snap-mandatory pb-4 hidden-scrollbar" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+            <div className="flex overflow-x-auto gap-4 snap-x snap-mandatory pb-4 hidden-scrollbar" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
                 {articles.map((art) => (
                     <div key={art.id} className="h-full min-w-[280px] w-[280px] sm:min-w-[340px] sm:w-[340px] snap-center shrink-0">
                         <ArticleCard

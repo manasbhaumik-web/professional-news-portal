@@ -1,6 +1,6 @@
 import React from 'react';
-import { Sparkles, Check, Plus, X, RefreshCw } from 'lucide-react';
-import { UserPreferences } from '../types';
+import { Sparkles, Check, Plus, X, RefreshCw, Activity } from 'lucide-react';
+import { UserPreferences, UserBehaviorProfile } from '../types';
 
 interface FeedConfigProps {
  activeTab: string;
@@ -11,6 +11,8 @@ interface FeedConfigProps {
  isGeneratingBriefing: boolean;
  handleGeneratePersonalFeed: () => void;
  CATEGORY_PRESETS: string[];
+ behaviorProfile?: UserBehaviorProfile;
+ resetBehaviorProfile?: () => void;
 }
 
 export default function FeedConfig({
@@ -21,7 +23,9 @@ export default function FeedConfig({
  setTempKeyword,
  isGeneratingBriefing,
  handleGeneratePersonalFeed,
- CATEGORY_PRESETS
+ CATEGORY_PRESETS,
+ behaviorProfile,
+ resetBehaviorProfile
 }: FeedConfigProps) {
  const toggleCategory = (cat: string) => {
  setPreferences(prev => {
@@ -147,6 +151,54 @@ export default function FeedConfig({
  )}
  </div>
  </div>
+
+ {behaviorProfile && (Object.keys(behaviorProfile.categories).length > 0 || Object.keys(behaviorProfile.keywords).length > 0) && (
+ <div className="mb-6 p-4 bg-portal-bg border border-portal-border/50 rounded-sm">
+   <div className="flex justify-between items-center mb-3">
+     <label className="text-[11px] font-mono font-bold tracking-wider uppercase text-portal-text-muted flex items-center gap-1.5">
+       <Activity size={12} className="text-portal-brand" />
+       3. LEARNED PROFILE (IMPLICIT)
+     </label>
+     {resetBehaviorProfile && (
+       <button onClick={resetBehaviorProfile} className="text-[10px] text-red-400 hover:text-red-300 hover:underline">
+         Reset Profile
+       </button>
+     )}
+   </div>
+   <div className="space-y-3">
+     {Object.keys(behaviorProfile.categories).length > 0 && (
+       <div>
+         <span className="text-[10px] text-portal-text-muted block mb-1">Top Categories:</span>
+         <div className="flex flex-wrap gap-1.5">
+           {Object.entries(behaviorProfile.categories)
+             .sort((a, b) => b[1] - a[1])
+             .slice(0, 5)
+             .map(([cat, weight]) => (
+               <span key={cat} className="text-[10px] px-2 py-0.5 bg-portal-surface border border-portal-border/50 text-portal-text-main opacity-80" title={`Weight: ${weight}`}>
+                 {cat}
+               </span>
+             ))}
+         </div>
+       </div>
+     )}
+     {Object.keys(behaviorProfile.keywords).length > 0 && (
+       <div>
+         <span className="text-[10px] text-portal-text-muted block mb-1">Top Keywords:</span>
+         <div className="flex flex-wrap gap-1.5">
+           {Object.entries(behaviorProfile.keywords)
+             .sort((a, b) => b[1] - a[1])
+             .slice(0, 8)
+             .map(([kw, weight]) => (
+               <span key={kw} className="text-[10px] px-2 py-0.5 bg-portal-surface border border-portal-border/50 text-portal-text-main opacity-80" title={`Weight: ${weight.toFixed(1)}`}>
+                 #{kw}
+               </span>
+             ))}
+         </div>
+       </div>
+     )}
+   </div>
+ </div>
+ )}
 
  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pt-4 border-t border-portal-border">
  <div className="flex items-center space-x-4">

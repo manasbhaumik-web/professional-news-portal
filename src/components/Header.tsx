@@ -11,6 +11,7 @@ interface HeaderProps {
     setPortalTheme: (theme: 'dark' | 'light' | 'sepia') => void;
     selectedCategories: string[];
     handleNotificationRead: (id: string) => void;
+    siteTitle?: string;
 }
 
 export default function Header({
@@ -21,7 +22,8 @@ export default function Header({
     portalTheme,
     setPortalTheme,
     selectedCategories,
-    handleNotificationRead
+    handleNotificationRead,
+    siteTitle
 }: HeaderProps) {
     return (
         <header id="primary-editorial-nav" className="flex items-center justify-between px-4 sm:px-8 border-b border-portal-border transition-colors shrink-0 backdrop-blur-md bg-opacity-95 bg-portal-surface text-portal-text-main h-16">
@@ -30,7 +32,7 @@ export default function Header({
                     <div className="w-8 h-8 flex items-center justify-center mr-2 shadow-lg transition-all bg-portal-brand">
                         <span className="text-xs font-mono font-black text-white">THP</span>
                     </div>
-                    THE HORIZON<span className="text-portal-brand font-serif italic ml-0.5"> POST</span>
+                    <>THE HORIZON<span className="text-portal-brand font-serif italic ml-0.5"> POST</span></>
                 </div>
 
                 <div id="nav-topic-pills" className="hidden lg:flex space-x-6 text-xs font-semibold uppercase tracking-wider">
