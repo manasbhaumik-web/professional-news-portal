@@ -328,11 +328,11 @@ export default function App() {
 
     const updateBehaviorProfile = useCallback((article: NewsArticle, weight: number = 1) => {
         setBehaviorProfile(prev => {
-            const next = { 
-                ...prev, 
-                categories: { ...prev.categories }, 
-                keywords: { ...prev.keywords }, 
-                lastUpdated: new Date().toISOString() 
+            const next = {
+                ...prev,
+                categories: { ...prev.categories },
+                keywords: { ...prev.keywords },
+                lastUpdated: new Date().toISOString()
             };
             if (article.category) {
                 next.categories[article.category] = (next.categories[article.category] || 0) + weight;
@@ -436,7 +436,7 @@ export default function App() {
                 .sort((a, b) => b[1] - a[1])
                 .slice(0, 3)
                 .map(e => e[0]);
-            
+
             const topImplicitKeywords = Object.entries(behaviorProfile.keywords)
                 .sort((a, b) => b[1] - a[1])
                 .slice(0, 5)
@@ -539,7 +539,7 @@ export default function App() {
         // 1. Fuzzy Search
         if (searchQuery) {
             const lowerQ = searchQuery.toLowerCase();
-            result = result.filter(art => 
+            result = result.filter(art =>
                 (art.title && art.title.toLowerCase().includes(lowerQ)) ||
                 (art.summary && art.summary.toLowerCase().includes(lowerQ)) ||
                 (art.category && art.category.toLowerCase().includes(lowerQ)) ||
@@ -595,7 +595,7 @@ export default function App() {
         // 1. Fuzzy Search
         if (searchQuery) {
             const lowerQ = searchQuery.toLowerCase();
-            result = result.filter(art => 
+            result = result.filter(art =>
                 (art.title && art.title.toLowerCase().includes(lowerQ)) ||
                 (art.summary && art.summary.toLowerCase().includes(lowerQ)) ||
                 (art.category && art.category.toLowerCase().includes(lowerQ)) ||
@@ -665,6 +665,14 @@ export default function App() {
 
     const topHeadlineIds = useMemo(() => new Set(topHeadlines.map(a => a.id)), [topHeadlines]);
 
+    const availableRegions = useMemo(() => {
+        const regions = new Set<string>();
+        trendingArticles.forEach(art => {
+            regions.add(getArticleRegion(art.source));
+        });
+        return Array.from(regions);
+    }, [trendingArticles]);
+
     return (
         <div id="news-portal-root" className={`min-h-screen theme-${portalTheme} bg-portal-bg text-portal-text-main font-sans flex flex-col antialiased selection:bg-portal-brand selection:text-white transition-colors duration-300`}>
             <Helmet>
@@ -685,7 +693,7 @@ export default function App() {
                             <span className="text-[10px] font-bold uppercase tracking-wider text-red-200">Live Alert</span>
                             <span className="text-sm font-semibold truncate max-w-sm">{liveNews.title}</span>
                         </div>
-                        <button 
+                        <button
                             className="ml-4 p-1 text-red-300 hover:text-white rounded-full hover:bg-red-700 transition-colors"
                             onClick={(e) => { e.stopPropagation(); setShowLiveToast(false); }}
                         >
@@ -731,6 +739,7 @@ export default function App() {
                                 setActiveTab={setActiveTab}
                                 selectedCountry={selectedCountry}
                                 setSelectedCountry={setSelectedCountry}
+                                availableRegions={availableRegions}
                             />
                         </>
                     )}
@@ -799,7 +808,7 @@ export default function App() {
 
                         {/* Search & Discovery Bar */}
                         {['trending', 'foryou', 'sports', 'business', 'politics', 'scienceTech', 'entertainment'].includes(activeTab) && (
-                            <SearchBar 
+                            <SearchBar
                                 searchQuery={searchQuery}
                                 setSearchQuery={setSearchQuery}
                                 filterDate={filterDate}
@@ -897,9 +906,9 @@ export default function App() {
                                     )}
 
                                     {activeTab === 'trending' && filteredTrending.length > 0 && (
-                                        <InfiniteScroll 
-                                            onIntersect={() => setTrendingLimit(prev => prev + 10)} 
-                                            hasMore={trendingLimit < filteredTrending.length} 
+                                        <InfiniteScroll
+                                            onIntersect={() => setTrendingLimit(prev => prev + 10)}
+                                            hasMore={trendingLimit < filteredTrending.length}
                                         />
                                     )}
 
@@ -929,7 +938,7 @@ export default function App() {
                                                     let sectionHeader = null;
                                                     const text = (art.title + ' ' + art.summary).toLowerCase();
                                                     const matchedImplicit = topImplicitKeywords.find(kw => text.includes(kw));
-                                                    
+
                                                     if (matchedImplicit && !renderedKeywords.has(matchedImplicit)) {
                                                         renderedKeywords.add(matchedImplicit);
                                                         sectionHeader = (
@@ -967,9 +976,9 @@ export default function App() {
                                     )}
 
                                     {activeTab === 'foryou' && filteredPersonalized.length > 0 && !isGeneratingBriefing && (
-                                        <InfiniteScroll 
-                                            onIntersect={() => setForyouLimit(prev => prev + 10)} 
-                                            hasMore={foryouLimit < filteredPersonalized.length} 
+                                        <InfiniteScroll
+                                            onIntersect={() => setForyouLimit(prev => prev + 10)}
+                                            hasMore={foryouLimit < filteredPersonalized.length}
                                         />
                                     )}
                                 </AnimatePresence>
@@ -1075,6 +1084,8 @@ export default function App() {
                                         bookmarks={bookmarks}
                                         failedImages={failedImages}
                                         setFailedImages={setFailedImages}
+                                        clearFilters={() => { setSelectedMenuCategory('All'); setSearchQuery(''); }}
+                                        fallbackArticles={topHeadlines}
                                     />
                                 )}
                                 {activeTab === 'business' && (
@@ -1091,6 +1102,8 @@ export default function App() {
                                         bookmarks={bookmarks}
                                         failedImages={failedImages}
                                         setFailedImages={setFailedImages}
+                                        clearFilters={() => { setSelectedMenuCategory('All'); setSearchQuery(''); }}
+                                        fallbackArticles={topHeadlines}
                                     />
                                 )}
                                 {activeTab === 'entertainment' && (
@@ -1107,6 +1120,8 @@ export default function App() {
                                         bookmarks={bookmarks}
                                         failedImages={failedImages}
                                         setFailedImages={setFailedImages}
+                                        clearFilters={() => { setSelectedMenuCategory('All'); setSearchQuery(''); }}
+                                        fallbackArticles={topHeadlines}
                                     />
                                 )}
                                 {activeTab === 'scienceTech' && (
@@ -1119,6 +1134,8 @@ export default function App() {
                                         bookmarks={bookmarks}
                                         failedImages={failedImages}
                                         setFailedImages={setFailedImages}
+                                        clearFilters={() => { setSelectedMenuCategory('All'); setSearchQuery(''); }}
+                                        fallbackArticles={topHeadlines}
                                     />
                                 )}
                                 {activeTab === 'report' && <ReportNewsPage />}
@@ -1133,6 +1150,8 @@ export default function App() {
                                         failedImages={failedImages}
                                         setFailedImages={setFailedImages}
                                         setActiveTab={setActiveTab}
+                                        clearFilters={() => { setSelectedMenuCategory('All'); setSearchQuery(''); }}
+                                        fallbackArticles={topHeadlines}
                                     />
                                 )}
 

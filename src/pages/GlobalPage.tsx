@@ -134,7 +134,7 @@ export default function GlobalPage({ theme }: GlobalPageProps) {
  return (
  <div className="flex flex-col items-center justify-center min-h-[50vh] space-y-4">
  <Radio className={`w-12 h-12 ${textMutedClass} opacity-50`} />
- <p className={`font-mono text-sm ${textMutedClass}`}>No TV feeds available right now.</p>
+ <p className={`font-mono text-sm ${textMutedClass}`}>Sorry !! Nothing to display in this section at the moment</p>
  </div>
  );
  }

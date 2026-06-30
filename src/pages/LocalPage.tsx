@@ -274,7 +274,7 @@ export default function LocalPage({
        </div>
      </div>
    ))
- ) : (
+ ) : mainDisplayArticles.length > 0 ? (
   mainDisplayArticles.map((art, idx) => (
   <ArticleCard
   key={art.id}
@@ -287,6 +287,11 @@ export default function LocalPage({
   setFailedImages={setFailedImages}
   />
   ))
+  ) : (
+      <div className="col-span-full py-12 flex flex-col items-center justify-center text-center">
+          <Rss className="w-12 h-12 text-portal-text-muted opacity-50 mb-4" />
+          <p className="font-mono text-sm text-portal-text-muted">Sorry !! Nothing to display in this section at the moment</p>
+      </div>
   )}
   </div>
   
@@ -337,5 +342,3 @@ export default function LocalPage({
  </div>
  );
 }
-
-

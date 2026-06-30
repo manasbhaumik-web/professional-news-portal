@@ -9,6 +9,7 @@ interface ChannelsNavProps {
     setActiveTab: (tab: any) => void;
     selectedCountry: string;
     setSelectedCountry: (country: string) => void;
+    availableRegions?: string[];
 }
 
 const REGIONS = ['North America', 'Latin America', 'Europe', 'Arab', 'Sub-Saharan Africa', 'South Asia', 'South East Asia', 'East Asia', 'Oceania'];
@@ -27,7 +28,8 @@ export default function ChannelsNav({
     activeTab,
     setActiveTab,
     selectedCountry,
-    setSelectedCountry
+    setSelectedCountry,
+    availableRegions = REGIONS
 }: ChannelsNavProps) {
     const [forceClose, setForceClose] = useState(false);
     const [isCountryDropdownOpen, setIsCountryDropdownOpen] = useState(false);
@@ -68,7 +70,7 @@ export default function ChannelsNav({
                                     >
                                         🌐 All Regions (World)
                                     </button>
-                                    {REGIONS.map(region => (
+                                    {REGIONS.filter(r => availableRegions.includes(r)).map(region => (
                                         <button
                                             key={region}
                                             onClick={() => {

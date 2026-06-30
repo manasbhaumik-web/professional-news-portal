@@ -17,7 +17,7 @@ interface SystemSidebarProps {
 }
 
 
-import { SidebarAdvertisement, OngoingIccSeriesCard, BookmarkedArticlesCard, UpcomingFixturesCard, TopScorersCard, ThumbnailNewsCard, TrendingTopicsCard, ProAdCard, TrendNewsPanel, RecentVideosCard, RecentSportVideosCard } from './SidebarComponents';
+import { SidebarAdvertisement, OngoingIccSeriesCard, BookmarkedArticlesCard, UpcomingFixturesCard, TopScorersCard, ThumbnailNewsCard, TrendingTopicsCard, ProAdCard, TrendNewsPanel, RecentVideosCard, RecentSportVideosCard, FifaLiveMatchesCard, FifaUpcomingFixturesCard, FifaResultsCard } from './SidebarComponents';
 
 export default React.memo(function SystemSidebar({
   bookmarks,
@@ -83,12 +83,28 @@ export default React.memo(function SystemSidebar({
 
   const hasContent = filteredForSidebar.length > 0;
 
+  const availableTabs = React.useMemo(() => {
+    return tabs.filter(t => {
+      if (t === 'Highlights') return highlightsArticles.length > 0;
+      if (t === 'Trending') return trendingTabArticles.length > 0;
+      if (t === 'Others') return othersTabArticles.length > 0;
+      return true; // For sports tabs, keep them as they might depend on external APIs (like fixtures)
+    });
+  }, [tabs, highlightsArticles, trendingTabArticles, othersTabArticles]);
+
+  useEffect(() => {
+    // If the active tab becomes hidden, switch to the first available tab
+    if (availableTabs.length > 0 && !availableTabs.includes(activeSidebarTab)) {
+      setActiveSidebarTab(availableTabs[0]);
+    }
+  }, [availableTabs, activeSidebarTab]);
+
   return (
     <aside id="systems-meta-sidebar" className="space-y-6">
 
-      {hasContent && (
+      {hasContent && availableTabs.length > 0 && (
         <div className="flex border-b border-portal-border/50 gap-2 mb-4">
-          {tabs.map(t => (
+          {availableTabs.map(t => (
             <button
               key={t}
               onClick={() => setActiveSidebarTab(t)}
@@ -108,7 +124,18 @@ export default React.memo(function SystemSidebar({
           <UpcomingFixturesCard />
         )}
 
-
+        {activeSidebarTab === 'Live' && context === 'fifa' && (
+          <FifaLiveMatchesCard />
+        )}
+        {activeSidebarTab === 'Upcoming' && context === 'fifa' && (
+          <FifaUpcomingFixturesCard />
+        )}
+        {activeSidebarTab === 'Results' && context === 'fifa' && (
+          <FifaResultsCard />
+        )}
+        {activeSidebarTab === 'Stats' && context === 'fifa' && (
+          <TopScorersCard />
+        )}
 
         {activeSidebarTab === 'Highlights' && (context === 'news' || context === 'sports') && (
           <>

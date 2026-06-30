@@ -3,6 +3,7 @@ import { NewsArticle } from '../types';
 import ArticleCard from '../components/ArticleCard';
 import MoreFromWire from '../components/MoreFromWire';
 import GoogleNewsSection from '../components/GoogleNewsSection';
+import EmptyFeedState from '../components/EmptyFeedState';
 import { Cpu } from 'lucide-react';
 
 interface ScienceTechPageProps {
@@ -14,9 +15,11 @@ interface ScienceTechPageProps {
  bookmarks: string[];
  failedImages?: string[];
  setFailedImages?: (f: any) => void;
+ clearFilters?: () => void;
+ fallbackArticles?: NewsArticle[];
 }
 
-export default function ScienceTechPage({ articles, selectedCategoryFromMenu, handleOpenArticle, toggleBookmark, bookmarks, failedImages, setFailedImages }: ScienceTechPageProps) {
+export default function ScienceTechPage({ articles, selectedCategoryFromMenu, handleOpenArticle, toggleBookmark, bookmarks, failedImages, setFailedImages, clearFilters, fallbackArticles }: ScienceTechPageProps) {
   const combinedArticles = selectedCategoryFromMenu === 'All' 
   ? articles 
   : articles.filter(art => 
@@ -58,9 +61,11 @@ export default function ScienceTechPage({ articles, selectedCategoryFromMenu, ha
 
  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 auto-rows-auto">
  {displayArticles.length === 0 ? (
- <div className="p-8 border border-dashed text-center text-xs font-mono border-portal-border text-portal-text-muted col-span-full">
- No intelligence available for {selectedCategoryFromMenu}.
- </div>
+ <EmptyFeedState 
+     onClearFilters={clearFilters || (() => {})} 
+     fallbackArticles={fallbackArticles || []} 
+     handleOpenArticle={handleOpenArticle} 
+ />
  ) : (
  displayArticles.map((art, idx) => (
  <ArticleCard

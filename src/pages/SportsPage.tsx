@@ -4,6 +4,7 @@ import ArticleCard from '../components/ArticleCard';
 import SkeletonArticleCard from '../components/SkeletonArticleCard';
 import MoreFromWire from '../components/MoreFromWire';
 import GoogleNewsSection from '../components/GoogleNewsSection';
+import EmptyFeedState from '../components/EmptyFeedState';
 import { Trophy, RefreshCw, ChevronRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRssFeeds } from '../utils/useRssFeeds';
@@ -18,6 +19,8 @@ interface SportsPageProps {
     failedImages?: string[];
     setFailedImages?: (f: any) => void;
     setActiveTab?: (tab: string) => void;
+    clearFilters?: () => void;
+    fallbackArticles?: NewsArticle[];
 }
 
 const timeAgo = (dateStr: string) => {
@@ -166,7 +169,7 @@ const SPORT_IMAGES: Record<string, string> = {
     Sports: generateSvgPattern('dots')
 };
 
-export default function SportsPage({ articles, selectedSportFromMenu, handleOpenArticle, toggleBookmark, bookmarks, failedImages, setFailedImages, setActiveTab }: SportsPageProps) {
+export default function SportsPage({ articles, selectedSportFromMenu, handleOpenArticle, toggleBookmark, bookmarks, failedImages, setFailedImages, setActiveTab, clearFilters, fallbackArticles }: SportsPageProps) {
     const [liveArticles, setLiveArticles] = useState<NewsArticle[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -319,9 +322,11 @@ export default function SportsPage({ articles, selectedSportFromMenu, handleOpen
                             <SkeletonArticleCard key={`skel-${i}`} index={i} />
                         ))
                     ) : displayArticles.length === 0 ? (
-                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center py-20 bg-portal-surface border border-portal-border/50 text-portal-text-muted font-mono text-sm">
-                            No recent updates available for {selectedSportFromMenu}.
-                        </motion.div>
+                        <EmptyFeedState 
+                            onClearFilters={clearFilters || (() => {})} 
+                            fallbackArticles={fallbackArticles || []} 
+                            handleOpenArticle={handleOpenArticle} 
+                        />
                     ) : (
                         displayArticles.map((art, idx) => (
                             <ArticleCard

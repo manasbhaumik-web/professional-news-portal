@@ -3,6 +3,7 @@ import { NewsArticle } from '../types';
 import ArticleCard from '../components/ArticleCard';
 import MoreFromWire from '../components/MoreFromWire';
 import GoogleNewsSection from '../components/GoogleNewsSection';
+import EmptyFeedState from '../components/EmptyFeedState';
 import { Activity } from 'lucide-react';
 
 interface BusinessPageProps {
@@ -12,8 +13,10 @@ interface BusinessPageProps {
     handleOpenArticle: (art: NewsArticle) => void;
     toggleBookmark: (id: string, e: React.MouseEvent) => void;
     bookmarks: string[];
-    failedImages?: string[];
-    setFailedImages?: (f: any) => void;
+    failedImages: string[];
+    setFailedImages: (f: any) => void;
+    clearFilters?: () => void;
+    fallbackArticles?: NewsArticle[];
 }
 
 const BUSINESS_FEEDS: Record<string, { source: string; url: string; subCategory: string }[]> = {
@@ -47,7 +50,7 @@ const BUSINESS_IMAGES: Record<string, string> = {
     General: 'https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?auto=format&fit=crop&w=800&q=80'
 };
 
-export default function BusinessPage({ articles, selectedCategoryFromMenu, handleOpenArticle, toggleBookmark, bookmarks, failedImages, setFailedImages }: BusinessPageProps) {
+export default function BusinessPage({ articles, selectedCategoryFromMenu, handleOpenArticle, toggleBookmark, bookmarks, failedImages, setFailedImages, clearFilters, fallbackArticles }: BusinessPageProps) {
     const [liveArticles, setLiveArticles] = React.useState<NewsArticle[]>([]);
     const [isLoading, setIsLoading] = React.useState(false);
 
@@ -159,9 +162,11 @@ export default function BusinessPage({ articles, selectedCategoryFromMenu, handl
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 auto-rows-auto">
                 {displayArticles.length === 0 ? (
-                    <div className="p-8 border border-dashed text-center text-xs font-mono border-portal-border text-portal-text-muted col-span-full">
-                        No intelligence available for {selectedCategoryFromMenu}.
-                    </div>
+                    <EmptyFeedState 
+                        onClearFilters={clearFilters || (() => {})} 
+                        fallbackArticles={fallbackArticles || []} 
+                        handleOpenArticle={handleOpenArticle} 
+                    />
                 ) : (
                     displayArticles.map((art, idx) => (
                         <ArticleCard

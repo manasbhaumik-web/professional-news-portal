@@ -984,13 +984,32 @@ app.post("/api/news/personalized", async (req, res) => {
   // Generate localized customized morning overview briefing
   const briefingText = `Here is your customized Morning Briefing. We've compiled a tailored digest based on your interest in ${selectedCategories.join(", ") || "General News"} and custom focus on keywords: "${selectedKeywords.join(", ") || "Latest Trends"}". Today, key movements show high systemic shifts with carbon borders and technological transitions across the wire.`;
 
-  // Filter base articles or synthesize tailored articles of interest based on selected items
-  const filtered = BASE_ARTICLES.filter(art =>
-    selectedCategories.some((cat: string) => art.category.toLowerCase().includes(cat.toLowerCase())) ||
-    selectedKeywords.some((kw: string) => art.title.toLowerCase().includes(kw.toLowerCase()) || art.summary.toLowerCase().includes(kw.toLowerCase()))
-  );
+  // Advanced Personalization Scoring Engine
+  const scoredArticles = BASE_ARTICLES.map(art => {
+    let score = 0;
+    
+    const categoryMatches = selectedCategories.filter((cat: string) => 
+      art.category && art.category.toLowerCase().includes(cat.toLowerCase())
+    );
+    score += categoryMatches.length * 3;
 
-  const resultArticles = filtered.length > 0 ? filtered : BASE_ARTICLES.slice(0, 3);
+    const keywordMatches = selectedKeywords.filter((kw: string) => 
+      (art.title && art.title.toLowerCase().includes(kw.toLowerCase())) || 
+      (art.summary && art.summary.toLowerCase().includes(kw.toLowerCase()))
+    );
+    score += keywordMatches.length * 2;
+    
+    if (art.trendsUp) score += 1;
+    if (art.views > 2000) score += 1;
+
+    return { art, score };
+  });
+
+  const relevantScored = scoredArticles.filter(item => item.score > 0).sort((a, b) => b.score - a.score);
+  
+  const resultArticles = relevantScored.length > 0 
+    ? relevantScored.map(item => item.art).slice(0, 10) 
+    : BASE_ARTICLES.slice(0, 3);
 
   // Modify slightly to tag as customized
   const customizedArticles = resultArticles.map((art, idx) => ({
@@ -998,17 +1017,12 @@ app.post("/api/news/personalized", async (req, res) => {
     id: `custom-digest-${idx}-${Date.now()}`,
     title: `[Targeted Study] ${art.title}`,
     source: `Digest • ${art.source}`,
-    isAiGenerated: false
+    readTime: "3 min read (Executive Summary)"
   }));
-
-  const topNews = getTopNews(customizedArticles, 30);
-  const breakingNews = getBreakingNews(customizedArticles, breakingOverrides);
-  const breakingIds = new Set(breakingNews.map(a => a.cluster_id));
-  const remainingTopNews = topNews.filter(a => !breakingIds.has(a.cluster_id));
 
   return res.json({
     briefing: briefingText,
-    articles: [...breakingNews, ...remainingTopNews]
+    articles: customizedArticles
   });
 });
 

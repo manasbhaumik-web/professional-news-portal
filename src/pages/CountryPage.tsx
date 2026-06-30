@@ -231,7 +231,7 @@ export default function CountryPage({
                     ) : articles.length === 0 ? (
                         <div className={`col-span-full p-12 text-center border border-dashed ${borderClass} ${textMutedClass} font-mono text-xs flex flex-col items-center justify-center gap-3`}>
                             <AlertCircle size={24} className="opacity-50" />
-                            No dispatches found for {selectedCountry}.
+                            Sorry !! Nothing to display in this section at the moment
                         </div>
                     ) : (
                         displayArticles.map((art, idx) => (
@@ -273,5 +273,3 @@ export default function CountryPage({
         </div>
     );
 }
-
-
