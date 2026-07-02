@@ -76,35 +76,36 @@ export default function ArticleReaderModal({
  };
 
  useEffect(() => {
- if (!selectedArticle.originalUrl) {
- setFullContent(selectedArticle.content);
- return;
- }
+  const targetUrl = selectedArticle.originalUrl || selectedArticle.url;
+  if (!targetUrl) {
+    setFullContent(selectedArticle.content);
+    return;
+  }
 
- const fetchFullReport = async () => {
- setIsScraping(true);
- setFullContent(null);
- try {
- const res = await fetch('/api/news/full-content', {
- method: 'POST',
- headers: { 'Content-Type': 'application/json' },
- body: JSON.stringify({
- url: selectedArticle.originalUrl,
- fallbackSummary: selectedArticle.summary || selectedArticle.content
- })
- });
- if (!res.ok) throw new Error("Scraping failed");
- const data = await res.json();
- setFullContent(data.content);
- } catch (err) {
- setFullContent(selectedArticle.content || selectedArticle.summary || "Failed to load report.");
- } finally {
- setIsScraping(false);
- }
- };
+  const fetchFullReport = async () => {
+    setIsScraping(true);
+    setFullContent(null);
+    try {
+      const res = await fetch('/api/news/full-content', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          url: targetUrl,
+          fallbackSummary: selectedArticle.summary || selectedArticle.content
+        })
+      });
+      if (!res.ok) throw new Error("Scraping failed");
+      const data = await res.json();
+      setFullContent(data.content);
+    } catch (err) {
+      setFullContent(selectedArticle.content || selectedArticle.summary || "Failed to load report.");
+    } finally {
+      setIsScraping(false);
+    }
+  };
 
- fetchFullReport();
- }, [selectedArticle.id, selectedArticle.originalUrl]);
+  fetchFullReport();
+ }, [selectedArticle.id, selectedArticle.originalUrl, selectedArticle.url]);
 
  return (
  <div id="article-reader-root-modal" className="fixed inset-0 bg-portal-bg bg-opacity-95 z-50 flex flex-col overflow-y-auto antialiased" onScroll={handleScroll}>
@@ -267,10 +268,10 @@ export default function ArticleReaderModal({
  })
  )}
 
- {selectedArticle.originalUrl && (
+ {(selectedArticle.originalUrl || selectedArticle.url) && (
  <div className={`pt-6 mt-6 border-t ${isCleanMode ? 'border-zinc-800' : 'border-portal-border/50'}`}>
  <a
- href={selectedArticle.originalUrl}
+ href={selectedArticle.originalUrl || selectedArticle.url}
  target="_blank"
  rel="noopener noreferrer"
  className={`inline-flex items-center space-x-2 text-sm font-mono font-bold transition-colors ${isCleanMode ? 'text-cyan-400 hover:text-cyan-300' : 'text-portal-brand hover:opacity-80'
