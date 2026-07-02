@@ -724,7 +724,6 @@ async function fetchRealTimeNews() {
 // Background Batch Job for Top News Ranking
 let cachedTopNews: any[] = [];
 let cachedBreakingNews: any[] = [];
-const breakingOverrides: Record<string, { is_breaking: boolean, marked_at: string }> = {};
 
 const updateTopNews = async () => {
   try {
@@ -733,7 +732,7 @@ const updateTopNews = async () => {
     const articles = await fetchRealTimeNews();
     if (articles && articles.length > 0) {
       cachedTopNews = getTopNews(articles, 50);
-      cachedBreakingNews = getBreakingNews(articles, breakingOverrides);
+      cachedBreakingNews = getBreakingNews(articles);
       console.log(`[Batch Job] Generated ${cachedTopNews.length} top news and ${cachedBreakingNews.length} breaking news clusters.`);
     }
   } catch (error) {
@@ -745,9 +744,6 @@ const expireBreakingNews = () => {
   if (cachedBreakingNews.length === 0) return;
   const now = Date.now();
   const valid = cachedBreakingNews.filter(cluster => {
-    // If it's a manual override with true, never auto-expire here (handled by override logic)
-    if (cluster.breaking_source === 'manual' && breakingOverrides[cluster.cluster_id]?.is_breaking) return true;
-
     const markedAt = new Date(cluster.breaking_marked_at).getTime();
     const hoursSinceMarked = (now - markedAt) / (1000 * 60 * 60);
     return hoursSinceMarked <= 2;
@@ -771,26 +767,6 @@ app.get("/api/breaking-news", async (req, res) => {
   res.json(cachedBreakingNews);
 });
 
-// POST Admin Override for Breaking News
-app.post("/api/admin/breaking-news/:clusterId", express.json(), (req, res) => {
-  const clusterId = req.params.clusterId;
-  const { is_breaking } = req.body;
-
-  if (typeof is_breaking !== 'boolean') {
-    return res.status(400).json({ error: "is_breaking must be a boolean" });
-  }
-
-  breakingOverrides[clusterId] = {
-    is_breaking,
-    marked_at: new Date().toISOString()
-  };
-
-  // Force an immediate recalculation to reflect the manual override
-  updateTopNews().then(() => {
-    res.json({ success: true, message: `Cluster ${clusterId} breaking status set to ${is_breaking}` });
-  });
-});
-
 // GET Top News (Clustered & Ranked)
 app.get("/api/news/top", async (req, res) => {
   // If cache is empty (e.g. just started up), compute it on the fly
@@ -806,7 +782,7 @@ app.get("/api/news/trending", async (req, res) => {
   if (cachedTopNews.length === 0) {
     const articles = await fetchRealTimeNews();
     cachedTopNews = getTopNews(articles, 50); // Get more articles for the main feed
-    cachedBreakingNews = getBreakingNews(articles, breakingOverrides);
+    cachedBreakingNews = getBreakingNews(articles);
   }
 
   // Combine breaking news at the top, then top news
@@ -831,7 +807,7 @@ app.get("/api/news/topic", async (req, res) => {
 
     if (matchingArticles.length > 0) {
       const topNews = getTopNews(matchingArticles, 30);
-      const breakingNews = getBreakingNews(matchingArticles, breakingOverrides);
+      const breakingNews = getBreakingNews(matchingArticles);
       const breakingIds = new Set(breakingNews.map(a => a.cluster_id));
       const remainingTopNews = topNews.filter(a => !breakingIds.has(a.cluster_id));
       return res.json([...breakingNews, ...remainingTopNews]);
@@ -883,7 +859,7 @@ app.get("/api/news/topic", async (req, res) => {
     });
 
     const topNews = getTopNews(articles, 30);
-    const breakingNews = getBreakingNews(articles, breakingOverrides);
+    const breakingNews = getBreakingNews(articles);
     const breakingIds = new Set(breakingNews.map(a => a.cluster_id));
     const remainingTopNews = topNews.filter(a => !breakingIds.has(a.cluster_id));
 
@@ -1307,6 +1283,8 @@ function generateMockGoals(score1: number | null, score2: number | null): any[] 
   return goals.sort((a, b) => a.minute - b.minute);
 }
 
+const wcMatchCache: Record<string, { data: any, timestamp: number }> = {};
+
 app.get('/api/football/wc2026', async (req, res) => {
   const API_KEY = process.env.FOOTBALL_DATA_API_KEY;
 
@@ -1320,7 +1298,14 @@ app.get('/api/football/wc2026', async (req, res) => {
 
   try {
     // FIFA World Cup 2026 competition code: WC (confirmed by football-data.org)
-    const statusParam = req.query.status ? req.query.status : 'FINISHED';
+    const statusParam = req.query.status ? String(req.query.status) : 'FINISHED';
+    
+    // Serve from cache if less than 60 seconds old
+    const now = Date.now();
+    if (wcMatchCache[statusParam] && (now - wcMatchCache[statusParam].timestamp < 60000)) {
+      return res.json(wcMatchCache[statusParam].data);
+    }
+
     const response = await fetch(
       `https://api.football-data.org/v4/competitions/WC/matches?status=${statusParam}&limit=20`,
       {
@@ -1346,10 +1331,10 @@ app.get('/api/football/wc2026', async (req, res) => {
 
     const matches = sorted.map((m: any) => ({
       id: m.id,
-      team1: m.homeTeam?.shortName || m.homeTeam?.name || 'TBD',
+      team1: m.homeTeam?.tla || m.homeTeam?.shortName || m.homeTeam?.name || 'TBD',
       flag1: m.homeTeam?.crest || null,
       score1: m.score?.fullTime?.home ?? '-',
-      team2: m.awayTeam?.shortName || m.awayTeam?.name || 'TBD',
+      team2: m.awayTeam?.tla || m.awayTeam?.shortName || m.awayTeam?.name || 'TBD',
       flag2: m.awayTeam?.crest || null,
       score2: m.score?.fullTime?.away ?? '-',
       status: m.status === 'FINISHED' ? 'FT' : m.status === 'IN_PLAY' ? 'LIVE' : m.status,
@@ -1363,11 +1348,16 @@ app.get('/api/football/wc2026', async (req, res) => {
       })) : generateMockGoals(m.score?.fullTime?.home, m.score?.fullTime?.away)
     }));
 
-    res.json({ matches, updatedAt: new Date().toISOString() });
+    const payload = { matches, updatedAt: new Date().toISOString() };
+    wcMatchCache[statusParam] = { data: payload, timestamp: now };
+    res.json(payload);
   } catch (err: any) {
     res.status(500).json({ error: err.message || 'Failed to fetch match data.' });
   }
 });
+
+// Player photo cache to minimize API calls
+const playerPhotoCache: Record<string, string | null> = {};
 
 // Scorer endpoint
 app.get('/api/football/wc2026/scorers', async (req, res) => {
@@ -1385,14 +1375,40 @@ app.get('/api/football/wc2026/scorers', async (req, res) => {
       return res.status(response.status).json({ error: errText });
     }
     const data = await response.json();
-    const scorers = data.scorers.map((s: any) => ({
-      name: s.player.name,
-      team: s.team.shortName || s.team.name,
-      goals: s.goals,
-      assists: s.assists || 0,
-      penalties: s.penalties || 0,
-      flag: s.team.crest || null,
-      playerImage: null // API might not provide player image directly, but we will handle fallback on frontend
+    const scorersRaw = data.scorers || [];
+    
+    // Fetch photos for each scorer concurrently, using cache
+    const scorers = await Promise.all(scorersRaw.map(async (s: any) => {
+      const playerName = s.player.name;
+      let playerImage = playerPhotoCache[playerName];
+
+      // If not in cache, fetch it from TheSportsDB
+      if (playerImage === undefined) {
+        try {
+          const searchRes = await fetch(`https://www.thesportsdb.com/api/v1/json/3/searchplayers.php?p=${encodeURIComponent(playerName)}`);
+          const searchData = await searchRes.json();
+          if (searchData.player && searchData.player.length > 0) {
+            playerImage = searchData.player[0].strCutout || searchData.player[0].strThumb || null;
+          } else {
+            playerImage = null;
+          }
+          playerPhotoCache[playerName] = playerImage || null;
+        } catch (err) {
+          console.error(`Failed to fetch photo for ${playerName}:`, err);
+          playerImage = null;
+          playerPhotoCache[playerName] = null;
+        }
+      }
+
+      return {
+        name: playerName,
+        team: s.team.tla || s.team.shortName || s.team.name,
+        goals: s.goals,
+        assists: s.assists || 0,
+        penalties: s.penalties || 0,
+        flag: s.team.crest || null,
+        playerImage: playerImage
+      };
     }));
     res.json({ scorers, updatedAt: new Date().toISOString() });
   } catch (err: any) {
@@ -1578,8 +1594,15 @@ app.get('/api/cricket/results', async (req, res) => {
     const allMatches = await fetchCricketMatches(API_KEY);
     const completedMatches = allMatches
       .filter((m: any) => isInternational(m) && m.matchEnded === true)
-      .sort((a: any, b: any) => (detectGender(a.name) === 'Men' ? 0 : 1) - (detectGender(b.name) === 'Men' ? 0 : 1))
-      .slice(0, 12)
+      .sort((a: any, b: any) => {
+        const genderDiff = (detectGender(a.name) === 'Men' ? 0 : 1) - (detectGender(b.name) === 'Men' ? 0 : 1);
+        if (genderDiff !== 0) return genderDiff;
+        // Sort chronologically (latest first)
+        const dateA = a.date ? new Date(a.date).getTime() : 0;
+        const dateB = b.date ? new Date(b.date).getTime() : 0;
+        return dateB - dateA;
+      })
+      .slice(0, 50)
       .map((m: any) => ({
         title: m.name,
         matchType: m.matchType ? m.matchType.toUpperCase() : 'Match',
@@ -1609,8 +1632,15 @@ app.get('/api/cricket/fixtures', async (req, res) => {
     const allMatches = await fetchCricketMatches(API_KEY);
     const upcomingMatches = allMatches
       .filter((m: any) => isInternational(m) && !m.matchStarted)
-      .sort((a: any, b: any) => (detectGender(a.name) === 'Men' ? 0 : 1) - (detectGender(b.name) === 'Men' ? 0 : 1))
-      .slice(0, 12)
+      .sort((a: any, b: any) => {
+        const genderDiff = (detectGender(a.name) === 'Men' ? 0 : 1) - (detectGender(b.name) === 'Men' ? 0 : 1);
+        if (genderDiff !== 0) return genderDiff;
+        // Sort chronologically (soonest first)
+        const dateA = a.date ? new Date(a.date).getTime() : Number.MAX_SAFE_INTEGER;
+        const dateB = b.date ? new Date(b.date).getTime() : Number.MAX_SAFE_INTEGER;
+        return dateA - dateB;
+      })
+      .slice(0, 50)
       .map((m: any) => {
         const matchDate = m.date ? new Date(m.date) : null;
         return {

@@ -202,9 +202,8 @@ export const clusterArticles = (articles: Article[], similarityThreshold: number
     });
 
     const hasUrgentCat = cluster.articles.some(a => URGENT_CATEGORIES.some(uc => a.category.toLowerCase() === uc.toLowerCase()));
-    const isFromBreakingFeed = cluster.articles.some(a => a.category === 'Breaking News');
 
-    if ((isFromBreakingFeed && minsSinceFirst <= 120) || (minsSinceFirst <= 45 && cluster.cluster_size >= 3 && (hasKeyword || hasUrgentCat))) {
+    if (minsSinceFirst <= 45 && cluster.cluster_size >= 3 && (hasKeyword || hasUrgentCat)) {
       cluster.is_breaking = true;
       cluster.breaking_marked_at = new Date().toISOString();
       cluster.breaking_source = 'auto';
@@ -277,35 +276,23 @@ export const getTopNews = (articles: Article[], limit: number = 10): any[] => {
   });
 };
 
-export const getBreakingNews = (articles: Article[], overrides: Record<string, { is_breaking: boolean, marked_at: string }> = {}): any[] => {
+export const getBreakingNews = (articles: Article[]): any[] => {
   const clusters = clusterArticles(articles, 0.75, 6);
   
   const breakingClusters = clusters.filter(cluster => {
-    const override = overrides[cluster.id];
     let isBreaking = cluster.is_breaking;
     let markedAt = cluster.breaking_marked_at ? new Date(cluster.breaking_marked_at).getTime() : 0;
-    let source = cluster.breaking_source;
-
-    // Apply manual override
-    if (override) {
-      isBreaking = override.is_breaking;
-      markedAt = new Date(override.marked_at).getTime();
-      source = 'manual';
-    }
 
     if (!isBreaking) return false;
 
     // Expiry check (2 hours)
     const hoursSinceMarked = (Date.now() - markedAt) / (1000 * 60 * 60);
     
-    // Auto-expire if > 2 hours and not manually pinned (override is false but marked as breaking? Wait, if override is true, it is pinned)
-    if (hoursSinceMarked > 2 && source !== 'manual') {
+    // Auto-expire if > 2 hours
+    if (hoursSinceMarked > 2) {
       return false; // Expired
     }
 
-    cluster.is_breaking = true; // Confirm state
-    cluster.breaking_marked_at = new Date(markedAt).toISOString();
-    cluster.breaking_source = source;
     return true;
   });
 

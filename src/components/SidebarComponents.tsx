@@ -227,10 +227,18 @@ export function TopScorersCard() {
           scorers.map((scorer, idx) => (
             <div key={idx} className="group flex items-center justify-between p-2 bg-portal-bg border border-portal-border hover:bg-portal-surface-hover transition-colors cursor-pointer">
               <div className="flex items-center gap-3">
-                <div className="flex items-center justify-center w-6 h-6 bg-portal-surface text-[11px] font-bold text-portal-text-main border border-portal-border">{idx + 1}</div>
+                <img 
+                  src={scorer.playerImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(scorer.name)}&background=222&color=fff&rounded=true&size=128`}
+                  alt={scorer.name}
+                  className="w-8 h-8 rounded-full border border-portal-border object-cover"
+                  onError={(e) => { (e.target as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${encodeURIComponent(scorer.name)}&background=222&color=fff&rounded=true&size=128`; }}
+                />
                 <div>
                   <div className="text-[13px] font-medium text-portal-text-main transition-colors">{scorer.name}</div>
-                  <div className="text-[10px] text-portal-text-muted tracking-wider uppercase">{scorer.team}</div>
+                  <div className="flex items-center gap-1.5 mt-0.5">
+                    {scorer.flag && <img src={scorer.flag} className="w-3 h-3 object-contain" alt="" />}
+                    <div className="text-[10px] text-portal-text-muted tracking-wider uppercase">{scorer.team}</div>
+                  </div>
                 </div>
               </div>
               <div className="text-xl font-bold text-portal-text-main transition-transform">{scorer.goals}</div>
@@ -553,22 +561,60 @@ export function RecentSportVideosCard() {
     </section>
   );
 }
+
+const formatAndSortMatches = (matches: any[]) => {
+  return (matches || []).map((m: any) => {
+    if (m.team1 && m.team2 && m.team1.localeCompare(m.team2) > 0) {
+      return { 
+        ...m, 
+        team1: m.team2, 
+        team2: m.team1, 
+        score1: m.score2, 
+        score2: m.score1, 
+        flag1: m.flag2, 
+        flag2: m.flag1, 
+        winner: m.winner === 'HOME_TEAM' ? 'AWAY_TEAM' : (m.winner === 'AWAY_TEAM' ? 'HOME_TEAM' : m.winner) 
+      };
+    }
+    return m;
+  });
+};
+
+const SkeletonLoader = () => (
+  <div className="flex flex-col gap-3 animate-pulse">
+    {[1, 2, 3, 4].map(i => (
+      <div key={i} className="h-[72px] bg-portal-border/30 rounded border border-portal-border/50"></div>
+    ))}
+  </div>
+);
 export function FifaLiveMatchesCard() {
   const [matches, setMatches] = React.useState<any[]>([]);
+  const [isLoading, setIsLoading] = React.useState(true);
+
   React.useEffect(() => {
-    fetch('/api/football/wc2026?status=IN_PLAY')
-      .then(res => res.json())
-      .then(data => setMatches(data.matches?.slice(0, 4) || []))
-      .catch(err => console.error(err));
+    const fetchMatches = () => {
+      fetch('/api/football/wc2026?status=IN_PLAY')
+        .then(res => res.json())
+        .then(data => {
+          const sorted = formatAndSortMatches(data.matches);
+          setMatches(sorted.slice(0, 4));
+        })
+        .catch(err => console.error(err))
+        .finally(() => setIsLoading(false));
+    };
+    
+    fetchMatches();
+    const interval = setInterval(fetchMatches, 60000); // Poll every 60s
+    return () => clearInterval(interval);
   }, []);
   
   return (
     <section className="relative overflow-hidden border bg-portal-surface border-portal-border p-5">
       <div className="relative z-10 mb-5 flex items-center justify-between border-b border-portal-border pb-3">
         <h3 className="flex items-center text-[13px] font-semibold tracking-wider text-portal-text-main uppercase">
-          <span className="relative flex h-2 w-2 mr-3">
-            <span className="animate-ping absolute inline-flex h-full w-full bg-emerald-400 opacity-75"></span>
-            <span className="relative inline-flex h-2 w-2 bg-emerald-500"></span>
+          <span className="relative flex h-2 w-2 mr-3" aria-hidden="true">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
           </span>
           LIVE ACTION
         </h3>
@@ -576,27 +622,35 @@ export function FifaLiveMatchesCard() {
       </div>
       
       <div className="relative z-10 flex flex-col gap-3">
-        {matches.length === 0 ? (
+        {isLoading ? (
+          <SkeletonLoader />
+        ) : matches.length === 0 ? (
           <div className="flex flex-col items-center justify-center border border-dashed border-portal-border bg-portal-bg py-8 text-center">
             <span className="mb-2 text-xl opacity-30 grayscale">⚽</span>
             <span className="text-[11px] text-portal-text-muted">No live matches right now</span>
           </div>
         ) : (
           matches.map((match: any, idx: number) => (
-            <div key={idx} className="group relative cursor-pointer overflow-hidden border border-portal-border bg-portal-bg p-3.5 transition-all duration-300 hover:border-portal-brand/50 hover:bg-portal-surface-hover">
+            <div key={idx} className="group relative overflow-hidden border border-portal-border bg-portal-bg p-3.5 transition-all duration-300 hover:border-portal-brand/50 hover:bg-portal-surface-hover">
               <div className="mb-3 flex items-center justify-between">
                 <span className="flex items-center text-[9px] font-bold tracking-widest text-emerald-500">
-                  <span className="mr-1.5 h-1.5 w-1.5 animate-pulse bg-emerald-500"></span>
+                  <span className="mr-1.5 h-1.5 w-1.5 rounded-full animate-pulse bg-emerald-500" aria-hidden="true"></span>
                   {match.status}
                 </span>
                 <span className="text-[10px] text-portal-text-muted">{match.date}</span>
               </div>
               <div className="flex items-center justify-between">
-                <div className="flex flex-col gap-1.5 text-[14px] font-semibold text-portal-text-main uppercase tracking-wide">
-                  <span>{match.team1}</span>
-                  <span>{match.team2}</span>
+                <div className="flex flex-col gap-1.5 text-[14px] font-semibold text-portal-text-main uppercase tracking-wide min-w-0">
+                  <span className="flex items-center gap-2 truncate">
+                    {match.flag1 && <img src={match.flag1} className="w-3.5 h-3.5 object-contain" alt="" />}
+                    <span className="truncate">{match.team1}</span>
+                  </span>
+                  <span className="flex items-center gap-2 truncate">
+                    {match.flag2 && <img src={match.flag2} className="w-3.5 h-3.5 object-contain" alt="" />}
+                    <span className="truncate">{match.team2}</span>
+                  </span>
                 </div>
-                <div className="flex flex-col gap-1.5 text-right text-[16px] font-bold tracking-tight text-portal-text-main transition-colors">
+                <div className="flex flex-col gap-1.5 text-right text-[16px] font-bold tracking-tight text-portal-text-main transition-colors ml-4 shrink-0">
                   <span>{match.score1}</span>
                   <span>{match.score2}</span>
                 </div>
@@ -611,11 +665,17 @@ export function FifaLiveMatchesCard() {
 
 export function FifaUpcomingFixturesCard() {
   const [fixtures, setFixtures] = React.useState<any[]>([]);
+  const [isLoading, setIsLoading] = React.useState(true);
+
   React.useEffect(() => {
     fetch('/api/football/wc2026?status=SCHEDULED')
       .then(res => res.json())
-      .then(data => setFixtures(data.matches?.slice(0, 4) || []))
-      .catch(err => console.error(err));
+      .then(data => {
+        const sorted = formatAndSortMatches(data.matches);
+        setFixtures(sorted.slice(0, 4));
+      })
+      .catch(err => console.error(err))
+      .finally(() => setIsLoading(false));
   }, []);
   
   return (
@@ -627,18 +687,26 @@ export function FifaUpcomingFixturesCard() {
       </div>
       
       <div className="relative z-10 flex flex-col gap-3">
-        {fixtures.length === 0 ? (
+        {isLoading ? (
+          <SkeletonLoader />
+        ) : fixtures.length === 0 ? (
           <div className="flex flex-col items-center justify-center border border-dashed border-portal-border bg-portal-bg py-8 text-center">
             <span className="text-[11px] text-portal-text-muted">No upcoming fixtures</span>
           </div>
         ) : (
           fixtures.map((match: any, idx: number) => (
-            <div key={idx} className="group relative cursor-pointer overflow-hidden border border-portal-border bg-portal-bg p-3 transition-all duration-300 hover:border-portal-brand/50 hover:bg-portal-surface-hover">
+            <div key={idx} className="group relative overflow-hidden border border-portal-border bg-portal-bg p-3 transition-all duration-300 hover:border-portal-brand/50 hover:bg-portal-surface-hover">
               <div className="mb-2 text-[9px] font-semibold tracking-widest text-portal-brand uppercase">{match.date}</div>
-              <div className="flex items-center justify-between text-[13px] font-medium text-portal-text-main transition-colors">
-                <span>{match.team1}</span>
-                <span className="text-[9px] text-portal-text-muted italic mx-2">vs</span>
-                <span>{match.team2}</span>
+              <div className="flex items-center justify-between text-[13px] font-medium text-portal-text-main transition-colors min-w-0">
+                <span className="flex items-center gap-1.5 truncate">
+                  {match.flag1 && <img src={match.flag1} className="w-3.5 h-3.5 object-contain shrink-0" alt="" />}
+                  <span className="truncate">{match.team1}</span>
+                </span>
+                <span className="text-[9px] text-portal-text-muted italic mx-2 shrink-0">vs</span>
+                <span className="flex items-center gap-1.5 flex-row-reverse truncate">
+                  {match.flag2 && <img src={match.flag2} className="w-3.5 h-3.5 object-contain shrink-0" alt="" />}
+                  <span className="truncate">{match.team2}</span>
+                </span>
               </div>
             </div>
           ))
@@ -650,11 +718,17 @@ export function FifaUpcomingFixturesCard() {
 
 export function FifaResultsCard() {
   const [results, setResults] = React.useState<any[]>([]);
+  const [isLoading, setIsLoading] = React.useState(true);
+
   React.useEffect(() => {
     fetch('/api/football/wc2026?status=FINISHED')
       .then(res => res.json())
-      .then(data => setResults(data.matches?.slice(0, 4) || []))
-      .catch(err => console.error(err));
+      .then(data => {
+        const sorted = formatAndSortMatches(data.matches);
+        setResults(sorted.slice(0, 4));
+      })
+      .catch(err => console.error(err))
+      .finally(() => setIsLoading(false));
   }, []);
   
   return (
@@ -666,24 +740,32 @@ export function FifaResultsCard() {
       </div>
       
       <div className="relative z-10 flex flex-col gap-3">
-        {results.length === 0 ? (
+        {isLoading ? (
+          <SkeletonLoader />
+        ) : results.length === 0 ? (
           <div className="flex flex-col items-center justify-center border border-dashed border-portal-border bg-portal-bg py-8 text-center">
             <span className="text-[11px] text-portal-text-muted">No results available</span>
           </div>
         ) : (
           results.map((match: any, idx: number) => (
-            <div key={idx} className="group relative cursor-pointer overflow-hidden border border-portal-border bg-portal-bg p-3.5 transition-all duration-300 hover:border-portal-brand/50 hover:bg-portal-surface-hover flex items-center justify-between">
-              <div className="flex flex-col gap-2 w-full">
+            <div key={idx} className="group relative overflow-hidden border border-portal-border bg-portal-bg p-3.5 transition-all duration-300 hover:border-portal-brand/50 hover:bg-portal-surface-hover flex items-center justify-between">
+              <div className="flex flex-col gap-2 w-full min-w-0">
                 <span className="text-[9px] font-medium tracking-widest text-portal-text-muted uppercase">{match.status} • {match.date}</span>
                 
                 <div className="flex items-center justify-between text-[13px] font-semibold text-portal-text-main">
-                  <span className={match.winner === 'AWAY_TEAM' ? 'opacity-40' : ''}>{match.team1}</span>
-                  <span className={`text-[15px] ${match.winner === 'AWAY_TEAM' ? 'opacity-40 font-normal' : 'font-bold'}`}>{match.score1}</span>
+                  <span className={`flex items-center gap-2 truncate ${match.winner === 'AWAY_TEAM' ? 'opacity-40' : ''}`}>
+                    {match.flag1 && <img src={match.flag1} className="w-3.5 h-3.5 object-contain shrink-0" alt="" />}
+                    <span className="truncate">{match.team1}</span>
+                  </span>
+                  <span className={`text-[15px] ml-4 shrink-0 ${match.winner === 'AWAY_TEAM' ? 'opacity-40 font-normal' : 'font-bold'}`}>{match.score1}</span>
                 </div>
                 
                 <div className="flex items-center justify-between text-[13px] font-semibold text-portal-text-main">
-                  <span className={match.winner === 'HOME_TEAM' ? 'opacity-40' : ''}>{match.team2}</span>
-                  <span className={`text-[15px] ${match.winner === 'HOME_TEAM' ? 'opacity-40 font-normal' : 'font-bold'}`}>{match.score2}</span>
+                  <span className={`flex items-center gap-2 truncate ${match.winner === 'HOME_TEAM' ? 'opacity-40' : ''}`}>
+                    {match.flag2 && <img src={match.flag2} className="w-3.5 h-3.5 object-contain shrink-0" alt="" />}
+                    <span className="truncate">{match.team2}</span>
+                  </span>
+                  <span className={`text-[15px] ml-4 shrink-0 ${match.winner === 'HOME_TEAM' ? 'opacity-40 font-normal' : 'font-bold'}`}>{match.score2}</span>
                 </div>
               </div>
             </div>

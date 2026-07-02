@@ -122,8 +122,8 @@ export default function ChannelsNav({
                     <button
                         onClick={() => { setActiveTab('sports'); setSelectedMenuCategory('Sports: Football'); }}
                         className={`px-4 py-1.5 text-[13px] font-normal rounded-none transition-all duration-300 flex items-center gap-2 cursor-pointer ${(activeTab === 'sports' && selectedMenuCategory === 'Sports: Football') || activeTab === 'fifa'
-                                ? 'bg-gradient-to-r from-[#c9a84c] to-[#e6cf8b] text-black transform scale-105'
-                                : 'bg-portal-surface hover:bg-[#c9a84c]/10 text-portal-text-main hover:text-[#c9a84c] border border-portal-border hover:border-[#c9a84c]/50'
+                            ? 'bg-gradient-to-r from-[#c9a84c] to-[#e6cf8b] text-black transform scale-105'
+                            : 'bg-portal-surface hover:bg-[#c9a84c]/10 text-portal-text-main hover:text-[#c9a84c] border border-portal-border hover:border-[#c9a84c]/50'
                             }`}
                     >
                         <Trophy size={14} className={((activeTab === 'sports' && selectedMenuCategory === 'Sports: Football') || activeTab === 'fifa') ? 'text-black' : 'text-[#c9a84c]'} />
