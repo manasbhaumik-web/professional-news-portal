@@ -38,7 +38,7 @@ export default function EmptyFeedState({ onClearFilters, fallbackArticles, handl
                             >
                                 <div className="aspect-[16/9] w-full rounded overflow-hidden bg-portal-surface border border-portal-border relative">
                                     {art.imageUrl ? (
-                                        <img src={art.imageUrl} alt={art.title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                                        <img referrerPolicy="no-referrer" src={art.imageUrl} alt={art.title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
                                     ) : (
                                         <div className="w-full h-full flex items-center justify-center text-portal-text-muted text-xs font-mono">No Image</div>
                                     )}

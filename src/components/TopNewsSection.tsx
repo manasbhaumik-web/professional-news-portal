@@ -91,6 +91,7 @@ const TopNewsSection: React.FC<TopNewsSectionProps> = ({
                     src={article.imageUrl || 'https://images.unsplash.com/photo-1585829365295-ab7cd400c167?auto=format&fit=crop&w=1200&q=80'}
                     alt={article.title}
                     className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700 ease-out"
+                    referrerPolicy="no-referrer"
                   />
                 </div>
                 <div className="w-full md:w-1/3 p-6 md:p-8 flex flex-col justify-center relative z-20 bg-portal-surface">
@@ -113,6 +114,7 @@ const TopNewsSection: React.FC<TopNewsSectionProps> = ({
                     src={article.imageUrl || 'https://images.unsplash.com/photo-1585829365295-ab7cd400c167?auto=format&fit=crop&w=600&q=80'}
                     alt={article.title}
                     className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700 ease-out"
+                    referrerPolicy="no-referrer"
                   />
                   <div className="absolute bottom-3 left-4 z-20 text-portal-accent font-mono text-[10px] font-bold tracking-wider uppercase">
                     {article.category}

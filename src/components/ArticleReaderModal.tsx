@@ -55,6 +55,7 @@ export default function ArticleReaderModal({
  const [isScraping, setIsScraping] = useState(false);
  const [scrollProgress, setScrollProgress] = useState(0);
  const [reactions, setReactions] = useState<{ [key: string]: number }>({});
+ const [imgError, setImgError] = useState(false);
 
  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
   const target = e.currentTarget;
@@ -76,6 +77,7 @@ export default function ArticleReaderModal({
  };
 
  useEffect(() => {
+  setImgError(false);
   const targetUrl = selectedArticle.originalUrl || selectedArticle.url;
   if (!targetUrl) {
     setFullContent(selectedArticle.content);
@@ -233,9 +235,9 @@ export default function ArticleReaderModal({
  </div>
 
   <div className={`overflow-hidden aspect-video max-h-96 w-full mb-8 relative border ${isCleanMode ? 'border-zinc-800 bg-zinc-950' : 'border-portal-border bg-portal-surface'}`}>
-  {selectedArticle.imageUrl ? (
+  {selectedArticle.imageUrl && !imgError ? (
       <>
-        <img src={selectedArticle.imageUrl} alt={selectedArticle.title.replace(/\bFeeds?\b/gi, '').replace(/\s+/g, ' ').trim()} className="w-full h-full object-cover" />
+        <img src={selectedArticle.imageUrl} alt={selectedArticle.title.replace(/\bFeeds?\b/gi, '').replace(/\s+/g, ' ').trim()} className="w-full h-full object-cover" referrerPolicy="no-referrer" onError={() => setImgError(true)} />
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent" />
       </>
   ) : (

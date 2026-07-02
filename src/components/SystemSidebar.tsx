@@ -33,14 +33,14 @@ export default React.memo(function SystemSidebar({
   topHeadlineIds = new Set()
 }: SystemSidebarProps) {
   const [cricketMatches, setCricketMatches] = useState<any[]>([]);
-  const [cricketIsMock, setCricketIsMock] = useState(true);
+
 
   useEffect(() => {
     fetch('/api/cricket/live')
       .then(res => res.json())
       .then(data => {
         setCricketMatches(data.matches || []);
-        setCricketIsMock(data.isMock);
+
       })
       .catch(err => console.error('Failed to fetch cricket live data', err));
   }, []);
@@ -118,7 +118,7 @@ export default React.memo(function SystemSidebar({
 
       <div className="min-h-[400px] space-y-6">
         {activeSidebarTab === 'Live' && context === 'live_sports' && (
-          <OngoingIccSeriesCard cricketIsMock={cricketIsMock} cricketMatches={cricketMatches} />
+          <OngoingIccSeriesCard cricketMatches={cricketMatches} />
         )}
         {activeSidebarTab === 'Upcoming' && context === 'live_sports' && (
           <UpcomingFixturesCard />

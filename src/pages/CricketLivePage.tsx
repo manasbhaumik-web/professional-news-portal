@@ -120,7 +120,7 @@ export default function CricketLivePage() {
   const [resultMatches, setResultMatches] = useState<ResultMatch[]>([]);
   const [fixtureMatches, setFixtureMatches] = useState<FixtureMatch[]>([]);
 
-  const [isMock, setIsMock] = useState(true);
+
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
@@ -148,7 +148,7 @@ export default function CricketLivePage() {
       if (tab === 'results') setResultMatches(data.matches || []);
       if (tab === 'fixtures') setFixtureMatches(data.matches || []);
 
-      setIsMock(data.isMock ?? true);
+
       setLastUpdated(new Date());
     } catch (err) {
       console.error('Cricket fetch failed:', err);
@@ -222,17 +222,11 @@ export default function CricketLivePage() {
           </div>
 
           <div className="flex items-center gap-3">
-            {isMock ? (
-              <span className="flex items-center gap-1.5 text-[10px] font-mono text-amber-400 bg-amber-500/10 border border-amber-500/20 px-3 py-1.5 ">
-                <WifiOff size={10} /> Demo Data
-              </span>
-            ) : (
-              <span className="flex items-center gap-1.5 text-[10px] font-mono text-green-400 bg-green-500/10 border border-green-500/20 px-3 py-1.5 ">
-                <Wifi size={10} />
-                <span className="w-1.5 h-1.5 bg-green-500 animate-pulse" />
-                Live API
-              </span>
-            )}
+            <span className="flex items-center gap-1.5 text-[10px] font-mono text-green-400 bg-green-500/10 border border-green-500/20 px-3 py-1.5 ">
+              <Wifi size={10} />
+              <span className="w-1.5 h-1.5 bg-green-500 animate-pulse" />
+              Live API
+            </span>
             <button
               onClick={() => fetchTab(activeTab, true)}
               disabled={isRefreshing}
@@ -350,7 +344,7 @@ export default function CricketLivePage() {
       {/* ── Footer ── */}
       <p className="text-center text-[10px] font-mono text-portal-text-muted/60 pb-4">
         Data via CricAPI · Auto-refreshes every 60s (Live tab) ·{' '}
-        {isMock ? 'Add CRICKET_API_KEY in .env for live data' : 'Live data active'}
+        Live data active
       </p>
 
       {selectedMatch && (

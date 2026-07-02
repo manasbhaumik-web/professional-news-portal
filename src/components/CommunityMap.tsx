@@ -39,12 +39,6 @@ interface CommunityMapProps {
 }
 
 export default function CommunityMap({ lat, lon }: CommunityMapProps) {
-  const mockReports = [
-    { id: 1, type: 'traffic', title: 'Major Traffic Delay', desc: 'Accident reported causing 20 min delays.', lat: lat + 0.005, lon: lon - 0.005 },
-    { id: 2, type: 'event', title: 'Community Farmers Market', desc: 'Local vendors and music until 2 PM.', lat: lat - 0.003, lon: lon + 0.004 },
-    { id: 3, type: 'hazard', title: 'Pothole Hazard', desc: 'Large pothole in the right lane.', lat: lat + 0.002, lon: lon + 0.008 },
-    { id: 4, type: 'incident', title: 'Lost Dog Found', desc: 'Golden Retriever found near the park.', lat: lat - 0.006, lon: lon - 0.002 }
-  ];
 
   return (
     <div className="w-full h-[600px] rounded-xl overflow-hidden border border-portal-border relative z-0 shadow-sm">
@@ -61,20 +55,7 @@ export default function CommunityMap({ lat, lon }: CommunityMapProps) {
           </Popup>
         </Marker>
 
-        {mockReports.map(report => (
-          <Marker 
-            key={report.id} 
-            position={[report.lat, report.lon]} 
-            icon={icons[report.type as keyof typeof icons] || icons.hazard}
-          >
-            <Popup>
-              <div className="flex flex-col gap-1 min-w-[200px]">
-                <strong className="text-sm border-b pb-1 mb-1">{report.title}</strong>
-                <span className="text-xs text-gray-600">{report.desc}</span>
-              </div>
-            </Popup>
-          </Marker>
-        ))}
+        {/* Reports would go here */}
       </MapContainer>
     </div>
   );

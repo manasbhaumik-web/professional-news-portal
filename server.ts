@@ -31,161 +31,7 @@ app.use(express.json());
 const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3001;
 
 // High-quality baseline articles database (simulating a database)
-const INITIAL_BASE_ARTICLES = [
-  {
-    id: "art-global-1",
-    title: "Global Maritime Green Corridors: Continental freight lanes adopt hydrogen bunkering networks",
-    category: "Global",
-    summary: "Sovereign transport alliances establish zero-emission oceanic checkpoints across major deepwater trade canals.",
-    content: `A consortium of international maritime registries and regional port authorities announced today the formal activation of six coordinated 'Green Shipping Corridors' by the end of the year. The pact shifts maritime propulsion systems toward liquid hydrogen fuel and ultra-dense magnetic induction storage.
-
-Major oceanic gateways in Rotterdam, Singapore, and Los Angeles are investing in synchronized bunkering infrastructure, bypassing traditional bunker-fuel grids that have accounted for over two percent of global emissions.
-
-Sovereign freight carriers are retrofitting container vessels with hydrogen-fuel cells. Maritime logistics managers project that standard trade lanes will face strict carbon levies at boundary canals, encouraging rapid deployment of zero-emission fleets.`,
-    source: "Aether Signal",
-    date: "Today, 09:12 AM",
-    readTime: "5 min read",
-    imageUrl: "https://images.unsplash.com/photo-1578575437130-527eed3abbec?auto=format&fit=crop&w=800&q=80",
-    trendsUp: true,
-    views: 1840
-  },
-  {
-    id: "art-local-1",
-    title: "Municipal Photonic Micro-Grid Integrates Autonomous Smart District Transit Lines",
-    category: "Local",
-    summary: "A metropolitan pilot project deploys multi-gigabit laser power arrays to drive local ultra-high-frequency train loops.",
-    content: `The Municipal Department of Spatial Allocation and Transit announced a full-scale micro-grid integration pilot within the central smart district. The system harnesses local waveguide solar grids and overhead optical laser receivers to transmit electric currents directly to dynamic commuter train lines.
-
-By bypassing older subterranean copper transformers, the local grid achieves a ninety-two percent efficiency rating on thermal distribution, eliminating transit energy drains by a factor of three.
-
-Local city planners noted that transit loops will operate at ninety-second intervals during peak commute thresholds. High-resolution local optical relays will coordinate the self-optimizing coaches dynamically based on real-time pedestrian density.`,
-    source: "Metropolitan Dispatch",
-    date: "Today, 08:30 AM",
-    readTime: "4 min read",
-    imageUrl: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=800&q=80",
-    trendsUp: true,
-    views: 1210
-  },
-  {
-    id: "art-politics-1",
-    title: "Carbon Border Tariff Adjustment Assembly Enters Final Ratification with Boundary Mandates",
-    category: "Politics",
-    summary: "Legislative chambers negotiate cross-boundary regulatory enforcement on energy-intensive industrial imports.",
-    content: `As cross-border carbon tariff policies transition from theoretical debates to custom legislative assemblies, parliamentary negotiators are locked in intense deliberations over the boundaries of active taxation systems.
-
-The proposed mechanism enforces steep compliance files on import quotas for carbon-intensive steel, raw concrete, and chemical fertilizers, based on the specific emission index registered during manufacture.
-
-Congressional officials from major manufacturing coalitions are seeking temporary tariff exemptions. Nonetheless, regulatory architects contend that standard carbon-leakage limits must remain absolute to preserve domestic green investments.`,
-    source: "Sovereign Risk Journal",
-    date: "Today, 07:15 AM",
-    readTime: "6 min read",
-    imageUrl: "https://images.unsplash.com/photo-1541872703-74c5e44368f9?auto=format&fit=crop&w=800&q=80",
-    trendsUp: false,
-    views: 950
-  },
-  {
-    id: "art-business-1",
-    title: "Sovereign CBDC Settlement Ledger Links Participating Clearinghouses Across Interbank Bridges",
-    category: "Business",
-    summary: "Central banking partners inaugurate real-time wholesale digital ledger clearance sandbox for cross-border liquidity.",
-    content: `The central digital ledger clearance project, codenamed 'Project Sovereign Settler,' has successfully deployed its real-time sandbox infrastructure to clear and settle wholesale transactions across six international clearinghouses.
-
-Using highly secure, permissioned state-consensus pipelines, the network handles upwards of eighty thousand clearance requests per second, bypassing older correspondent network hoops that take days to reconcile.
-
-Commercial bank representatives noted that the digital clearance frameworks will alleviate collateral blockades and streamline cross-boundary trade finance pipelines for corporate participants.`,
-    source: "Consensus Daily",
-    date: "Today, 06:45 AM",
-    readTime: "5 min read",
-    imageUrl: "https://images.unsplash.com/photo-1559526324-4b87b5e36e44?auto=format&fit=crop&w=800&q=80",
-    trendsUp: true,
-    views: 1120
-  },
-  {
-    id: "art-sports-1",
-    title: "Aero-Formula Wind Tunnel Simulations: Liquid Hydrogen Combustion Trials Reach Peak Kinetic Yields",
-    category: "Sports",
-    summary: "High-performance motorsport engineers simulate next-generation hydrogen turbines for carbon-neutral global racing.",
-    content: `High-density formula racing teams have concluded successful simulated trials of next-generation liquid hydrogen combustion motors. Integrating complex computational fluid dynamics (CFD) with real-time wind tunnel sensor arrays, engineers optimized turbine manifolds to maximize kinetic energy recovery.
-
-The lightweight composite prototype frames demonstrated high durability under high thermal loads, registering zero backpressure failures during five simulated endurance trials.
-
-Team lead flight-dynamic architects commented that carbon-neutral fuels will form the benchmark of international professional racing circuits before the turn of the decade.`,
-    source: "Planck Racing",
-    date: "Yesterday",
-    readTime: "4 min read",
-    imageUrl: "https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?auto=format&fit=crop&w=800&q=80",
-    trendsUp: false,
-    views: 890
-  },
-  {
-    id: "art-articles-1",
-    title: "The Boundaries of Silicon Photonic Superposition: A Technical Prospectus on Micro-Coherence",
-    category: "Articles",
-    summary: "An in-depth exposition on room-temperature photonic waveguides and the physical limits of isotopic wave traps.",
-    content: `In early quantum experimental protocols, preserving qubit superposition typically demanded absolute zero temperature controls to block thermal noise. However, recent breakthroughs in silicon-photonics waveguide traps are challenging this physical limitation.
-
-By coating micro-glass traps with dense isotopic isotopes, researchers successfully created a vacuum chamber that insulates moving photons from external kinetic vibrations, maintaining coherence times above eighteen seconds.
-
-This expository study investigates how multi-layer reflective coatings can minimize light scattering within fiber infrastructures, laying the groundwork for a scalable quantum distribution network.`,
-    source: "Ministry Science Review",
-    date: "2 days ago",
-    readTime: "8 min read",
-    imageUrl: "https://images.unsplash.com/photo-1635070041078-e363dbe005cb?auto=format&fit=crop&w=800&q=80",
-    trendsUp: false,
-    views: 1420
-  },
-  {
-    id: "art-blogs-1",
-    title: "Headless Ecosystems and Sovereign Context Engines: Why downloading apps is a legacy convention",
-    category: "Blogs",
-    summary: "An opinion piece on the transition from static screens to continuous conversational filters and headless API connectors.",
-    content: `Over the past decade, opening and closing single-purpose applications on distinct mobile screens has remained the default user interface paradigm. Yet evidence points to the structural obsolescence of store ecosystems.
-
-The rise of general client-side context layers shifts interaction away from fixed pixels and toward headless API agents. These models negotiate transactions and compile custom snippets in real-time.
-
-In this blog, we explore how spatial networks and headless web directories will render application icons redundant, opening a new landscape for modular developers.`,
-    source: "Headless Thoughts",
-    date: "3 days ago",
-    readTime: "7 min read",
-    imageUrl: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=800&q=80",
-    trendsUp: true,
-    views: 2310
-  },
-  {
-    id: "art-entertainment-1",
-    title: "Global Film Festival Premieres Revolutionary Holographic Cinema Experience",
-    category: "Entertainment",
-    summary: "Industry leaders unveil immersive 3D holographic projection technology, reshaping the future of theatrical releases.",
-    content: `At the opening night of the International Cinema Expo, directors and tech visionaries showcased the first full-length feature film utilizing volumetric holographic projection. Unlike traditional 3D, this technology requires no glasses and projects life-sized actors directly into the theater space.
-
-Major studios have already committed to retrofitting select flagship theaters in metropolitan hubs to support the new format, which relies on a complex array of laser emitters and localized atmospheric manipulators to create tangible depth.
-
-Critics at the premiere praised the system's ability to maintain crystal-clear resolution from any viewing angle, noting that this innovation could reverse the decade-long trend of declining theater attendance by offering an experience impossible to replicate at home.`,
-    source: "Culture & Screen",
-    date: "Today, 11:30 AM",
-    readTime: "4 min read",
-    imageUrl: "https://images.unsplash.com/photo-1485846234645-a62644f84728?auto=format&fit=crop&w=800&q=80",
-    trendsUp: true,
-    views: 3105
-  },
-  {
-    id: "art-science-1",
-    title: "Breakthrough in Quantum Error Correction Achieved at CERN",
-    category: "Technology",
-    summary: "Researchers successfully maintain quantum coherence ten times longer than previous records.",
-    content: `Scientists at the European Organization for Nuclear Research (CERN) announced a major milestone in quantum computing today. By implementing a novel topological error correction code, the team managed to keep a 50-qubit array stable for over three seconds—a full order of magnitude improvement over existing commercial quantum processors.
-
-This breakthrough addresses one of the most stubborn hurdles in the field: quantum decoherence. The new technique dynamically isolates individual qubits from environmental thermal noise without requiring near-absolute zero temperatures.
-
-Tech analysts suggest this development could accelerate the timeline for practical quantum supremacy, paving the way for revolutionary advancements in cryptographic decryption, complex molecular modeling, and artificial intelligence training protocols within the next five years.`,
-    source: "Quantum Daily",
-    date: "Today, 02:15 PM",
-    readTime: "6 min read",
-    imageUrl: "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=800&q=80",
-    trendsUp: true,
-    views: 4520
-  }
-];
+const INITIAL_BASE_ARTICLES: any[] = [];
 
 import fs from "fs";
 const dataDir = path.join(process.cwd(), "data");
@@ -718,7 +564,7 @@ async function fetchRealTimeNews() {
     return cachedNews;
   }
 
-  return publishedBaseArticles; // Fallback to mock data if RSS fails entirely
+  return publishedBaseArticles; // Fallback to CMS data if RSS fails entirely
 }
 
 // Background Batch Job for Top News Ranking
@@ -910,7 +756,7 @@ async function fetchYouTubeVideos() {
           source: channel.source,
           region: channel.region,
           views: Math.floor(Math.random() * 50000) + 5000 + ' views',
-          isLive: idx === 0, // Mock the latest video as live
+          isLive: false,
           imageUrl: imageUrl,
           youtubeUrl: item.link,
           date: item.pubDate ? new Date(item.pubDate).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : "Recently",
@@ -1261,27 +1107,7 @@ app.get("/api/news/alerts", (req, res) => {
 // Competition ID for FIFA World Cup 2026 will be confirmed once registered.
 // Free tier: 10 requests/min, results delayed ~10 min. No live scores.
 
-function generateMockGoals(score1: number | null, score2: number | null): any[] {
-  const goals = [];
-  const mockScorers = ['J. Doe', 'M. Smith', 'A. Silva', 'D. Costa', 'K. Muller', 'L. Messi', 'C. Ronaldo', 'K. Mbappe', 'E. Haaland'];
-
-  const s1 = score1 || 0;
-  const s2 = score2 || 0;
-
-  for (let i = 0; i < s1; i++) {
-    goals.push({
-      minute: Math.floor(Math.random() * 90) + 1,
-      scorer: mockScorers[Math.floor(Math.random() * mockScorers.length)]
-    });
-  }
-  for (let i = 0; i < s2; i++) {
-    goals.push({
-      minute: Math.floor(Math.random() * 90) + 1,
-      scorer: mockScorers[Math.floor(Math.random() * mockScorers.length)]
-    });
-  }
-  return goals.sort((a, b) => a.minute - b.minute);
-}
+// generateMockGoals removed
 
 const wcMatchCache: Record<string, { data: any, timestamp: number }> = {};
 
@@ -1341,11 +1167,7 @@ app.get('/api/football/wc2026', async (req, res) => {
       date: new Date(m.utcDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }),
       utcDate: m.utcDate,
       winner: m.score?.winner || null,
-      goals: m.goals && m.goals.length > 0 ? m.goals.map((g: any) => ({
-        minute: g.minute,
-        scorer: g.scorer?.name || 'Unknown',
-        teamId: g.team?.id
-      })) : generateMockGoals(m.score?.fullTime?.home, m.score?.fullTime?.away)
+      scorers: []
     }));
 
     const payload = { matches, updatedAt: new Date().toISOString() };
@@ -1731,6 +1553,7 @@ app.get('/api/news/live-stream', (req, res) => {
   });
 });
 
+/*
 setInterval(() => {
   if (sseClients.size === 0) return;
   const breakNews = {
@@ -1753,6 +1576,7 @@ setInterval(() => {
     client.write(payload);
   }
 }, 45000);
+*/
 
 // Vite Server middleware integration
 async function startServer() {

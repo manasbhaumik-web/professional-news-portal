@@ -10,7 +10,8 @@ export function BrandLogoPlaceholder({ article, className = "", iconSizeClass = 
       return null;
     }
   };
-  const domain = getDomain(article.originalUrl);
+  const targetUrl = article.originalUrl || article.url;
+  const domain = getDomain(targetUrl);
   const brandLogoUrl = domain ? `https://s2.googleusercontent.com/s2/favicons?domain=${domain}&sz=128` : null;
 
   return (

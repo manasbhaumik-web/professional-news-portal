@@ -35,7 +35,7 @@ export function SidebarAdvertisement() {
 }
 
 
-export function OngoingIccSeriesCard({ cricketIsMock, cricketMatches }: { cricketIsMock: boolean, cricketMatches: any[] }) {
+export function OngoingIccSeriesCard({ cricketMatches }: { cricketMatches: any[] }) {
   return (
     <section id="ongoing-icc-series-card" className="border-2 flex flex-col overflow-hidden transition-all bg-portal-surface border-blue-500/40 shadow-lg shadow-blue-500/10 relative">
       <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/10 blur-2xl -mr-10 -mt-10 pointer-events-none"></div>
@@ -47,13 +47,7 @@ export function OngoingIccSeriesCard({ cricketIsMock, cricketMatches }: { cricke
         <span className="text-[10px] bg-blue-500/20 text-blue-400 px-2 py-0.5 font-sans uppercase tracking-widest font-normal ring-1 ring-blue-500/30">Live</span>
       </header>
       <div className="p-4 space-y-4 relative z-10 max-h-96 overflow-y-auto scrollbar-thin scrollbar-thumb-blue-500/20 hover:scrollbar-thumb-blue-500/40">
-        {cricketIsMock && (
-          <div className="absolute top-0 right-0 m-2">
-            <span className="flex items-center gap-1 text-[8px] font-mono text-amber-500 bg-amber-500/10 px-1.5 py-0.5 border border-amber-500/20">
-              <span className="w-1.5 h-1.5 bg-amber-500 "></span>Demo
-            </span>
-          </div>
-        )}
+
         {cricketMatches.length === 0 ? (
           <div className="text-center py-6 text-[11px] font-sans text-portal-text-muted/60 border border-dashed border-blue-500/20 m-2">
             No live cricket matches right now.
@@ -198,7 +192,7 @@ export function UpcomingFixturesCard() {
 
 export function TopScorersCard() {
   const [scorers, setScorers] = React.useState<any[]>([]);
-  const [isMock, setIsMock] = React.useState(false);
+
   const [isLoading, setIsLoading] = React.useState(true);
 
   React.useEffect(() => {
@@ -206,7 +200,7 @@ export function TopScorersCard() {
       .then(res => res.json())
       .then(data => {
         setScorers(data.scorers?.slice(0, 4) || []);
-        setIsMock(data.isMock || false);
+
       })
       .catch(err => console.error('Failed to fetch top scorers', err))
       .finally(() => setIsLoading(false));
@@ -218,9 +212,7 @@ export function TopScorersCard() {
         <h3 className="flex items-center text-[13px] font-semibold tracking-wider text-portal-text-main uppercase">
           TOP SCORERS
         </h3>
-        {isMock && !isLoading && (
-          <span className="text-[9px] uppercase tracking-widest bg-portal-bg text-portal-text-muted px-2 py-0.5 border border-portal-border/50">Mock</span>
-        )}
+
       </div>
       <div className="space-y-3 relative z-10">
         {scorers.length > 0 ? (
@@ -276,7 +268,7 @@ export function ThumbnailNewsCard({ relatedArticles, handleOpenArticle, failedIm
                   className="relative cursor-pointer group rounded overflow-hidden h-48 shadow-md"
                 >
                   {art.imageUrl && !failedImages.includes(art.id) ? (
-                    <img src={art.imageUrl} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" alt="" />
+                    <img referrerPolicy="no-referrer" src={art.imageUrl} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" alt="" />
                   ) : (
                     <BrandLogoPlaceholder article={art} iconSizeClass="w-20 h-20" textSizeClass="text-5xl" />
                   )}
@@ -295,7 +287,7 @@ export function ThumbnailNewsCard({ relatedArticles, handleOpenArticle, failedIm
               <div key={art.id} onClick={() => handleOpenArticle(art)} className="flex items-center gap-3 cursor-pointer group border-t border-portal-border/30 pt-4">
                 <div className="w-14 h-14 shrink-0 overflow-hidden rounded shadow-sm border border-portal-border/20">
                   {art.imageUrl && !failedImages.includes(art.id) ? (
-                    <img src={art.imageUrl} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" alt="" />
+                    <img referrerPolicy="no-referrer" src={art.imageUrl} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" alt="" />
                   ) : (
                     <BrandLogoPlaceholder article={art} iconSizeClass="w-8 h-8" textSizeClass="text-2xl" textMarginClass="mt-0 hidden" />
                   )}
@@ -438,7 +430,7 @@ export function TrendNewsPanel({ trendArticles, handleOpenArticle, failedImages 
           >
             {art.imageUrl && !failedImages.includes(art.id) ? (
               <div className="w-12 h-12 shrink-0 overflow-hidden shadow-sm bg-portal-bg">
-                <img src={art.imageUrl} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                <img referrerPolicy="no-referrer" src={art.imageUrl} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
               </div>
             ) : (
               <div className="w-12 h-12 shrink-0 overflow-hidden shadow-sm bg-portal-bg border border-portal-border/50">
@@ -493,7 +485,7 @@ export function RecentVideosCard() {
         {videos.map(vid => (
           <div key={vid.id} className="p-3 sm:p-4 hover:bg-portal-surface-hover transition-colors group cursor-pointer flex gap-3" onClick={() => handleVideoClick(vid)}>
             <div className="w-20 h-14 bg-portal-bg shrink-0 relative overflow-hidden border border-portal-border/50">
-              <img src={vid.imageUrl} className="w-full h-full object-cover opacity-80 group-hover:scale-110 transition-transform" />
+              <img referrerPolicy="no-referrer" src={vid.imageUrl} className="w-full h-full object-cover opacity-80 group-hover:scale-110 transition-transform" />
               <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/40">
                 <PlayCircle size={16} className="text-white" />
               </div>
@@ -544,7 +536,7 @@ export function RecentSportVideosCard() {
         {videos.map(vid => (
           <div key={vid.id} className="p-3 sm:p-4 hover:bg-portal-surface-hover transition-colors group cursor-pointer flex gap-3" onClick={() => handleVideoClick(vid)}>
             <div className="w-20 h-14 bg-portal-bg shrink-0 relative overflow-hidden border border-portal-border/50">
-              <img src={vid.imageUrl} className="w-full h-full object-cover opacity-80 group-hover:scale-110 transition-transform" />
+              <img referrerPolicy="no-referrer" src={vid.imageUrl} className="w-full h-full object-cover opacity-80 group-hover:scale-110 transition-transform" />
               <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/40">
                 <PlayCircle size={16} className="text-white" />
               </div>
