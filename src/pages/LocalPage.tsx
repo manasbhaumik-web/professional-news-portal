@@ -108,7 +108,7 @@ export default function LocalPage({
  if (data.status === 'ok' && data.items) {
  return data.items.map((item: any, idx: number) => ({
  id: `local-live-${feed.name.replace(/\s+/g, '')}-${idx}`,
- title: item.title,
+ title: (item.title || '').replace(/\bFeeds?\b/gi, '').replace(/\s+/g, ' ').trim(),
  summary: item.description ? item.description.replace(/<[^>]+>/g, '').substring(0, 150) + '...' : '',
  content: item.content || item.description || '',
  imageUrl: item.enclosure?.link || item.thumbnail || undefined,

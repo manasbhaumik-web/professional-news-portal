@@ -56,8 +56,8 @@ export default React.memo(function ArticleCard({
 
   if (index !== undefined) {
     if (index % 5 === 0) {
-      bentoClass = 'md:col-span-2 row-span-2 flex-col sm:flex-row items-stretch';
-      imageClass = 'w-full sm:w-1/2 min-h-[200px] ';
+      bentoClass = 'md:col-span-2 flex-col sm:flex-row items-stretch';
+      imageClass = 'w-full sm:w-1/2 sm:max-h-[320px]';
       isHero = true;
     } else if (index % 5 === 3 || index % 5 === 4) {
       bentoClass = 'col-span-1 row-span-1 flex-col sm:flex-row items-start sm:items-center';
@@ -84,7 +84,7 @@ export default React.memo(function ArticleCard({
         {!hasMissingImage ? (
           <img
             src={art.imageUrl}
-            alt={art.title}
+            alt={art.title.replace(/\bFeeds?\b/gi, '').replace(/\s+/g, ' ').trim()}
             referrerPolicy="no-referrer"
             loading="lazy"
             decoding="async"
@@ -118,7 +118,7 @@ export default React.memo(function ArticleCard({
         )}
       </div>
 
-      <div className={`flex-1 flex flex-col ${isHero ? 'justify-center' : ''} space-y-3`}>
+      <div className="flex-1 flex flex-col space-y-3">
         {!minimal && (
           <header className="flex items-center justify-between text-[11px] font-mono uppercase">
             <div className="flex items-center space-x-2">
@@ -131,11 +131,11 @@ export default React.memo(function ArticleCard({
         )}
 
         <h4 className={`text-portal-text-main group-hover:text-portal-brand transition-colors font-serif font-bold leading-snug ${isHero ? 'text-2xl' : isCompact ? 'text-base' : 'text-xl'} ${minimal ? 'text-left line-clamp-3 text-base sm:text-lg' : ''}`}>
-          {art.title}
+          {art.title.replace(/\bFeeds?\b/gi, '').replace(/\s+/g, ' ').trim()}
         </h4>
 
         {!isCompact && !minimal && (
-          <p className="text-sm line-clamp-3 leading-relaxed text-portal-text-muted">
+          <p className={`text-sm ${isHero ? 'line-clamp-4' : 'line-clamp-3'} leading-relaxed text-portal-text-muted`}>
             {art.summary}
           </p>
         )}

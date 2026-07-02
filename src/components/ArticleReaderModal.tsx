@@ -110,9 +110,9 @@ export default function ArticleReaderModal({
  return (
  <div id="article-reader-root-modal" className="fixed inset-0 bg-portal-bg bg-opacity-95 z-50 flex flex-col overflow-y-auto antialiased" onScroll={handleScroll}>
     <Helmet>
-        <title>{`${selectedArticle.title} | Horizon`}</title>
+        <title>{`${selectedArticle.title.replace(/\bFeeds?\b/gi, '').replace(/\s+/g, ' ').trim()} | Horizon`}</title>
         <meta name="description" content={selectedArticle.summary || "Read this article on Horizon Professional News Portal"} />
-        <meta property="og:title" content={selectedArticle.title} />
+        <meta property="og:title" content={selectedArticle.title.replace(/\bFeeds?\b/gi, '').replace(/\s+/g, ' ').trim()} />
         {selectedArticle.imageUrl && <meta property="og:image" content={selectedArticle.imageUrl} />}
     </Helmet>
  <nav id="reader-sticky-controls" className="sticky top-0 z-50 bg-portal-surface border-b border-portal-border flex flex-col shrink-0">
@@ -216,7 +216,7 @@ export default function ArticleReaderModal({
  {/* LEFT COLUMN: THE ARTICLE */}
  <div className="lg:col-span-7 space-y-6">
  <h1 className={`text-2xl sm:text-4xl lg:text-5xl font-bold tracking-tight font-serif leading-tight ${isCleanMode ? 'text-inherit' : 'text-portal-text-main'}`}>
- {selectedArticle.title}
+ {selectedArticle.title.replace(/\bFeeds?\b/gi, '').replace(/\s+/g, ' ').trim()}
  </h1>
 
  <div className={`flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b pb-6 text-xs font-mono ${isCleanMode ? 'border-zinc-800 text-zinc-400' : 'border-portal-border text-portal-text-muted'}`}>
@@ -235,7 +235,7 @@ export default function ArticleReaderModal({
   <div className={`overflow-hidden aspect-video max-h-96 w-full mb-8 relative border ${isCleanMode ? 'border-zinc-800 bg-zinc-950' : 'border-portal-border bg-portal-surface'}`}>
   {selectedArticle.imageUrl ? (
       <>
-        <img src={selectedArticle.imageUrl} alt={selectedArticle.title} className="w-full h-full object-cover" />
+        <img src={selectedArticle.imageUrl} alt={selectedArticle.title.replace(/\bFeeds?\b/gi, '').replace(/\s+/g, ' ').trim()} className="w-full h-full object-cover" />
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent" />
       </>
   ) : (

@@ -71,7 +71,7 @@ export default function BusinessPage({ articles, selectedCategoryFromMenu, handl
                         if (data.status === 'ok' && data.items) {
                             return data.items.map((item: any, idx: number) => ({
                                 id: `biz-live-${feed.source.toLowerCase().replace(/[^a-z0-9]+/g, '-')}-${idx}-${Math.random().toString(36).substr(2, 5)}`,
-                                title: item.title,
+                                title: (item.title || '').replace(/\bFeeds?\b/gi, '').replace(/\s+/g, ' ').trim(),
                                 summary: item.description ? item.description.replace(/<[^>]+>/g, '').substring(0, 150) + '...' : '',
                                 content: item.content || item.description || '',
                                 imageUrl: item.enclosure?.link || item.thumbnail || (feed.source.includes('Google') ? undefined : (BUSINESS_IMAGES[feed.subCategory] || BUSINESS_IMAGES['General'])),

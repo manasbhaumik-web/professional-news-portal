@@ -69,7 +69,7 @@ export default function EntertainmentPage({ articles, selectedCategoryFromMenu, 
               if (data.status === 'ok' && data.items) {
                 const mapped: NewsArticle[] = data.items.map((item: any, idx: number) => ({
                   id: `ent-live-${fIdx}-${idx}`,
-                  title: item.title,
+                  title: (item.title || '').replace(/\bFeeds?\b/gi, '').replace(/\s+/g, ' ').trim(),
                   summary: item.description ? item.description.replace(/<[^>]+>/g, '').substring(0, 150) + '...' : '',
                   content: item.content || item.description || '',
                   imageUrl: item.enclosure?.link || item.thumbnail || undefined,

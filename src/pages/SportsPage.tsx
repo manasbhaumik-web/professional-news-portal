@@ -190,7 +190,7 @@ export default function SportsPage({ articles, selectedSportFromMenu, handleOpen
                     if (data.items) {
                         const mapped = data.items.map((item: any, idx: number) => ({
                             id: `live-sport-${feed.source.toLowerCase().replace(/[^a-z0-9]+/g, '-')}-${idx}-${Math.random().toString(36).substr(2, 5)}`,
-                            title: item.title,
+                            title: (item.title || '').replace(/\bFeeds?\b/gi, '').replace(/\s+/g, ' ').trim(),
                             summary: item.description ? item.description.replace(/<[^>]+>/g, '').substring(0, 150) + '...' : '',
                             content: item.content || item.description || '',
                             imageUrl: item.enclosure?.link || item.thumbnail || undefined,
