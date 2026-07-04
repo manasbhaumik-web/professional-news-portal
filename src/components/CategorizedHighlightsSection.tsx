@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { NewsArticle } from '../types';
 import { Landmark, Briefcase, Activity, Rocket } from 'lucide-react';
 import { BrandLogoPlaceholder } from './BrandLogoPlaceholder';
+import { formatLocalTime } from '../utils/formatLocalTime';
+
 
 interface CategorizedHighlightsSectionProps {
     articles: NewsArticle[];
@@ -84,7 +86,7 @@ export default function CategorizedHighlightsSection({ articles, handleOpenArtic
                                 </h3>
                                 <div className="text-[9px] font-mono text-portal-text-muted flex justify-between mt-1">
                                     <span className="truncate max-w-[60%]">{article.source}</span>
-                                    <span className="shrink-0">{article.timeAgo || article.date}</span>
+                                    <span className="shrink-0">{article.timeAgo || formatLocalTime(article.date, article.publishedAt)}</span>
                                 </div>
                             </div>
                         </div>

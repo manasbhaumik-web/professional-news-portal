@@ -3,6 +3,8 @@ import { motion } from 'motion/react';
 import { Newspaper, Flame, Activity } from 'lucide-react';
 import { NewsArticle } from '../types';
 import ArticleCard from './ArticleCard';
+import { formatLocalTime } from '../utils/formatLocalTime';
+
 
 interface TopNewsSectionProps {
   handleOpenArticle: (art: NewsArticle) => void;

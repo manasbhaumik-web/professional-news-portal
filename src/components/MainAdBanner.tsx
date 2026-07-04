@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Minus, Plus, ChevronLeft, ChevronRight, TrendingUp, ArrowRight } from 'lucide-react';
 import { NewsArticle } from '../types';
+import { formatLocalTime } from '../utils/formatLocalTime';
+
 
 interface MainAdBannerProps {
     isAdMinimized: boolean;
@@ -93,6 +95,7 @@ export default React.memo(function MainAdBanner({
                                     src={article.imageUrl}
                                     alt={article.title}
                                     className="absolute inset-0 w-full h-full object-cover"
+                                    referrerPolicy="no-referrer"
                                 />
                             </div>
 
@@ -123,7 +126,7 @@ export default React.memo(function MainAdBanner({
                                 <div className="mt-auto pt-3 border-t border-slate-700/50 flex items-center justify-between">
                                     <div className="flex flex-col gap-0.5">
                                         <span className="text-[11px] font-bold text-white font-mono">{article.source}</span>
-                                        <span className="text-[10px] text-slate-400 font-mono">{article.date}</span>
+                                        <span className="text-[10px] text-slate-400 font-mono">{formatLocalTime(article.date, article.publishedAt)}</span>
                                     </div>
                                     <div className="flex items-center gap-1 text-portal-brand text-[10px] font-bold font-mono uppercase tracking-wide group">
                                         Read <ArrowRight size={10} className="group-hover:translate-x-0.5 transition-transform" />

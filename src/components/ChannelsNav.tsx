@@ -143,7 +143,7 @@ export default function ChannelsNav({
                         {isCountryDropdownOpen && (
                             <>
                                 <div className="fixed inset-0 z-40" onClick={() => setIsCountryDropdownOpen(false)} />
-                                <div className="absolute right-0 top-full mt-1 w-full max-h-64 overflow-y-auto bg-portal-bg border border-portal-border shadow-lg z-50 py-1 scrollbar-hide">
+                                <div className="absolute right-0 top-full mt-1 w-max min-w-[140px] max-h-64 overflow-y-auto bg-portal-bg border border-portal-border shadow-lg z-50 py-1 scrollbar-hide">
                                     {COUNTRIES.map(c => (
                                         <button
                                             key={c}
@@ -152,7 +152,7 @@ export default function ChannelsNav({
                                                 setActiveTab('country');
                                                 setIsCountryDropdownOpen(false);
                                             }}
-                                            className={`w-full text-left px-3 py-1.5 text-[13px] transition-colors cursor-pointer ${selectedCountry === c ? 'text-portal-brand bg-portal-surface font-medium' : 'text-portal-text-main hover:bg-portal-surface hover:text-portal-brand'}`}
+                                            className={`w-full text-left whitespace-nowrap px-3 py-1.5 text-[13px] transition-colors cursor-pointer ${selectedCountry === c ? 'text-portal-brand bg-portal-surface font-medium' : 'text-portal-text-main hover:bg-portal-surface hover:text-portal-brand'}`}
                                         >
                                             {c}
                                         </button>

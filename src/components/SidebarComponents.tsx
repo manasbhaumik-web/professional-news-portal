@@ -85,10 +85,10 @@ export function BreakingNewsTicker({ relatedArticles, handleOpenArticle }: { rel
   return (
     <div id="breaking-news-ticker-fullwidth" className="w-full flex border-b border-red-500/20 bg-portal-surface overflow-hidden relative h-12 group">
       <div className="absolute top-0 right-0 w-32 h-32 bg-red-500/5 blur-2xl -mr-10 -mt-10 pointer-events-none"></div>
-      <div className="flex items-center px-4 bg-red-500 text-white z-20 shrink-0 shadow-[4px_0_12px_rgba(239,68,68,0.3)] relative">
-        <span className="w-2 h-2 rounded-full bg-white mr-2 animate-pulse"></span>
+      <div className="flex items-center px-2 sm:px-4 bg-red-500 text-white z-20 shrink-0 shadow-[4px_0_12px_rgba(239,68,68,0.3)] relative">
+        <span className="w-2 h-2 rounded-full bg-white mr-1.5 sm:mr-2 animate-pulse"></span>
         <h3 className="text-xs font-bold font-mono tracking-wider">
-          BREAKING NEWS
+          BREAKING<span className="hidden sm:inline"> NEWS</span>
         </h3>
       </div>
 
@@ -103,7 +103,7 @@ export function BreakingNewsTicker({ relatedArticles, handleOpenArticle }: { rel
             >
               <span className="text-[10px] font-mono text-red-500 font-bold tracking-widest uppercase mr-3 shrink-0">{art.category}</span>
               <span className="text-[13px] font-normal font-mono tracking-wider group-hover:text-red-500 transition-colors text-portal-text-main shrink-0">{art.title}</span>
-              <span className="text-[10px] italic text-portal-text-muted opacity-80 ml-3 shrink-0">{art.date} • {art.readTime}</span>
+              <span className="text-[10px] italic text-portal-text-muted opacity-80 ml-3 shrink-0">{formatLocalTime(art.date, art.publishedAt)} • {art.readTime}</span>
             </div>
           ))}
         </div>
@@ -181,7 +181,7 @@ export function UpcomingFixturesCard() {
             <div key={idx} className="group cursor-pointer border-l-4 border-blue-500/30 pl-3 py-2.5 -ml-2 hover:bg-blue-500/5 hover:border-blue-500 transition-all border border-transparent hover:border-y-blue-500/10 hover:border-r-blue-500/10 hover:shadow-sm">
               <div className="text-[11px] font-sans text-blue-500 mb-0.5 font-normal tracking-widest">{match.matchType || match.format}</div>
               <div className="text-[13px] font-normal group-hover:text-blue-500 transition-colors text-portal-text-main font-sans">{match.title || `${match.team1} vs ${match.team2}`}</div>
-              <div className="text-[11px] italic mt-1 text-portal-text-muted opacity-80 font-sans">{match.date}</div>
+              <div className="text-[11px] italic mt-1 text-portal-text-muted opacity-80 font-sans">{formatLocalTime(match.date, match.publishedAt)}</div>
             </div>
           ))
         )}
@@ -223,12 +223,13 @@ export function TopScorersCard() {
                   src={scorer.playerImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(scorer.name)}&background=222&color=fff&rounded=true&size=128`}
                   alt={scorer.name}
                   className="w-8 h-8 rounded-full border border-portal-border object-cover"
+                  referrerPolicy="no-referrer"
                   onError={(e) => { (e.target as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${encodeURIComponent(scorer.name)}&background=222&color=fff&rounded=true&size=128`; }}
                 />
                 <div>
                   <div className="text-[13px] font-medium text-portal-text-main transition-colors">{scorer.name}</div>
                   <div className="flex items-center gap-1.5 mt-0.5">
-                    {scorer.flag && <img src={scorer.flag} className="w-3 h-3 object-contain" alt="" />}
+                    {scorer.flag && <img src={scorer.flag} className="w-3 h-3 object-contain" alt="" referrerPolicy="no-referrer" />}
                     <div className="text-[10px] text-portal-text-muted tracking-wider uppercase">{scorer.team}</div>
                   </div>
                 </div>
@@ -247,6 +248,8 @@ export function TopScorersCard() {
 }
 
 import { BrandLogoPlaceholder } from './BrandLogoPlaceholder';
+import { formatLocalTime } from '../utils/formatLocalTime';
+
 
 export function ThumbnailNewsCard({ relatedArticles, handleOpenArticle, failedImages = [] }: { relatedArticles: NewsArticle[], handleOpenArticle: (art: NewsArticle) => void, failedImages?: string[] }) {
   const validArticles = [...relatedArticles].slice(0, 12);
@@ -329,7 +332,7 @@ export function TrendingTopicsCard({ relatedArticles, handleOpenArticle, failedI
               </h4>
               <div className="flex items-center gap-2 mt-1">
                 <span className="text-[10px] font-sans text-portal-brand font-normal tracking-widest uppercase">{art.category}</span>
-                <span className="text-[10px] text-portal-text-muted/60 font-sans tracking-tighter">• {art.date}</span>
+                <span className="text-[10px] text-portal-text-muted/60 font-sans tracking-tighter">• {formatLocalTime(art.date, art.publishedAt)}</span>
               </div>
             </div>
           </div>
@@ -405,7 +408,7 @@ export function GoogleNewsPanel({ googleArticles, handleOpenArticle, failedImage
               <div className="flex flex-col justify-center">
                 <span className="text-[10px] font-mono text-[#4285F4] tracking-wider uppercase mb-1">{art.category}</span>
                 <span className="text-[10px] text-portal-text-muted line-clamp-2 leading-tight">
-                  Published {art.date}. Click to read full article coverage on Google News.
+                  Published {formatLocalTime(art.date, art.publishedAt)}. Click to read full article coverage on Google News.
                 </span>
               </div>
             </div>
@@ -443,7 +446,7 @@ export function TrendNewsPanel({ trendArticles, handleOpenArticle, failedImages 
               </h4>
               <div className="flex items-center gap-2 mt-1.5">
                 <span className="text-[9px] font-bold text-portal-brand uppercase tracking-wider">{art.category}</span>
-                <span className="text-[9px] text-portal-text-muted/70 font-mono tracking-tighter">{art.date}</span>
+                <span className="text-[9px] text-portal-text-muted/70 font-mono tracking-tighter">{formatLocalTime(art.date, art.publishedAt)}</span>
               </div>
             </div>
           </div>
@@ -629,16 +632,16 @@ export function FifaLiveMatchesCard() {
                   <span className="mr-1.5 h-1.5 w-1.5 rounded-full animate-pulse bg-emerald-500" aria-hidden="true"></span>
                   {match.status}
                 </span>
-                <span className="text-[10px] text-portal-text-muted">{match.date}</span>
+                <span className="text-[10px] text-portal-text-muted">{formatLocalTime(match.date, match.publishedAt)}</span>
               </div>
               <div className="flex items-center justify-between">
                 <div className="flex flex-col gap-1.5 text-[14px] font-semibold text-portal-text-main uppercase tracking-wide min-w-0">
                   <span className="flex items-center gap-2 truncate">
-                    {match.flag1 && <img src={match.flag1} className="w-3.5 h-3.5 object-contain" alt="" />}
+                    {match.flag1 && <img src={match.flag1} className="w-3.5 h-3.5 object-contain" alt="" referrerPolicy="no-referrer" />}
                     <span className="truncate">{match.team1}</span>
                   </span>
                   <span className="flex items-center gap-2 truncate">
-                    {match.flag2 && <img src={match.flag2} className="w-3.5 h-3.5 object-contain" alt="" />}
+                    {match.flag2 && <img src={match.flag2} className="w-3.5 h-3.5 object-contain" alt="" referrerPolicy="no-referrer" />}
                     <span className="truncate">{match.team2}</span>
                   </span>
                 </div>
@@ -688,15 +691,15 @@ export function FifaUpcomingFixturesCard() {
         ) : (
           fixtures.map((match: any, idx: number) => (
             <div key={idx} className="group relative overflow-hidden border border-portal-border bg-portal-bg p-3 transition-all duration-300 hover:border-portal-brand/50 hover:bg-portal-surface-hover">
-              <div className="mb-2 text-[9px] font-semibold tracking-widest text-portal-brand uppercase">{match.date}</div>
+              <div className="mb-2 text-[9px] font-semibold tracking-widest text-portal-brand uppercase">{formatLocalTime(match.date, match.publishedAt)}</div>
               <div className="flex items-center justify-between text-[13px] font-medium text-portal-text-main transition-colors min-w-0">
                 <span className="flex items-center gap-1.5 truncate">
-                  {match.flag1 && <img src={match.flag1} className="w-3.5 h-3.5 object-contain shrink-0" alt="" />}
+                  {match.flag1 && <img src={match.flag1} className="w-3.5 h-3.5 object-contain shrink-0" alt="" referrerPolicy="no-referrer" />}
                   <span className="truncate">{match.team1}</span>
                 </span>
                 <span className="text-[9px] text-portal-text-muted italic mx-2 shrink-0">vs</span>
                 <span className="flex items-center gap-1.5 flex-row-reverse truncate">
-                  {match.flag2 && <img src={match.flag2} className="w-3.5 h-3.5 object-contain shrink-0" alt="" />}
+                  {match.flag2 && <img src={match.flag2} className="w-3.5 h-3.5 object-contain shrink-0" alt="" referrerPolicy="no-referrer" />}
                   <span className="truncate">{match.team2}</span>
                 </span>
               </div>
@@ -742,11 +745,11 @@ export function FifaResultsCard() {
           results.map((match: any, idx: number) => (
             <div key={idx} className="group relative overflow-hidden border border-portal-border bg-portal-bg p-3.5 transition-all duration-300 hover:border-portal-brand/50 hover:bg-portal-surface-hover flex items-center justify-between">
               <div className="flex flex-col gap-2 w-full min-w-0">
-                <span className="text-[9px] font-medium tracking-widest text-portal-text-muted uppercase">{match.status} • {match.date}</span>
+                <span className="text-[9px] font-medium tracking-widest text-portal-text-muted uppercase">{match.status} • {formatLocalTime(match.date, match.publishedAt)}</span>
                 
                 <div className="flex items-center justify-between text-[13px] font-semibold text-portal-text-main">
                   <span className={`flex items-center gap-2 truncate ${match.winner === 'AWAY_TEAM' ? 'opacity-40' : ''}`}>
-                    {match.flag1 && <img src={match.flag1} className="w-3.5 h-3.5 object-contain shrink-0" alt="" />}
+                    {match.flag1 && <img src={match.flag1} className="w-3.5 h-3.5 object-contain shrink-0" alt="" referrerPolicy="no-referrer" />}
                     <span className="truncate">{match.team1}</span>
                   </span>
                   <span className={`text-[15px] ml-4 shrink-0 ${match.winner === 'AWAY_TEAM' ? 'opacity-40 font-normal' : 'font-bold'}`}>{match.score1}</span>
@@ -754,7 +757,7 @@ export function FifaResultsCard() {
                 
                 <div className="flex items-center justify-between text-[13px] font-semibold text-portal-text-main">
                   <span className={`flex items-center gap-2 truncate ${match.winner === 'HOME_TEAM' ? 'opacity-40' : ''}`}>
-                    {match.flag2 && <img src={match.flag2} className="w-3.5 h-3.5 object-contain shrink-0" alt="" />}
+                    {match.flag2 && <img src={match.flag2} className="w-3.5 h-3.5 object-contain shrink-0" alt="" referrerPolicy="no-referrer" />}
                     <span className="truncate">{match.team2}</span>
                   </span>
                   <span className={`text-[15px] ml-4 shrink-0 ${match.winner === 'HOME_TEAM' ? 'opacity-40 font-normal' : 'font-bold'}`}>{match.score2}</span>

@@ -1115,11 +1115,8 @@ app.get('/api/football/wc2026', async (req, res) => {
   const API_KEY = process.env.FOOTBALL_DATA_API_KEY;
 
   if (!API_KEY) {
-    // No key configured — return clear error so frontend can show fallback
-    return res.status(503).json({
-      error: 'FOOTBALL_DATA_API_KEY not configured.',
-      hint: 'Get a free key at https://www.football-data.org/client/register and add it to your .env file.'
-    });
+    // No key configured — return empty array so frontend can show fallback gracefully
+    return res.json({ matches: [], isMock: false });
   }
 
   try {

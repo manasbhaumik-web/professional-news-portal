@@ -32,13 +32,6 @@ export default function CountryPage({
 
     const [articles, setArticles] = useState<NewsArticle[]>([]);
     const [isLoading, setIsLoading] = useState(false);
-    const [countryFlagUrl, setCountryFlagUrl] = useState<string>('');
-    const [countryMeta, setCountryMeta] = useState<{
-        population?: string;
-        region?: string;
-        time?: string;
-        weather?: string;
-    } | null>(null);
 
     const bgClass = isDark ? 'bg-[#0A0B0D]' : isSepia ? 'bg-[#FAF3E3]' : 'bg-white';
     const borderClass = isDark ? 'border-zinc-800' : isSepia ? 'border-[#CDBC9D]' : 'border-neutral-200';
@@ -49,86 +42,6 @@ export default function CountryPage({
     const fetchCountryNews = async (country: string) => {
         setIsLoading(true);
         setArticles([]);
-
-        // Hardcode common flags to bypass any API blocking
-        const flagMap: Record<string, string> = {
-            "India": "in", "United States": "us", "United Kingdom": "gb", "Canada": "ca", "Australia": "au",
-            "China": "cn", "Japan": "jp", "Malaysia": "my", "South Africa": "za", "France": "fr", "Germany": "de",
-            "Georgia": "ge", "Argentina": "ar", "Brazil": "br", "Indonesia": "id", "Italy": "it", "Mexico": "mx",
-            "Nigeria": "ng", "Russia": "ru", "Saudi Arabia": "sa", "South Korea": "kr", "Spain": "es", "Turkey": "tr",
-            "Switzerland": "ch", "Portugal": "pt", "Singapore": "sg", "New Zealand": "nz", "Netherlands": "nl"
-        };
-
-        setCountryMeta(null);
-
-        if (flagMap[country]) {
-            setCountryFlagUrl(`https://flagcdn.com/${flagMap[country]}.svg`);
-        }
-
-        try {
-            const metaRes = await fetch(`https://restcountries.com/v3.1/name/${encodeURIComponent(country)}?fields=flags,population,region,timezones,latlng`);
-            if (!metaRes.ok) throw new Error("REST Countries API failed");
-            const metaData = await metaRes.json();
-            if (metaData && Array.isArray(metaData) && metaData.length > 0) {
-                const data = metaData[0];
-
-                if (!flagMap[country]) {
-                    if (data.flags?.svg || data.flags?.png) {
-                        setCountryFlagUrl(data.flags.svg || data.flags.png);
-                    } else {
-                        setCountryFlagUrl('');
-                    }
-                }
-
-                let timeStr = '';
-                if (data.timezones && data.timezones.length > 0) {
-                    const tz = data.timezones[0];
-                    if (tz === "UTC") {
-                        timeStr = new Date().toLocaleTimeString('en-US', { timeZone: 'UTC', hour: '2-digit', minute: '2-digit' });
-                    } else if (tz.startsWith("UTC")) {
-                        const offset = tz.replace("UTC", "");
-                        const sign = offset.startsWith('-') ? -1 : 1;
-                        const parts = offset.substring(1).split(':');
-                        const hours = parseInt(parts[0], 10) || 0;
-                        const minutes = parseInt(parts[1], 10) || 0;
-                        const totalOffsetMins = sign * (hours * 60 + minutes);
-
-                        const now = new Date();
-                        const utcNow = now.getTime() + (now.getTimezoneOffset() * 60000);
-                        const localTime = new Date(utcNow + (totalOffsetMins * 60000));
-                        timeStr = localTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-                    }
-                }
-
-                setCountryMeta(prev => ({
-                    ...(prev || {}),
-                    population: data.population ? new Intl.NumberFormat('en-US', { notation: "compact", compactDisplay: "short" }).format(data.population) : undefined,
-                    region: data.region,
-                    time: timeStr
-                }));
-
-                // Fetch weather using lat/lng via open-meteo
-                if (data.latlng && data.latlng.length === 2) {
-                    try {
-                        const weatherRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${data.latlng[0]}&longitude=${data.latlng[1]}&current_weather=true`);
-                        if (weatherRes.ok) {
-                            const weatherData = await weatherRes.json();
-                            const temp = weatherData.current_weather?.temperature;
-                            if (temp !== undefined) {
-                                setCountryMeta(prev => ({ ...(prev || {}), weather: `${temp}°C` }));
-                            }
-                        }
-                    } catch (we) {
-                        console.log("Open-meteo fetch failed", we);
-                    }
-                }
-
-            } else if (!flagMap[country]) {
-                setCountryFlagUrl('');
-            }
-        } catch (e) {
-            if (!flagMap[country]) setCountryFlagUrl('');
-        }
 
         try {
             let feeds = COUNTRY_FEEDS[country];
@@ -197,7 +110,7 @@ export default function CountryPage({
     const googleArticles = articles.filter(art => isGoogle(art));
 
     const displayArticles = nonGoogle.slice(0, 10);
-    const overflowArticles = nonGoogle.slice(43);
+    const overflowArticles = nonGoogle.slice(10);
     const displayGoogleArticles = googleArticles.slice(0, 40);
 
 

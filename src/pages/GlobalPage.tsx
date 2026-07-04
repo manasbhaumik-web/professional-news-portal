@@ -168,6 +168,7 @@ export default function GlobalPage({ theme }: GlobalPageProps) {
                   src={activeVideo?.imageUrl}
                   alt="Main Featured Stream"
                   className="w-full h-full object-cover opacity-90 group-hover/player:opacity-100 transition-opacity"
+                  referrerPolicy="no-referrer"
                 />
                 <div className="absolute inset-0 bg-black/30 group-hover/player:bg-transparent transition-colors duration-300" />
                 <button className="absolute inset-0 m-auto w-16 h-16 bg-red-600 hover:bg-red-500 text-white rounded-full flex items-center justify-center transform group-hover/player:scale-110 transition-transform shadow-lg">
@@ -229,6 +230,7 @@ export default function GlobalPage({ theme }: GlobalPageProps) {
                 src={vid.imageUrl} 
                 alt={vid.title}
                 className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-300"
+                referrerPolicy="no-referrer"
               />
               <div className="absolute inset-0 bg-black/10 group-hover:bg-transparent transition-colors" />
               <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">

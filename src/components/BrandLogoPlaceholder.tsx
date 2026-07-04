@@ -1,7 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { NewsArticle } from '../types';
 
 export function BrandLogoPlaceholder({ article, className = "", iconSizeClass = "w-16 h-16", textSizeClass = "text-4xl", textMarginClass = "mt-2" }: { article: NewsArticle, className?: string, iconSizeClass?: string, textSizeClass?: string, textMarginClass?: string }) {
+  const [imgError, setImgError] = useState(false);
+  
   const getDomain = (url?: string) => {
     if (!url) return null;
     try {
@@ -12,12 +14,12 @@ export function BrandLogoPlaceholder({ article, className = "", iconSizeClass = 
   };
   const targetUrl = article.originalUrl || article.url;
   const domain = getDomain(targetUrl);
-  const brandLogoUrl = domain ? `https://s2.googleusercontent.com/s2/favicons?domain=${domain}&sz=128` : null;
+  const brandLogoUrl = domain && !imgError ? `https://s2.googleusercontent.com/s2/favicons?domain=${domain}&sz=128` : null;
 
   return (
     <div className={`w-full h-full bg-portal-surface border border-portal-border/30 flex flex-col items-center justify-center p-4 ${className}`}>
       {brandLogoUrl ? (
-        <img src={brandLogoUrl} alt={article.source} className={`${iconSizeClass} object-contain opacity-70 group-hover:scale-110 transition-transform duration-500`} />
+        <img src={brandLogoUrl} alt={article.source} className={`${iconSizeClass} object-contain opacity-70 group-hover:scale-110 transition-transform duration-500`} referrerPolicy="no-referrer" onError={() => setImgError(true)} />
       ) : (
         <div className={`${textSizeClass} font-black font-serif text-portal-text-muted/30 group-hover:text-portal-brand transition-colors uppercase`}>
           {article.source ? article.source.charAt(0) : '?'}

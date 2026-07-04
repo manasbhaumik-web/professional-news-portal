@@ -29,10 +29,10 @@ export default function Header({
         <header id="primary-editorial-nav" className="flex items-center justify-between px-4 sm:px-8 border-b border-portal-border transition-colors shrink-0 backdrop-blur-md bg-opacity-95 bg-portal-surface text-portal-text-main h-16">
             <div className="flex items-center space-x-4 sm:space-x-8">
                 <div id="brand-logo" className="text-lg sm:text-xl font-bold tracking-tighter flex items-center cursor-pointer select-none transition-colors text-portal-text-main" onClick={() => setActiveTab('trending')}>
-                    <div className="w-8 h-8 flex items-center justify-center mr-2 shadow-lg transition-all bg-portal-brand">
+                    <div className="w-8 h-8 flex items-center justify-center sm:mr-2 shadow-lg transition-all bg-portal-brand shrink-0">
                         <span className="text-xs font-mono font-black text-white">THP</span>
                     </div>
-                    <>THE HORIZON<span className="text-portal-brand font-serif italic ml-0.5"> POST</span></>
+                    <span className="hidden sm:inline-flex items-center whitespace-nowrap">THE HORIZON<span className="text-portal-brand font-serif italic ml-0.5"> POST</span></span>
                 </div>
 
                 <div id="nav-topic-pills" className="hidden lg:flex space-x-6 text-xs font-semibold uppercase tracking-wider">
@@ -97,8 +97,8 @@ export default function Header({
                     theme={portalTheme}
                 />
 
-                <div id="usr-profile-chip" className="flex items-center space-x-2 border-l pl-4 sm:pl-6 select-none border-portal-border">
-                    <div className="w-8 h-8 bg-gradient-to-tr from-blue-700 to-indigo-800 flex items-center justify-center text-xs font-bold text-white shadow-inner">
+                <div id="usr-profile-chip" className="flex items-center space-x-2 border-l pl-3 sm:pl-6 select-none border-portal-border">
+                    <div className="w-7 h-7 sm:w-8 sm:h-8 bg-gradient-to-tr from-blue-700 to-indigo-800 flex items-center justify-center text-[10px] sm:text-xs font-bold text-white shadow-inner">
                         AE
                     </div>
                     <span className="hidden lg:inline-block text-xs font-semibold text-portal-text-main">

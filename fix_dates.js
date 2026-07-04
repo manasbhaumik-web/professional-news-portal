@@ -44,13 +44,16 @@ components.forEach(file => {
   
   // Replace article.date where it might be standalone
   content = content.replace(/article\.date/g, function(match, offset, string) {
+      // Don't replace if it's already wrapped in formatLocalTime
       if (string.substring(offset - 16, offset) === 'formatLocalTime(') return match;
       if (string.substring(offset, offset + 12) === 'article.date') {
+          // If it's part of `article.timeAgo || article.date` which we already covered, skip.
           return match;
       }
       return match;
   });
 
+  // Re-run for CategorizedHighlightsSection.tsx specifically because it has {article.timeAgo || article.date}
   content = content.replace(/\{article\.timeAgo \|\| article\.date\}/g, "{article.timeAgo || formatLocalTime(article.date, article.publishedAt)}");
   
   fs.writeFileSync(p, content);

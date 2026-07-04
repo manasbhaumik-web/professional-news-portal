@@ -4,6 +4,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Helmet } from 'react-helmet-async';
 import { NewsArticle } from '../types';
 import { BrandLogoPlaceholder } from './BrandLogoPlaceholder';
+import { formatLocalTime } from '../utils/formatLocalTime';
+
 
 interface ArticleReaderModalProps {
  selectedArticle: NewsArticle;
@@ -228,7 +230,7 @@ export default function ArticleReaderModal({
  <span>Reporting Team</span>
  </div>
  <div className="flex items-center space-x-3">
- <span>Filed {selectedArticle.date}</span>
+ <span>Filed {formatLocalTime(selectedArticle.date, selectedArticle.publishedAt)}</span>
  <span>•</span>
  <span>{selectedArticle.readTime || '5 min read'} Focus</span>
  </div>

@@ -3,6 +3,8 @@ import { motion } from 'motion/react';
 import { TrendingUp, Clock, Eye, BookMarked, ChevronRight, Sparkles, Flame, Activity, Newspaper } from 'lucide-react';
 import { NewsArticle } from '../types';
 import { BrandLogoPlaceholder } from './BrandLogoPlaceholder';
+import { formatLocalTime } from '../utils/formatLocalTime';
+
 
 interface ArticleCardProps {
   key?: React.Key;
@@ -126,7 +128,7 @@ export default React.memo(function ArticleCard({
               <span className="text-portal-text-muted">•</span>
               <span className="text-portal-text-muted line-clamp-1">{art.source}</span>
             </div>
-            <time dateTime={art.date} className="text-[10px] text-portal-text-muted shrink-0 ml-2 text-right">{art.timeAgo || art.date}</time>
+            <time dateTime={formatLocalTime(art.date, art.publishedAt)} className="text-[10px] text-portal-text-muted shrink-0 ml-2 text-right">{art.timeAgo || formatLocalTime(art.date, art.publishedAt)}</time>
           </header>
         )}
 

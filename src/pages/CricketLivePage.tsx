@@ -202,7 +202,7 @@ export default function CricketLivePage() {
       {/* ── Page Header ────────────────────────────────────────────── */}
       <div className="relative overflow-hidden border-b border-portal-border bg-portal-surface">
         <div className="absolute inset-0 z-0">
-          <img src="https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?w=1600&auto=format&fit=crop" alt="Cricket Stadium" className="w-full h-full object-cover opacity-20" />
+          <img src="https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?w=1600&auto=format&fit=crop" alt="Cricket Stadium" className="w-full h-full object-cover opacity-20" referrerPolicy="no-referrer" />
           <div className="absolute inset-0 bg-gradient-to-t from-portal-surface to-transparent" />
         </div>
 
