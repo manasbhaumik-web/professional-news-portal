@@ -10,6 +10,14 @@ class ErrorBoundary extends React.Component<{children: React.ReactNode}, {hasErr
     this.state = { hasError: false, error: null };
   }
   static getDerivedStateFromError(error: any) {
+    const errorMsg = error?.message?.toLowerCase() || '';
+    if (errorMsg.includes('dynamically imported module') || errorMsg.includes('importing a module script failed')) {
+      if (!sessionStorage.getItem('chunk_reload')) {
+        sessionStorage.setItem('chunk_reload', 'true');
+        window.location.reload();
+        return { hasError: false, error: null };
+      }
+    }
     return { hasError: true, error };
   }
   render() {
