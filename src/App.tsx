@@ -133,7 +133,44 @@ export default function App() {
         return () => window.removeEventListener('keydown', handleKeyDown);
     }, []);
 
+    // FIFA World Cup 2026 live scores
+    const [fifaScores, setFifaScores] = useState<any[]>([]);
+    const [fifaLoading, setFifaLoading] = useState(false);
+    const [fifaStatus, setFifaStatus] = useState<'live' | 'demo' | 'idle'>('idle');
+    const [fifaLastUpdated, setFifaLastUpdated] = useState<Date | null>(null);
 
+    const fetchFifaScores = useCallback(async () => {
+        setFifaLoading(true);
+        try {
+            const res = await fetch('/api/football/wc2026');
+            const data = await res.json();
+            if (res.ok && data.matches && data.matches.length > 0) {
+                setFifaScores(data.matches);
+                setFifaStatus('live');
+            } else {
+                setFifaStatus('demo');
+            }
+            setFifaLastUpdated(new Date());
+        } catch {
+            setFifaStatus('demo');
+        } finally {
+            setFifaLoading(false);
+        }
+    }, []);
+
+    // Fetch FIFA scores on tab switch to football or sports
+    useEffect(() => {
+        if (selectedMenuCategory === 'Sports: Football' || activeTab === 'fifa') {
+            fetchFifaScores();
+        }
+    }, [selectedMenuCategory, activeTab, fetchFifaScores]);
+
+    // Auto-refresh FIFA scores every 5 minutes when on football tab
+    useEffect(() => {
+        if (selectedMenuCategory !== 'Sports: Football') return;
+        const interval = setInterval(fetchFifaScores, 300000);
+        return () => clearInterval(interval);
+    }, [selectedMenuCategory, fetchFifaScores]);
 
     // FIFA World Cup 2026 news feeds for Main Ad Banner
     const [fifaNewsArticles, setFifaNewsArticles] = useState<NewsArticle[]>([]);
@@ -848,7 +885,9 @@ export default function App() {
                                                         return true;
                                                     });
 
-                                                const mainArticles = validArticles.slice(0, trendingLimit);
+                                                const isGoogle = (art: NewsArticle) => art.source?.toLowerCase().includes('google') || art.url?.includes('news.google.com');
+                                                const nonGoogle = validArticles.filter(art => !isGoogle(art));
+                                                const mainArticles = nonGoogle.slice(0, trendingLimit);
 
                                                 return mainArticles.map((art, idx) => (
                                                     <ArticleCard
