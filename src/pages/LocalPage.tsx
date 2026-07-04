@@ -156,7 +156,7 @@ export default function LocalPage({
  const textPrimaryClass = isDark ? 'text-white' : isSepia ? 'text-[#2C2114]' : 'text-neutral-900';
  const cardBgClass = isDark ? 'bg-[#14161B]' : isSepia ? 'bg-[#FAF6EE]' : 'bg-white';
 
- const combinedArticles = [...liveArticles, ...articles.filter(art => art.title.toLowerCase().includes(locationName.toLowerCase()) || art.category === 'Local')];
+ const combinedArticles = [...liveArticles];
  const allSorted = combinedArticles.filter((art, idx, self) => idx === self.findIndex(a => a.title.toLowerCase().trim() === art.title.toLowerCase().trim()));
 
  const filteredByCategory = activeCategory === "All" ? allSorted : allSorted.filter(art => {
