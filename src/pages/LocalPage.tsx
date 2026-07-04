@@ -85,21 +85,19 @@ export default function LocalPage({
  setIsLiveLoading(true);
  try {
  const query = locationName === "Unknown Country" ? "Local" : locationName;
- 
- let feeds = COUNTRY_FEEDS[countryName] ? [...COUNTRY_FEEDS[countryName]] : [];
- const codeParams = FALLBACK_CODES[countryName];
- 
- if (feeds.length === 0) {
- // If no curated country feeds exist, fallback to Google News
- feeds.push({ 
- name: "Hyperlocal Dispatches", 
- url: `https://news.google.com/rss/search?q=${encodeURIComponent(query + " News")}` 
- });
- 
- if (codeParams) {
- feeds.push({ name: `${countryName} National News`, url: `https://news.google.com/rss?hl=${codeParams}` });
- }
- }
+  const codeParams = FALLBACK_CODES[countryName];
+  
+  let feeds: any[] = [];
+  
+  // Strictly enforce local news by using targeted Google News queries
+  feeds.push({ 
+    name: "Hyperlocal Dispatches", 
+    url: `https://news.google.com/rss/search?q=${encodeURIComponent(query + " News")}` 
+  });
+  
+  if (codeParams) {
+    feeds.push({ name: `${countryName} National News`, url: `https://news.google.com/rss?hl=${codeParams}` });
+  }
 
  const fetchPromises = feeds.map(async (feed) => {
  try {
