@@ -143,7 +143,7 @@ export default function ChannelsNav({
                         {isCountryDropdownOpen && (
                             <>
                                 <div className="fixed inset-0 z-40" onClick={() => setIsCountryDropdownOpen(false)} />
-                                <div className="absolute right-0 top-full mt-1 w-max min-w-[140px] max-h-64 overflow-y-auto bg-portal-bg border border-portal-border shadow-lg z-50 py-1 scrollbar-hide">
+                                <div className="absolute right-0 top-full mt-1 w-max min-w-[140px] max-h-64 overflow-y-auto bg-portal-bg border border-portal-border shadow-lg z-50 py-1 scrollbar-hide flex flex-col">
                                     {COUNTRIES.map(c => (
                                         <button
                                             key={c}
