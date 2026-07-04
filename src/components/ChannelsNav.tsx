@@ -131,7 +131,7 @@ export default function ChannelsNav({
                     </button>
 
                     {/* Country Selection */}
-                    <div className="hidden md:block relative">
+                    <div className="relative">
                         <button
                             onClick={() => setIsCountryDropdownOpen(!isCountryDropdownOpen)}
                             className="flex items-center justify-between gap-2 px-3 py-1.5 border border-portal-border bg-portal-bg text-portal-text-main hover:border-portal-brand transition-colors text-[13px] font-normal cursor-pointer w-[140px]"
