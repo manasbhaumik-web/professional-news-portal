@@ -78,7 +78,7 @@ let lastFetchTime = 0;
 const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 
 // CMS Routes
-const ADMIN_PASSWORD = "admin123";
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "admin123_fallback_change_me";
 
 const authMiddleware = (req: express.Request, res: express.Response, next: express.NextFunction) => {
   const token = req.headers.authorization;
@@ -192,6 +192,48 @@ app.get('/api/news/proxy', async (req, res) => {
   try {
     const rssUrl = req.query.url as string;
     if (!rssUrl) return res.status(400).json({ status: 'error', message: 'Missing url param' });
+
+    // Security: Prevent SSRF by restricting allowed domains
+    const allowedDomains = [
+      'news.google.com',
+      'feeds.bbci.co.uk',
+      'feeds.npr.org',
+      'rss.nytimes.com',
+      'www.cbc.ca',
+      'en.mercopress.com',
+      'rss.dw.com',
+      'www.france24.com',
+      'www.aljazeera.com',
+      'gulfnews.com',
+      'feeds.news24.com',
+      'www.thehindu.com',
+      'news.abs-cbn.com',
+      'search.cnbc.com',
+      'www.japantimes.co.jp',
+      'www.abc.net.au',
+      'theguardian.com',
+      'feeds.feedburner.com',
+      'www.scmp.com',
+      'www.freemalaysiatoday.com',
+      'www.malaymail.com',
+      'www.thestar.com.my',
+      'www.espn.com',
+      'sports.yahoo.com'
+    ];
+    let isAllowed = false;
+    try {
+      const parsedUrl = new URL(rssUrl);
+      if (allowedDomains.some(domain => parsedUrl.hostname === domain || parsedUrl.hostname.endsWith(`.${domain}`))) {
+        isAllowed = true;
+      }
+    } catch (e) {
+      return res.status(400).json({ status: 'error', message: 'Invalid URL format' });
+    }
+    
+    if (!isAllowed) {
+      console.warn(`[SSRF Prevented] Blocked proxy request to unauthorized domain: ${rssUrl}`);
+      return res.status(403).json({ status: 'error', message: 'Domain not permitted for proxy.' });
+    }
 
     const feed = await parser.parseURL(rssUrl);
     res.json({
@@ -921,92 +963,7 @@ app.post("/api/news/summarize", async (req, res) => {
   }
 });
 
-// POST to scrape and extract full news report text from a URL using cheerio
-app.post("/api/news/full-content", async (req, res) => {
-  const { url, fallbackSummary } = req.body;
-  if (!url) {
-    return res.status(400).json({ error: "URL parameter is required." });
-  }
 
-  try {
-    const fetchRes = await fetch(url, {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
-      },
-      signal: AbortSignal.timeout(10000)
-    });
-
-    if (!fetchRes.ok) {
-      throw new Error(`Failed to fetch original page. Status: ${fetchRes.status}`);
-    }
-
-    const html = await fetchRes.text();
-    const $ = cheerio.load(html);
-
-    // Remove scripts, stylesheets, and irrelevant modules
-    $('script, style, svg, noscript, footer, nav, header, aside, iframe, .cookie-notice, .footer, .header, .nav').remove();
-
-    const paragraphs: string[] = [];
-    const selectors = [
-      'article p',
-      '.article-body p',
-      '.story-body p',
-      '.main-content p',
-      '.entry-content p',
-      'main p',
-      '.story p',
-      '.content p',
-      '.post-content p',
-      '.article__body p'
-    ];
-
-    $(selectors.join(', ')).each((_, el) => {
-      const text = $(el).text().trim();
-      if (text.length > 50 &&
-        !text.toLowerCase().includes('cookie') &&
-        !text.toLowerCase().includes('privacy policy') &&
-        !text.toLowerCase().includes('terms of service') &&
-        !text.toLowerCase().includes('subscribe') &&
-        !text.toLowerCase().includes('sign in')) {
-        paragraphs.push(text);
-      }
-    });
-
-    // Fallback to any paragraphs if container-specific selectors yielded nothing
-    if (paragraphs.length === 0) {
-      $('p').each((_, el) => {
-        const text = $(el).text().trim();
-        if (text.length > 80 &&
-          !text.toLowerCase().includes('cookie') &&
-          !text.toLowerCase().includes('privacy policy') &&
-          !text.toLowerCase().includes('terms of service') &&
-          !text.toLowerCase().includes('subscribe') &&
-          !text.toLowerCase().includes('sign in')) {
-          paragraphs.push(text);
-        }
-      });
-    }
-
-    if (paragraphs.length > 0) {
-      return res.json({ content: paragraphs.join('\n\n') });
-    }
-
-    // If scraping returned no text (e.g. paywall/anti-scraping), use fallback summary
-    return res.json({
-      content: fallbackSummary
-        ? `${fallbackSummary}\n\n(Note: The full report text is protected behind a paywall or login screen. Please click the link below to read the original article directly.)`
-        : "The full report text is protected or could not be parsed. Please click the link below to read the original article directly."
-    });
-
-  } catch (error: any) {
-    console.error("Full content scraping error:", error.message);
-    return res.json({
-      content: fallbackSummary
-        ? `${fallbackSummary}\n\n(Note: Connection to the original news server timed out or failed. Please click the link below to view the original report.)`
-        : "Failed to establish a connection to the original news host. Please check the original source link below."
-    });
-  }
-});
 
 // In-memory store for citizen reports
 const citizenReports: any[] = [
@@ -1057,7 +1014,7 @@ app.post("/api/news/report", (req, res) => {
     details,
     mediaUrl: mediaUrl || null,
     timestamp: new Date().toISOString(),
-    status: 'Verified'
+    status: 'Pending Review'
   };
 
   citizenReports.unshift(newReport);

@@ -54,10 +54,19 @@ const TopNewsSection: React.FC<TopNewsSectionProps> = ({
 
   return (
     <div className="mb-10 w-full">
-      <div className="flex items-center mb-6 pb-2 border-b-2 border-portal-border">
-        <Flame className="text-portal-accent mr-3 animate-pulse" size={24} />
-        <h2 className="text-2xl font-bold font-serif tracking-tight text-portal-text">Top News</h2>
-        <span className="ml-4 font-mono text-xs text-portal-text-muted bg-portal-surface px-2 py-1 rounded">ALGORITHMICALLY CURATED</span>
+      {/* #4 — Editorial gradient section header */}
+      <div className="flex items-center gap-4 mb-6">
+        <div className="flex items-center gap-2 shrink-0">
+          <div className="w-1 h-6 bg-gradient-to-b from-portal-brand to-portal-accent shrink-0" />
+          <h2 className="text-xl font-black font-serif tracking-tight uppercase text-portal-text-main">
+            Top News
+          </h2>
+        </div>
+        <div className="flex-1 h-px section-rule" />
+        <span className="text-[9px] font-mono tracking-widest text-portal-text-muted uppercase shrink-0 opacity-60 flex items-center gap-1">
+          <Flame size={10} className="animate-pulse text-portal-accent" />
+          Algorithmically Curated
+        </span>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
@@ -93,7 +102,7 @@ const TopNewsSection: React.FC<TopNewsSectionProps> = ({
                     src={article.imageUrl || 'https://images.unsplash.com/photo-1585829365295-ab7cd400c167?auto=format&fit=crop&w=1200&q=80'}
                     alt={article.title}
                     className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700 ease-out"
-                    referrerPolicy="no-referrer"
+
                   />
                 </div>
                 <div className="w-full md:w-1/3 p-6 md:p-8 flex flex-col justify-center relative z-20 bg-portal-surface">
@@ -116,7 +125,7 @@ const TopNewsSection: React.FC<TopNewsSectionProps> = ({
                     src={article.imageUrl || 'https://images.unsplash.com/photo-1585829365295-ab7cd400c167?auto=format&fit=crop&w=600&q=80'}
                     alt={article.title}
                     className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700 ease-out"
-                    referrerPolicy="no-referrer"
+
                   />
                   <div className="absolute bottom-3 left-4 z-20 text-portal-accent font-mono text-[10px] font-bold tracking-wider uppercase">
                     {article.category}

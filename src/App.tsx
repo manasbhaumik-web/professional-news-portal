@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import {
     Newspaper, AlertCircle, RefreshCw, Flame, Sparkles, ChevronDown, ChevronRight, Trophy, Minus, Plus, X,
@@ -25,7 +25,7 @@ const CricketLivePage = React.lazy(() => import('./pages/CricketLivePage'));
 
 
 import Header from './components/Header';
-import ChannelsNav from './components/ChannelsNav';
+// ChannelsNav merged into Header
 import MainAdBanner from './components/MainAdBanner';
 import { BreakingNewsTicker } from './components/SidebarComponents';
 import MoreFromWire from './components/MoreFromWire';
@@ -39,11 +39,14 @@ import SkeletonArticleCard from './components/SkeletonArticleCard';
 import InfiniteScroll from './components/InfiniteScroll';
 import SystemSidebar from './components/SystemSidebar';
 import SearchBar from './components/SearchBar';
-import ArticleReaderModal from './components/ArticleReaderModal';
 import solariaGtAd from '../assets/solaria_gt_advert.png';
 import TopNewsSection from './components/TopNewsSection';
 import AdminLoginModal from './components/AdminLoginModal';
 import CmsPage from './pages/CmsPage';
+const PrivacyPolicy = React.lazy(() => import('./pages/PrivacyPolicy'));
+const TermsOfService = React.lazy(() => import('./pages/TermsOfService'));
+import CookieBanner from './components/CookieBanner';
+
 const FootballIcon = ({ size = 24, className = "" }: { size?: number, className?: string }) => (
     <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
         <circle cx="12" cy="12" r="10" />
@@ -102,20 +105,26 @@ export default function App() {
     const [foryouLimit, setForyouLimit] = useState(10);
 
     const [scrollDirection, setScrollDirection] = useState<'up' | 'down'>('up');
+    const [isScrolled, setIsScrolled] = useState(false);
 
     useEffect(() => {
         let lastScrollY = window.pageYOffset;
 
-        const updateScrollDirection = () => {
+        const handleScroll = () => {
             const scrollY = window.pageYOffset;
             const direction = scrollY > lastScrollY ? 'down' : 'up';
             if (direction !== scrollDirection && (scrollY - lastScrollY > 10 || scrollY - lastScrollY < -10)) {
                 setScrollDirection(direction);
             }
+            setIsScrolled(prev => {
+                if (!prev && scrollY > 200) return true;
+                if (prev && scrollY < 50) return false;
+                return prev;
+            });
             lastScrollY = scrollY > 0 ? scrollY : 0;
         };
-        window.addEventListener('scroll', updateScrollDirection);
-        return () => window.removeEventListener('scroll', updateScrollDirection);
+        window.addEventListener('scroll', handleScroll);
+        return () => window.removeEventListener('scroll', handleScroll);
     }, [scrollDirection]);
 
     // CMS States
@@ -346,13 +355,7 @@ export default function App() {
         });
     }, []);
 
-    const [selectedArticle, setSelectedArticle] = useState<NewsArticle | null>(null);
-    const [isExpandingDeepDive, setIsExpandingDeepDive] = useState(false);
-    const [expandedContent, setExpandedContent] = useState<string | null>(null);
 
-    const [isCleanMode, setIsCleanMode] = useState(false);
-    const [cleanTheme, setCleanTheme] = useState<'midnight' | 'charcoal' | 'sepia'>('midnight');
-    const [cleanFontSize, setCleanFontSize] = useState<'sm' | 'md' | 'lg' | 'xl'>('md');
 
     const [portalTheme, setPortalTheme] = useState<'dark' | 'light' | 'sepia'>('light');
     const [siteConfig, setSiteConfig] = useState<any>({
@@ -377,7 +380,7 @@ export default function App() {
     const [isAdMinimized, setIsAdMinimized] = useState(false);
 
     const CATEGORY_PRESETS = [
-        'Global', 'Local', 'Politics', 'Business', 'Sports', 'Articles', 'Blogs'
+        'Global', 'Local', 'Politics', 'Business', 'Sports', 'Science', 'Entertainment'
     ];
 
     const fetchTrendingNews = useCallback(async () => {
@@ -466,29 +469,12 @@ export default function App() {
         }
     }, [preferences.selectedCategories, preferences.selectedKeywords, behaviorProfile]);
 
-    const handleDeepDiveExpand = useCallback(async (title: string) => {
-        setIsExpandingDeepDive(true);
-        try {
-            const res = await fetch('/api/news/generate-article', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ title })
-            });
-            if (!res.ok) throw new Error("Could not formulate investigation expansion");
-            const data = await res.json();
-            setExpandedContent(data.content);
-        } catch (e: any) {
-            console.error(e);
-            setExpandedContent("ANALYSIS EXPANSION LIMITS TRIGGERED:\n\nOur dynamic investigative team is currently offline or experiencing heavy loads.");
-        } finally {
-            setIsExpandingDeepDive(false);
-        }
-    }, []);
-
     const handleOpenArticle = useCallback((art: NewsArticle) => {
-        setSelectedArticle(art);
-        setExpandedContent(null);
         updateBehaviorProfile(art, 1);
+        const targetUrl = art.originalUrl || art.url;
+        if (targetUrl) {
+            window.open(targetUrl, '_blank', 'noopener,noreferrer');
+        }
     }, [updateBehaviorProfile]);
 
     const handleNotificationRead = useCallback((articleId: string) => {
@@ -714,6 +700,7 @@ export default function App() {
                     }}
                 />
             )}
+            {/* Sticky header — only the nav bar stays fixed */}
             <div className="sticky top-0 z-50 flex flex-col w-full">
                 <div className="relative z-10 flex flex-col w-full shadow-md drop-shadow-md bg-portal-bg">
                     <Header
@@ -726,23 +713,13 @@ export default function App() {
                         selectedCategories={preferences.selectedCategories}
                         handleNotificationRead={handleNotificationRead}
                         siteTitle={siteConfig.siteTitle}
+                        selectedMenuCategory={selectedMenuCategory}
+                        setSelectedMenuCategory={setSelectedMenuCategory}
+                        selectedCountry={selectedCountry}
+                        setSelectedCountry={setSelectedCountry}
+                        availableRegions={availableRegions}
+                        isScrolled={isScrolled}
                     />
-
-                    {activeTab !== 'cms' && (
-                        <>
-                            <MarketTicker theme={portalTheme} />
-
-                            <ChannelsNav
-                                selectedMenuCategory={selectedMenuCategory}
-                                setSelectedMenuCategory={setSelectedMenuCategory}
-                                activeTab={activeTab}
-                                setActiveTab={setActiveTab}
-                                selectedCountry={selectedCountry}
-                                setSelectedCountry={setSelectedCountry}
-                                availableRegions={availableRegions}
-                            />
-                        </>
-                    )}
                 </div>
 
                 {activeTab !== 'cms' && (
@@ -751,6 +728,11 @@ export default function App() {
                     </div>
                 )}
             </div>
+
+            {/* Market ticker — non-sticky, scrolls with content */}
+            {activeTab !== 'cms' && (
+                <MarketTicker theme={portalTheme} />
+            )}
 
             {errorFeedback && (
                 <div id="secure-system-log-bar" className="bg-red-950/40 border-b border-red-900/50 p-2 text-center text-xs text-red-400 flex items-center justify-center gap-2 font-mono">
@@ -825,7 +807,7 @@ export default function App() {
                                     <div className="flex items-center space-x-3">
                                         <div className="flex flex-wrap items-center gap-2">
                                             <h3 className="font-serif font-black text-lg sm:text-xl tracking-tight capitalize text-portal-text-main">
-                                                {activeTab === 'trending' ? 'Trending Spotlight Indexes' : 'Personal Intel Briefing'}
+                                                {activeTab === 'trending' ? 'Top Stories' : 'Top Picks For You'}
                                             </h3>
                                             {selectedMenuCategory !== 'All' && (
                                                 <span className="text-[10px] font-mono tracking-widest font-black uppercase px-2 py-0.5 border bg-portal-brand/10 text-portal-brand border-portal-brand/30">
@@ -834,14 +816,14 @@ export default function App() {
                                             )}
                                         </div>
                                         <span className="text-[10px] font-mono px-2 py-0.5 uppercase bg-portal-surface text-portal-text-muted border border-portal-border/50">
-                                            {activeTab === 'trending' ? `${filteredTrending.length} indexes` : 'Curated'}
+                                            {activeTab === 'trending' ? `${filteredTrending.length} stories` : 'Curated'}
                                         </span>
                                     </div>
 
                                     {activeTab === 'trending' ? (
                                         <div className="text-xs flex items-center space-x-1 select-none font-mono text-portal-text-muted">
                                             <Flame size={12} className="text-[#ef4444] animate-pulse" />
-                                            <span>Updated in Real-Time</span>
+                                            <span>Live Updates</span>
                                         </div>
                                     ) : (
                                         <button
@@ -849,7 +831,7 @@ export default function App() {
                                             className="text-xs flex items-center space-x-1 text-portal-text-muted hover:text-portal-accent transition-colors"
                                         >
                                             <RefreshCw size={12} />
-                                            <span>Regenerate Brief</span>
+                                            <span>Refresh Feed</span>
                                         </button>
                                     )}
                                 </div>
@@ -858,18 +840,18 @@ export default function App() {
                             {isLoadingArticles && (
                                 <div className="p-12 text-center text-portal-text-muted text-xs font-mono flex flex-col items-center gap-3">
                                     <RefreshCw className="animate-spin text-portal-brand" size={24} />
-                                    <span>Establishing cryptographic news stream tunnel...</span>
+                                    <span>Fetching latest updates...</span>
                                 </div>
                             )}
 
 
-                            <div id="articles-list-flow" className="grid grid-cols-1 md:grid-cols-2 gap-4 auto-rows-auto">
+                            <div id="articles-list-flow" className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-2 auto-rows-auto">
                                 <AnimatePresence>
                                     {activeTab === 'trending' && (
                                         filteredTrending.length === 0 ? (
                                             <div className="flex flex-col items-center justify-center p-20 text-portal-text-muted border border-dashed border-portal-border bg-portal-surface md:col-span-2">
                                                 <AlertCircle size={40} className="mb-4 opacity-50" />
-                                                <p className="text-sm font-mono">NO RECORDS FOUND IN INDEX</p>
+                                                <p className="text-sm font-mono">NO STORIES FOUND</p>
                                             </div>
                                         ) : (
                                             (() => {
@@ -905,11 +887,15 @@ export default function App() {
                                         )
                                     )}
 
-                                    {activeTab === 'trending' && filteredTrending.length > 0 && (
-                                        <InfiniteScroll
-                                            onIntersect={() => setTrendingLimit(prev => prev + 10)}
-                                            hasMore={trendingLimit < filteredTrending.length}
-                                        />
+                                    {activeTab === 'trending' && trendingLimit < filteredTrending.length && (
+                                        <div className="col-span-1 md:col-span-2 flex justify-center mt-6 mb-4">
+                                            <button
+                                                onClick={() => setTrendingLimit(prev => prev + 10)}
+                                                className="px-6 py-2 border border-portal-border text-portal-text-main hover:bg-portal-surface hover:text-portal-brand font-mono text-xs tracking-widest uppercase transition-colors rounded-sm shadow-sm"
+                                            >
+                                                Load More Top Stories
+                                            </button>
+                                        </div>
                                     )}
 
                                     {activeTab === 'foryou' && (
@@ -920,9 +906,9 @@ export default function App() {
                                         ) : filteredPersonalized.length === 0 ? (
                                             <div className="flex flex-col items-center justify-center p-20 text-portal-text-muted border border-dashed border-portal-border bg-portal-surface md:col-span-2">
                                                 <AlertCircle size={40} className="mb-4 opacity-50 text-portal-accent" />
-                                                <p className="text-sm font-mono text-portal-accent mb-2">INTELLIGENCE BRIEFING EMPTY</p>
+                                                <p className="text-sm font-mono text-portal-accent mb-2">NO TOP PICKS AVAILABLE</p>
                                                 <p className="text-xs max-w-md text-center opacity-70">
-                                                    We couldn't formulate a brief based on your current tracking parameters. Modify your interests or try generating again.
+                                                    We couldn't find stories based on your current topics. Try modifying your interests.
                                                 </p>
                                             </div>
                                         ) : (
@@ -975,11 +961,15 @@ export default function App() {
                                         )
                                     )}
 
-                                    {activeTab === 'foryou' && filteredPersonalized.length > 0 && !isGeneratingBriefing && (
-                                        <InfiniteScroll
-                                            onIntersect={() => setForyouLimit(prev => prev + 10)}
-                                            hasMore={foryouLimit < filteredPersonalized.length}
-                                        />
+                                    {activeTab === 'foryou' && filteredPersonalized.length > 0 && !isGeneratingBriefing && foryouLimit < filteredPersonalized.length && (
+                                        <div className="col-span-1 md:col-span-2 flex justify-center mt-6 mb-4">
+                                            <button
+                                                onClick={() => setForyouLimit(prev => prev + 10)}
+                                                className="px-6 py-2 border border-portal-border text-portal-text-main hover:bg-portal-surface hover:text-portal-brand font-mono text-xs tracking-widest uppercase transition-colors rounded-sm shadow-sm"
+                                            >
+                                                Load More Top Picks
+                                            </button>
+                                        </div>
                                     )}
                                 </AnimatePresence>
                             </div>
@@ -1173,12 +1163,14 @@ export default function App() {
                                         Unauthorized access. Please login via Ctrl+Shift+L.
                                     </div>
                                 )}
+                                {activeTab === 'privacy' && <PrivacyPolicy theme={portalTheme} />}
+                                {activeTab === 'terms' && <TermsOfService theme={portalTheme} />}
                             </React.Suspense>
 
                         </div>
                     </div>
 
-                    {!['cms', 'cricket', 'fifa', 'fifaAllScores'].includes(activeTab) && (
+                    {!['cms', 'cricket', 'fifa', 'fifaAllScores', 'privacy', 'terms'].includes(activeTab) && (
                         <SystemSidebar
                             activeTab={activeTab}
                             bookmarks={bookmarks}
@@ -1196,32 +1188,15 @@ export default function App() {
                 </div>
             </main>
 
-            {selectedArticle && (
-                <ArticleReaderModal
-                    selectedArticle={selectedArticle}
-                    setSelectedArticle={setSelectedArticle}
-                    isCleanMode={isCleanMode}
-                    setIsCleanMode={setIsCleanMode}
-                    cleanTheme={cleanTheme}
-                    setCleanTheme={setCleanTheme}
-                    cleanFontSize={cleanFontSize}
-                    setCleanFontSize={setCleanFontSize}
-                    handleDeepDiveExpand={handleDeepDiveExpand}
-                    isExpandingDeepDive={isExpandingDeepDive}
-                    expandedContent={expandedContent}
-                    toggleBookmark={toggleBookmark}
-                    bookmarks={bookmarks}
-                />
-            )}
 
             <footer id="system-corporate-footer" className="mt-auto bg-portal-surface border-t border-portal-border px-4 sm:px-8 flex flex-col items-center justify-between gap-2 shrink-0 py-4 select-none">
                 <div className="flex flex-col sm:flex-row w-full justify-between items-center gap-4">
                     <div className="flex space-x-4 text-[10px] text-portal-text-muted uppercase tracking-widest font-semibold">
-                        <a href="#" className="hover:text-portal-text-main">Operational Index</a>
+                        <span className="hover:text-portal-text-main cursor-pointer">News Archive</span>
                         <span>•</span>
-                        <a href="#" className="hover:text-portal-text-main">Encryptions</a>
+                        <span onClick={() => { setActiveTab('privacy'); window.scrollTo(0,0); }} className="hover:text-portal-text-main cursor-pointer">Privacy Policy</span>
                         <span>•</span>
-                        <a href="#" className="hover:text-portal-text-main">Terminal protocols</a>
+                        <span onClick={() => { setActiveTab('terms'); window.scrollTo(0,0); }} className="hover:text-portal-text-main cursor-pointer">Terms of Service</span>
                     </div>
                     <div className="flex items-center space-x-2 text-[10px] text-portal-text-muted font-mono">
                         <span className="w-1.5 h-1.5 bg-emerald-500 animate-pulse"></span>
@@ -1233,6 +1208,8 @@ export default function App() {
                     Disclaimer: All product and company names, including FIFA, ICC, and others, are trademarks™ or registered® trademarks of their respective holders. Use of them does not imply any affiliation with or endorsement by them.
                 </div>
             </footer>
+            
+            <CookieBanner />
         </div>
     );
 }

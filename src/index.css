@@ -1,6 +1,14 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Merriweather:ital,wght@0,300;0,400;0,700;0,900;1,300;1,400;1,700;1,900&family=JetBrains+Mono:wght@400;500;700&display=swap');
 @import "tailwindcss";
 
+.font-playfair {
+  font-family: 'Playfair Display', serif;
+}
+
+.font-old-english {
+  font-family: 'UnifrakturMaguntia', cursive;
+}
+
 @theme {
   --font-sans: "Inter", "Segoe UI", ui-sans-serif, system-ui, sans-serif;
   --font-serif: "Merriweather", Georgia, Cambria, serif;
@@ -110,6 +118,19 @@
   --tw-shadow-color: var(--color-portal-brand);
 }
 
+/* Focus ring offset using theme tokens — used by keyboard-navigable interactive elements */
+.focus-visible\:ring-offset-portal-bg:focus-visible {
+  --tw-ring-offset-color: var(--color-portal-bg);
+}
+
+.focus-visible\:ring-offset-portal-surface:focus-visible {
+  --tw-ring-offset-color: var(--color-portal-surface);
+}
+
+.focus-visible\:ring-portal-brand:focus-visible {
+  --tw-ring-color: var(--color-portal-brand);
+}
+
 /* Custom fade scrollbar styling for an elegant editorial feel */
 ::-webkit-scrollbar {
   width: 6px;
@@ -193,4 +214,282 @@
 .group-hover\/ticker\:pause:hover,
 .group:hover .group-hover\/ticker\:pause {
   animation-play-state: paused;
+}
+
+/* ═══════════════════════════════════════════════
+   ARTISTIC UPGRADES — Added 2026-07
+   ═══════════════════════════════════════════════ */
+
+/* #1 — Cinematic Hero: Ken Burns zoom */
+@keyframes kenburns {
+  0% {
+    transform: scale(1) translate(0, 0);
+  }
+
+  100% {
+    transform: scale(1.08) translate(-2%, -1%);
+  }
+}
+
+.animate-kenburns {
+  animation: kenburns 14s ease-in-out infinite alternate;
+}
+
+/* Hero gradient scrim — text on top of image */
+.hero-scrim {
+  background: linear-gradient(to right,
+      rgba(9, 13, 22, 0.97) 0%,
+      rgba(9, 13, 22, 0.82) 42%,
+      rgba(9, 13, 22, 0.08) 100%);
+}
+
+/* #2 — Paper grain texture on article cards */
+.card-grain::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 1;
+  mix-blend-mode: overlay;
+  border-radius: inherit;
+}
+
+/* Luminous hover halo on cards */
+.card-halo {
+  transition: box-shadow 0.3s ease, border-color 0.3s ease, transform 0.3s ease;
+}
+
+.card-halo:hover {
+  box-shadow:
+    0 0 0 1px rgba(59, 130, 246, 0.35),
+    0 8px 32px rgba(59, 130, 246, 0.10),
+    0 20px 48px rgba(0, 0, 0, 0.28);
+}
+
+/* Left-border accent bar on cards */
+.card-accent-bar {
+  border-left: 3px solid transparent;
+  transition: border-color 0.25s ease;
+}
+
+.card-accent-bar:hover {
+  border-left-color: var(--color-portal-brand);
+}
+
+/* #5 — Breaking News: red shimmer sweep */
+@keyframes red-shimmer {
+  0% {
+    transform: translateX(-120%);
+  }
+
+  100% {
+    transform: translateX(320%);
+  }
+}
+
+.breaking-shimmer::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 30%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(239, 68, 68, 0.12), transparent);
+  animation: red-shimmer 6s ease-in-out infinite;
+  pointer-events: none;
+}
+
+/* ═══════════════════════════════════════════════
+   COLLAPSIBLE EDITORIAL HEADER SYSTEM
+   ═══════════════════════════════════════════════ */
+
+/* --- Dateline bar (thin, top-most) --- */
+.header-dateline {
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  background: var(--color-portal-surface);
+  border-bottom: 1px solid var(--color-portal-border);
+  color: var(--color-portal-text-muted);
+  transition: max-height 0.35s ease, opacity 0.3s ease, padding 0.35s ease;
+  overflow: hidden;
+  max-height: 36px;
+  opacity: 1;
+}
+
+.header-scrolled .header-dateline {
+  max-height: 0;
+  opacity: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+  border-bottom-width: 0;
+}
+
+/* --- Centered masthead (expanded state) --- */
+.header-masthead {
+  text-align: center;
+  transition: max-height 0.35s ease, opacity 0.3s ease, padding 0.35s ease;
+  overflow: hidden;
+  max-height: 72px;
+  opacity: 1;
+  background: var(--color-portal-bg);
+}
+
+.header-scrolled .header-masthead {
+  max-height: 0;
+  opacity: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+/* --- Unified nav bar (always visible, adapts on scroll) --- */
+.header-navbar {
+  background: linear-gradient(180deg, rgba(9, 13, 22, 0.97) 0%, rgba(9, 13, 22, 0.90) 100%);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border-bottom: 1px solid rgba(59, 130, 246, 0.12);
+  box-shadow: 0 1px 0 rgba(59, 130, 246, 0.07), 0 4px 24px rgba(0, 0, 0, 0.35);
+  transition: height 0.3s ease, box-shadow 0.3s ease;
+  height: 52px;
+}
+
+.header-scrolled .header-navbar {
+  height: 48px;
+  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.45);
+}
+
+/* Sepia overrides */
+.theme-sepia .header-navbar {
+  background: linear-gradient(180deg, rgba(250, 243, 227, 0.97) 0%, rgba(250, 243, 227, 0.92) 100%);
+  border-bottom: 1px solid rgba(124, 90, 62, 0.18);
+  box-shadow: 0 1px 0 rgba(124, 90, 62, 0.08), 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+.theme-sepia .header-dateline {
+  background: #EDE6D6;
+  border-bottom-color: #DFD5C1;
+}
+
+/* Light overrides */
+.theme-light .header-navbar {
+  background: linear-gradient(180deg, rgba(250, 249, 246, 0.97) 0%, rgba(250, 249, 246, 0.92) 100%);
+  border-bottom: 1px solid rgba(37, 99, 235, 0.12);
+  box-shadow: 0 1px 0 rgba(37, 99, 235, 0.06), 0 4px 16px rgba(0, 0, 0, 0.06);
+}
+
+.theme-light .header-dateline {
+  background: #f5f5f0;
+  border-bottom-color: rgba(229, 229, 229, 0.8);
+}
+
+/* --- Compact logo (shown in navbar, hidden in expanded, visible on scroll) --- */
+.header-compact-logo {
+  opacity: 0;
+  max-width: 0;
+  overflow: hidden;
+  transition: opacity 0.3s ease, max-width 0.3s ease, margin 0.3s ease;
+  margin-right: 0;
+}
+
+.header-scrolled .header-compact-logo {
+  opacity: 1;
+  max-width: 200px;
+  margin-right: 16px;
+}
+
+/* --- Glowing logo monogram --- */
+.logo-glow {
+  background: linear-gradient(135deg, #2563eb 0%, #1e3a8a 100%);
+  box-shadow:
+    0 0 14px rgba(59, 130, 246, 0.55),
+    0 0 4px rgba(59, 130, 246, 0.85),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  transition: box-shadow 0.3s ease;
+}
+
+.logo-glow:hover {
+  box-shadow:
+    0 0 22px rgba(59, 130, 246, 0.7),
+    0 0 6px rgba(59, 130, 246, 0.95),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+/* --- Nav pill active indicator --- */
+.nav-pill-active {
+  position: relative;
+}
+
+.nav-pill-active::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 20%;
+  right: 20%;
+  height: 2px;
+  background: var(--color-portal-brand);
+  border-radius: 1px;
+}
+
+/* --- Sections mega-menu panel --- */
+.sections-panel {
+  opacity: 0;
+  transform: translateY(-8px);
+  pointer-events: none;
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+.sections-panel.open {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+/* #3 — Bloomberg ticker: price flash */
+@keyframes price-up {
+
+  0%,
+  100% {
+    color: inherit;
+  }
+
+  30% {
+    color: #10b981;
+  }
+}
+
+@keyframes price-down {
+
+  0%,
+  100% {
+    color: inherit;
+  }
+
+  30% {
+    color: #f43f5e;
+  }
+}
+
+.price-flash-up {
+  animation: price-up 1s ease;
+}
+
+.price-flash-down {
+  animation: price-down 1s ease;
+}
+
+/* Scanline texture for ticker */
+.ticker-scanlines {
+  background-image: repeating-linear-gradient(0deg,
+      transparent,
+      transparent 2px,
+      rgba(0, 0, 0, 0.03) 2px,
+      rgba(0, 0, 0, 0.03) 4px);
+}
+
+/* #4 — Editorial gradient section divider */
+.section-rule {
+  background: linear-gradient(to right,
+      var(--color-portal-brand) 0%,
+      rgba(59, 130, 246, 0.3) 35%,
+      transparent 100%);
 }

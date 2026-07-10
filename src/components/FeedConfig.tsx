@@ -67,21 +67,21 @@ export default function FeedConfig({
  <div>
  <h3 className="text-md flex items-center space-x-2 font-bold">
  <Sparkles size={18} className="text-portal-accent animate-pulse" />
- <span className="text-portal-text-main font-semibold">Personalized Feed Setup</span>
+ <span className="text-portal-text-main font-semibold">Curated Feed Setup</span>
  </h3>
- <p className="text-xs text-portal-text-muted">Toggle categories and feed custom keywords to generate real-time analytical briefs.</p>
+ <p className="text-xs text-portal-text-muted">Select categories and enter keywords to curate your personal news feed.</p>
  </div>
  <div className="flex items-center space-x-2">
- <span className="text-[10px] font-mono text-portal-text-muted uppercase">Engine Status:</span>
+ <span className="text-[10px] font-mono text-portal-text-muted uppercase">Feed Status:</span>
  <span className="px-2 py-0.5 text-[10px] border bg-emerald-500/10 text-emerald-500 border-emerald-500/30">
- The Horizon Post Engine Online
+ The Horizon Post Feed Live
  </span>
  </div>
  </div>
 
  <div id="subject-category-picker" className="mb-4">
  <label className="text-[11px] font-mono font-bold tracking-wider uppercase text-portal-text-muted block mb-2">
- 1. TARGET SUBJECT DOMAINS
+ 1. TOPICS OF INTEREST
  </label>
  <div className="flex flex-wrap gap-2">
  {CATEGORY_PRESETS.map((catString) => {
@@ -157,7 +157,7 @@ export default function FeedConfig({
    <div className="flex justify-between items-center mb-3">
      <label className="text-[11px] font-mono font-bold tracking-wider uppercase text-portal-text-muted flex items-center gap-1.5">
        <Activity size={12} className="text-portal-brand" />
-       3. LEARNED PROFILE (IMPLICIT)
+       3. YOUR READING PROFILE
      </label>
      {resetBehaviorProfile && (
        <button onClick={resetBehaviorProfile} className="text-[10px] text-red-400 hover:text-red-300 hover:underline">
@@ -230,12 +230,12 @@ export default function FeedConfig({
  {isGeneratingBriefing ? (
  <>
  <RefreshCw size={14} className="animate-spin text-white" />
- <span>Formulating Strategic Feed...</span>
+ <span>Curating your feed...</span>
  </>
  ) : (
  <>
  <Sparkles size={14} className="text-white animate-pulse" />
- <span>Generate My Personalized Intelligence Feed</span>
+ <span>Generate My Top Picks</span>
  </>
  )}
  </button>

@@ -45,12 +45,12 @@ export default function ChannelsNav({
             <div className="flex items-center justify-between max-w-7xl mx-auto w-full">
                 <div className="flex flex-wrap items-center gap-y-3 gap-x-2 w-full">
 
-                    {/* ── All Channels Mega Menu ── */}
+                    {/* ── Sections Mega Menu ── */}
                     <div className="group/allchannels relative h-full flex items-center" onMouseLeave={() => setForceClose(false)}>
-                        <button className="flex items-center space-x-2 mr-2 sm:mr-4 pr-3 sm:pr-4 border-r border-portal-border/50 text-portal-text-muted hover:text-portal-text-main transition-colors shrink-0 py-1.5 cursor-pointer">
+                        <button className="flex items-center space-x-2 mr-2 sm:mr-4 pr-3 sm:pr-4 border-r border-portal-border/50 text-portal-text-muted hover:text-portal-text-main transition-colors shrink-0 min-h-[44px] cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-portal-brand focus-visible:ring-offset-1">
                             <Menu size={18} className="text-portal-brand" />
                             <span className="text-[13px] font-normal tracking-wide">
-                                {selectedMenuCategory === 'All' ? 'All Channels' : selectedMenuCategory.replace('Region: ', '')}
+                                {selectedMenuCategory === 'All' ? 'Sections' : selectedMenuCategory.replace('Region: ', '')}
                             </span>
                             <ChevronDown size={14} className="opacity-50 group-hover/allchannels:rotate-180 transition-transform duration-300" />
                         </button>
@@ -66,7 +66,7 @@ export default function ChannelsNav({
                                     </div>
                                     <button
                                         onClick={() => handleMenuClick('All', 'trending')}
-                                        className="text-left px-2 py-1.5 text-xs text-portal-brand font-bold rounded-none hover:bg-portal-brand/10 transition-colors mb-1 cursor-pointer"
+                                        className="text-left px-2 py-1.5 min-h-[36px] text-xs text-portal-brand font-bold rounded-none hover:bg-portal-brand/10 transition-colors mb-1 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-portal-brand focus-visible:ring-inset"
                                     >
                                         🌐 All Regions (World)
                                     </button>
@@ -77,7 +77,7 @@ export default function ChannelsNav({
                                                 const tab = (activeTab !== 'trending' && activeTab !== 'foryou') ? 'trending' : activeTab;
                                                 handleMenuClick(`Region: ${region}`, tab);
                                             }}
-                                            className={`text-left px-2 py-1 text-xs rounded-none transition-colors cursor-pointer ${selectedMenuCategory === `Region: ${region}` ? 'bg-portal-surface text-portal-brand font-semibold' : 'text-portal-text-main hover:bg-portal-surface hover:text-portal-brand'}`}
+                                            className={`text-left px-2 py-1 min-h-[36px] text-xs rounded-none transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-portal-brand focus-visible:ring-inset ${selectedMenuCategory === `Region: ${region}` ? 'bg-portal-surface text-portal-brand font-semibold' : 'text-portal-text-main hover:bg-portal-surface hover:text-portal-brand'}`}
                                         >
                                             {region}
                                         </button>
@@ -94,7 +94,7 @@ export default function ChannelsNav({
                                             </div>
                                             <button
                                                 onClick={() => handleMenuClick(cat.id, cat.tab)}
-                                                className="text-left px-2 py-1.5 text-xs text-portal-brand font-bold rounded-none hover:bg-portal-brand/10 transition-colors mb-1 cursor-pointer"
+                                                className="text-left px-2 py-1.5 min-h-[36px] text-xs text-portal-brand font-bold rounded-none hover:bg-portal-brand/10 transition-colors mb-1 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-portal-brand focus-visible:ring-inset"
                                             >
                                                 All {cat.id}
                                             </button>
@@ -102,7 +102,7 @@ export default function ChannelsNav({
                                                 <button
                                                     key={item}
                                                     onClick={() => handleMenuClick(`${cat.id}: ${item}`, cat.tab)}
-                                                    className={`text-left px-2 py-1 text-xs rounded-none transition-colors cursor-pointer ${selectedMenuCategory === `${cat.id}: ${item}` ? 'bg-portal-surface text-portal-brand font-semibold' : 'text-portal-text-main hover:bg-portal-surface hover:text-portal-brand'}`}
+                                                    className={`text-left px-2 py-1 min-h-[36px] text-xs rounded-none transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-portal-brand focus-visible:ring-inset ${selectedMenuCategory === `${cat.id}: ${item}` ? 'bg-portal-surface text-portal-brand font-semibold' : 'text-portal-text-main hover:bg-portal-surface hover:text-portal-brand'}`}
                                                 >
                                                     {item}
                                                 </button>
@@ -121,7 +121,8 @@ export default function ChannelsNav({
                     {/* FIFA Link on right side (Promotional Shortcut) */}
                     <button
                         onClick={() => { setActiveTab('sports'); setSelectedMenuCategory('Sports: Football'); }}
-                        className={`px-4 py-1.5 text-[13px] font-normal rounded-none transition-all duration-300 flex items-center gap-2 cursor-pointer ${(activeTab === 'sports' && selectedMenuCategory === 'Sports: Football') || activeTab === 'fifa'
+                        aria-label="FIFA World Cup 2026 news"
+                        className={`px-4 min-h-[44px] text-[13px] font-normal rounded-none transition-all duration-300 flex items-center gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#c9a84c] focus-visible:ring-offset-1 ${(activeTab === 'sports' && selectedMenuCategory === 'Sports: Football') || activeTab === 'fifa'
                             ? 'bg-gradient-to-r from-[#c9a84c] to-[#e6cf8b] text-black transform scale-105'
                             : 'bg-portal-surface hover:bg-[#c9a84c]/10 text-portal-text-main hover:text-[#c9a84c] border border-portal-border hover:border-[#c9a84c]/50'
                             }`}
@@ -130,37 +131,6 @@ export default function ChannelsNav({
                         FIFA 2026
                     </button>
 
-                    {/* Country Selection */}
-                    <div className="relative">
-                        <button
-                            onClick={() => setIsCountryDropdownOpen(!isCountryDropdownOpen)}
-                            className="flex items-center justify-between gap-2 px-3 py-1.5 border border-portal-border bg-portal-bg text-portal-text-main hover:border-portal-brand transition-colors text-[13px] font-normal cursor-pointer w-[140px]"
-                        >
-                            <span className="truncate">{selectedCountry}</span>
-                            <ChevronDown size={14} className={`transition-transform duration-200 opacity-50 ${isCountryDropdownOpen ? 'rotate-180' : ''}`} />
-                        </button>
-
-                        {isCountryDropdownOpen && (
-                            <>
-                                <div className="fixed inset-0 z-40" onClick={() => setIsCountryDropdownOpen(false)} />
-                                <div className="absolute right-0 top-full mt-1 w-max min-w-[140px] max-h-64 overflow-y-auto bg-portal-bg border border-portal-border shadow-lg z-50 py-1 scrollbar-hide flex flex-col">
-                                    {COUNTRIES.map(c => (
-                                        <button
-                                            key={c}
-                                            onClick={() => {
-                                                setSelectedCountry(c);
-                                                setActiveTab('country');
-                                                setIsCountryDropdownOpen(false);
-                                            }}
-                                            className={`w-full text-left whitespace-nowrap px-3 py-1.5 text-[13px] transition-colors cursor-pointer ${selectedCountry === c ? 'text-portal-brand bg-portal-surface font-medium' : 'text-portal-text-main hover:bg-portal-surface hover:text-portal-brand'}`}
-                                        >
-                                            {c}
-                                        </button>
-                                    ))}
-                                </div>
-                            </>
-                        )}
-                    </div>
                 </div>
             </div>
         </nav>

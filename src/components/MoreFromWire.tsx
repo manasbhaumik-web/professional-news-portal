@@ -46,9 +46,9 @@ export default function MoreFromWire({
             animate={{ opacity: 1, y: 0 }}
             className="mt-8 mb-4 w-full relative group"
         >
-            <div className="flex items-center justify-between border-b border-portal-border pb-3 mb-5">
-                <h3 className="text-portal-text-main font-serif font-black text-xl flex items-center gap-2">
-                    <Globe size={18} className="text-portal-brand" /> Global Intelligence Feed
+            <div className="flex items-center justify-between border-b border-portal-border pb-3 px-1">
+                <h3 className="font-serif font-black text-lg tracking-tight capitalize text-portal-text-main flex items-center gap-2">
+                    <Globe size={18} className="text-portal-brand" /> Global Wire Feed
                 </h3>
                 <div className="flex items-center gap-2">
                     <button

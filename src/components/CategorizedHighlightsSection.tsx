@@ -67,7 +67,7 @@ export default function CategorizedHighlightsSection({ articles, handleOpenArtic
                                     <img 
                                         src={article.imageUrl} 
                                         alt={article.title}
-                                        referrerPolicy="no-referrer"
+
                                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                                         onError={(e) => { 
                                             (e.target as HTMLImageElement).style.opacity = '0.3';

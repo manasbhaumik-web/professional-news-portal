@@ -19,7 +19,7 @@ export function BrandLogoPlaceholder({ article, className = "", iconSizeClass = 
   return (
     <div className={`w-full h-full bg-portal-surface border border-portal-border/30 flex flex-col items-center justify-center p-4 ${className}`}>
       {brandLogoUrl ? (
-        <img src={brandLogoUrl} alt={article.source} className={`${iconSizeClass} object-contain opacity-70 group-hover:scale-110 transition-transform duration-500`} referrerPolicy="no-referrer" onError={() => setImgError(true)} />
+        <img src={brandLogoUrl} alt={article.source} className={`${iconSizeClass} object-contain opacity-70 group-hover:scale-110 transition-transform duration-500`} onError={() => setImgError(true)} />
       ) : (
         <div className={`${textSizeClass} font-black font-serif text-portal-text-muted/30 group-hover:text-portal-brand transition-colors uppercase`}>
           {article.source ? article.source.charAt(0) : '?'}

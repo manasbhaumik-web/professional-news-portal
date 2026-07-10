@@ -84,26 +84,34 @@ export function BreakingNewsTicker({ relatedArticles, handleOpenArticle }: { rel
 
   return (
     <div id="breaking-news-ticker-fullwidth" className="w-full flex border-b border-red-500/20 bg-portal-surface overflow-hidden relative h-12 group">
-      <div className="absolute top-0 right-0 w-32 h-32 bg-red-500/5 blur-2xl -mr-10 -mt-10 pointer-events-none"></div>
-      <div className="flex items-center px-2 sm:px-4 bg-red-500 text-white z-20 shrink-0 shadow-[4px_0_12px_rgba(239,68,68,0.3)] relative">
-        <span className="w-2 h-2 rounded-full bg-white mr-1.5 sm:mr-2 animate-pulse"></span>
+      {/* subtle top-glow border */}
+      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-red-500/30 to-transparent pointer-events-none z-30" />
+
+      {/* BREAKING badge — gradient + neon bloom */}
+      <div
+        className="flex items-center px-2 sm:px-4 bg-gradient-to-r from-red-700 to-red-500 text-white z-20 shrink-0 relative"
+        style={{ boxShadow: '4px 0 16px rgba(239,68,68,0.55), 0 0 12px rgba(239,68,68,0.3)' }}
+      >
+        <span className="w-2 h-2 rounded-full bg-white mr-1.5 sm:mr-2 animate-pulse" />
         <h3 className="text-xs font-bold font-mono tracking-wider">
           BREAKING<span className="hidden sm:inline"> NEWS</span>
         </h3>
       </div>
 
-      <div className="flex-grow relative z-10 h-12 overflow-hidden flex items-center group/ticker bg-red-500/5">
+      {/* Ticker body with shimmer sweep */}
+      <div className="flex-grow relative z-10 h-12 overflow-hidden flex items-center group/ticker bg-red-500/5 breaking-shimmer">
         <div className="animate-horizontal-ticker group-hover/ticker:pause">
-          {/* Duplicate the list to create a seamless loop */}
           {[...breakingArticles, ...breakingArticles].map((art, i) => (
             <div
               key={`${art.id}-${i}`}
               onClick={() => handleOpenArticle(art)}
-              className="group cursor-pointer inline-flex items-center px-6 hover:bg-red-500/10 transition-colors h-12 border-r border-red-500/20 whitespace-nowrap shrink-0"
+              className="group cursor-pointer inline-flex items-center px-6 hover:bg-red-500/10 transition-colors h-12 whitespace-nowrap shrink-0"
             >
-              <span className="text-[10px] font-mono text-red-500 font-bold tracking-widest uppercase mr-3 shrink-0">{art.category}</span>
-              <span className="text-[13px] font-normal font-mono tracking-wider group-hover:text-red-500 transition-colors text-portal-text-main shrink-0">{art.title}</span>
-              <span className="text-[10px] italic text-portal-text-muted opacity-80 ml-3 shrink-0">{formatLocalTime(art.date, art.publishedAt)} • {art.readTime}</span>
+              <span className="text-[10px] font-mono text-red-400 font-bold tracking-widest uppercase mr-3 shrink-0">{art.category}</span>
+              <span className="text-[13px] font-normal font-mono tracking-wide group-hover:text-red-400 transition-colors text-portal-text-main shrink-0">{art.title}</span>
+              <span className="text-[10px] italic text-portal-text-muted opacity-70 ml-3 shrink-0">{formatLocalTime(art.date, art.publishedAt)} • {art.readTime}</span>
+              {/* ◆ diamond separator */}
+              <span className="text-red-700/60 mx-4 shrink-0 text-[10px]">◆</span>
             </div>
           ))}
         </div>
@@ -111,6 +119,7 @@ export function BreakingNewsTicker({ relatedArticles, handleOpenArticle }: { rel
     </div>
   );
 }
+
 
 export function BookmarkedArticlesCard({
   bookmarks,
@@ -223,13 +232,13 @@ export function TopScorersCard() {
                   src={scorer.playerImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(scorer.name)}&background=222&color=fff&rounded=true&size=128`}
                   alt={scorer.name}
                   className="w-8 h-8 rounded-full border border-portal-border object-cover"
-                  referrerPolicy="no-referrer"
+
                   onError={(e) => { (e.target as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${encodeURIComponent(scorer.name)}&background=222&color=fff&rounded=true&size=128`; }}
                 />
                 <div>
                   <div className="text-[13px] font-medium text-portal-text-main transition-colors">{scorer.name}</div>
                   <div className="flex items-center gap-1.5 mt-0.5">
-                    {scorer.flag && <img src={scorer.flag} className="w-3 h-3 object-contain" alt="" referrerPolicy="no-referrer" />}
+                    {scorer.flag && <img src={scorer.flag} className="w-3 h-3 object-contain" alt="" />}
                     <div className="text-[10px] text-portal-text-muted tracking-wider uppercase">{scorer.team}</div>
                   </div>
                 </div>
@@ -271,7 +280,7 @@ export function ThumbnailNewsCard({ relatedArticles, handleOpenArticle, failedIm
                   className="relative cursor-pointer group rounded overflow-hidden h-48 shadow-md"
                 >
                   {art.imageUrl && !failedImages.includes(art.id) ? (
-                    <img referrerPolicy="no-referrer" src={art.imageUrl} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" alt="" />
+                    <img src={art.imageUrl} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" alt="" />
                   ) : (
                     <BrandLogoPlaceholder article={art} iconSizeClass="w-20 h-20" textSizeClass="text-5xl" />
                   )}
@@ -290,7 +299,7 @@ export function ThumbnailNewsCard({ relatedArticles, handleOpenArticle, failedIm
               <div key={art.id} onClick={() => handleOpenArticle(art)} className="flex items-center gap-3 cursor-pointer group border-t border-portal-border/30 pt-4">
                 <div className="w-14 h-14 shrink-0 overflow-hidden rounded shadow-sm border border-portal-border/20">
                   {art.imageUrl && !failedImages.includes(art.id) ? (
-                    <img referrerPolicy="no-referrer" src={art.imageUrl} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" alt="" />
+                    <img src={art.imageUrl} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" alt="" />
                   ) : (
                     <BrandLogoPlaceholder article={art} iconSizeClass="w-8 h-8" textSizeClass="text-2xl" textMarginClass="mt-0 hidden" />
                   )}
@@ -433,7 +442,7 @@ export function TrendNewsPanel({ trendArticles, handleOpenArticle, failedImages 
           >
             {art.imageUrl && !failedImages.includes(art.id) ? (
               <div className="w-12 h-12 shrink-0 overflow-hidden shadow-sm bg-portal-bg">
-                <img referrerPolicy="no-referrer" src={art.imageUrl} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                <img src={art.imageUrl} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
               </div>
             ) : (
               <div className="w-12 h-12 shrink-0 overflow-hidden shadow-sm bg-portal-bg border border-portal-border/50">
@@ -488,7 +497,7 @@ export function RecentVideosCard() {
         {videos.map(vid => (
           <div key={vid.id} className="p-3 sm:p-4 hover:bg-portal-surface-hover transition-colors group cursor-pointer flex gap-3" onClick={() => handleVideoClick(vid)}>
             <div className="w-20 h-14 bg-portal-bg shrink-0 relative overflow-hidden border border-portal-border/50">
-              <img referrerPolicy="no-referrer" src={vid.imageUrl} className="w-full h-full object-cover opacity-80 group-hover:scale-110 transition-transform" />
+              <img src={vid.imageUrl} className="w-full h-full object-cover opacity-80 group-hover:scale-110 transition-transform" />
               <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/40">
                 <PlayCircle size={16} className="text-white" />
               </div>
@@ -539,7 +548,7 @@ export function RecentSportVideosCard() {
         {videos.map(vid => (
           <div key={vid.id} className="p-3 sm:p-4 hover:bg-portal-surface-hover transition-colors group cursor-pointer flex gap-3" onClick={() => handleVideoClick(vid)}>
             <div className="w-20 h-14 bg-portal-bg shrink-0 relative overflow-hidden border border-portal-border/50">
-              <img referrerPolicy="no-referrer" src={vid.imageUrl} className="w-full h-full object-cover opacity-80 group-hover:scale-110 transition-transform" />
+              <img src={vid.imageUrl} className="w-full h-full object-cover opacity-80 group-hover:scale-110 transition-transform" />
               <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/40">
                 <PlayCircle size={16} className="text-white" />
               </div>
@@ -637,11 +646,11 @@ export function FifaLiveMatchesCard() {
               <div className="flex items-center justify-between">
                 <div className="flex flex-col gap-1.5 text-[14px] font-semibold text-portal-text-main uppercase tracking-wide min-w-0">
                   <span className="flex items-center gap-2 truncate">
-                    {match.flag1 && <img src={match.flag1} className="w-3.5 h-3.5 object-contain" alt="" referrerPolicy="no-referrer" />}
+                    {match.flag1 && <img src={match.flag1} className="w-3.5 h-3.5 object-contain" alt="" />}
                     <span className="truncate">{match.team1}</span>
                   </span>
                   <span className="flex items-center gap-2 truncate">
-                    {match.flag2 && <img src={match.flag2} className="w-3.5 h-3.5 object-contain" alt="" referrerPolicy="no-referrer" />}
+                    {match.flag2 && <img src={match.flag2} className="w-3.5 h-3.5 object-contain" alt="" />}
                     <span className="truncate">{match.team2}</span>
                   </span>
                 </div>
@@ -694,12 +703,12 @@ export function FifaUpcomingFixturesCard() {
               <div className="mb-2 text-[9px] font-semibold tracking-widest text-portal-brand uppercase">{formatLocalTime(match.date, match.publishedAt)}</div>
               <div className="flex items-center justify-between text-[13px] font-medium text-portal-text-main transition-colors min-w-0">
                 <span className="flex items-center gap-1.5 truncate">
-                  {match.flag1 && <img src={match.flag1} className="w-3.5 h-3.5 object-contain shrink-0" alt="" referrerPolicy="no-referrer" />}
+                  {match.flag1 && <img src={match.flag1} className="w-3.5 h-3.5 object-contain shrink-0" alt="" />}
                   <span className="truncate">{match.team1}</span>
                 </span>
                 <span className="text-[9px] text-portal-text-muted italic mx-2 shrink-0">vs</span>
                 <span className="flex items-center gap-1.5 flex-row-reverse truncate">
-                  {match.flag2 && <img src={match.flag2} className="w-3.5 h-3.5 object-contain shrink-0" alt="" referrerPolicy="no-referrer" />}
+                  {match.flag2 && <img src={match.flag2} className="w-3.5 h-3.5 object-contain shrink-0" alt="" />}
                   <span className="truncate">{match.team2}</span>
                 </span>
               </div>
@@ -749,7 +758,7 @@ export function FifaResultsCard() {
                 
                 <div className="flex items-center justify-between text-[13px] font-semibold text-portal-text-main">
                   <span className={`flex items-center gap-2 truncate ${match.winner === 'AWAY_TEAM' ? 'opacity-40' : ''}`}>
-                    {match.flag1 && <img src={match.flag1} className="w-3.5 h-3.5 object-contain shrink-0" alt="" referrerPolicy="no-referrer" />}
+                    {match.flag1 && <img src={match.flag1} className="w-3.5 h-3.5 object-contain shrink-0" alt="" />}
                     <span className="truncate">{match.team1}</span>
                   </span>
                   <span className={`text-[15px] ml-4 shrink-0 ${match.winner === 'AWAY_TEAM' ? 'opacity-40 font-normal' : 'font-bold'}`}>{match.score1}</span>
@@ -757,7 +766,7 @@ export function FifaResultsCard() {
                 
                 <div className="flex items-center justify-between text-[13px] font-semibold text-portal-text-main">
                   <span className={`flex items-center gap-2 truncate ${match.winner === 'HOME_TEAM' ? 'opacity-40' : ''}`}>
-                    {match.flag2 && <img src={match.flag2} className="w-3.5 h-3.5 object-contain shrink-0" alt="" referrerPolicy="no-referrer" />}
+                    {match.flag2 && <img src={match.flag2} className="w-3.5 h-3.5 object-contain shrink-0" alt="" />}
                     <span className="truncate">{match.team2}</span>
                   </span>
                   <span className={`text-[15px] ml-4 shrink-0 ${match.winner === 'HOME_TEAM' ? 'opacity-40 font-normal' : 'font-bold'}`}>{match.score2}</span>

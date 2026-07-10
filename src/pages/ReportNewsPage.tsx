@@ -13,6 +13,7 @@ export default function ReportNewsPage() {
  const [isSubmitting, setIsSubmitting] = useState(false);
  const [isSuccess, setIsSuccess] = useState(false);
  const [error, setError] = useState<string | null>(null);
+ const [agreedToTerms, setAgreedToTerms] = useState(false);
 
  const handleSubmit = async (e: React.FormEvent) => {
  e.preventDefault();
@@ -50,13 +51,14 @@ export default function ReportNewsPage() {
  <div className="w-20 h-20 bg-portal-brand/20 text-portal-brand flex items-center justify-center mx-auto mb-6 shadow-lg shadow-portal-brand/10 ring-4 ring-portal-brand/30">
  <CheckCircle2 size={40} className="animate-pulse" />
  </div>
- <h2 className="text-3xl font-serif font-bold text-portal-text-main mb-4 tracking-tight">Transmission Received</h2>
+ <h2 className="text-3xl font-serif font-bold text-portal-text-main mb-4 tracking-tight">Pending Editorial Review</h2>
  <p className="text-portal-text-muted font-mono text-sm max-w-xl mx-auto leading-relaxed border-t border-portal-border pt-6">
- Your report has been successfully transmitted to the editorial queue. Our verification team is actively reviewing your submission against verified sources.
+ Your report has been successfully transmitted to the editorial queue. It is currently <strong>Pending Review</strong>. Our verification team is actively reviewing your submission against verified sources.
  </p>
  <button 
  onClick={() => {
  setIsSuccess(false);
+ setAgreedToTerms(false);
  setFormData({ headline: '', category: 'Incident', location: '', details: '', mediaUrl: '' });
  }}
  className="mt-10 px-6 py-2.5 bg-portal-surface border border-portal-border hover:bg-portal-surface-hover text-xs font-mono uppercase tracking-widest text-portal-text-main transition-all"
@@ -167,10 +169,30 @@ export default function ReportNewsPage() {
  </div>
  </div>
 
- <div className="pt-8 border-t border-portal-border flex justify-end">
+ <div className="pt-6">
+ <label className="flex items-start space-x-3 cursor-pointer group">
+ <div className="relative flex items-center justify-center mt-0.5">
+ <input 
+ type="checkbox" 
+ className="peer sr-only"
+ checked={agreedToTerms}
+ onChange={(e) => setAgreedToTerms(e.target.checked)}
+ required
+ />
+ <div className="w-4 h-4 border border-portal-border bg-portal-surface peer-checked:bg-portal-brand peer-checked:border-portal-brand transition-colors flex items-center justify-center">
+ <CheckCircle2 size={12} className="text-white opacity-0 peer-checked:opacity-100 transition-opacity" />
+ </div>
+ </div>
+ <span className="text-xs font-mono text-portal-text-muted leading-tight group-hover:text-portal-text-main transition-colors max-w-2xl">
+ I confirm I own the rights to this content or have explicit permission to share it. I grant The Horizon Post a non-exclusive license to use, reproduce, and distribute this content, and I agree to the <a href="/tos" className="text-portal-brand underline hover:text-portal-brand/80">Terms of Service</a>.
+ </span>
+ </label>
+ </div>
+
+ <div className="pt-6 border-t border-portal-border flex justify-end">
  <button 
  type="submit" 
- disabled={isSubmitting || !formData.headline || !formData.details || !formData.location}
+ disabled={isSubmitting || !formData.headline || !formData.details || !formData.location || !agreedToTerms}
  className="bg-portal-brand hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed text-white px-8 py-3 text-xs font-mono font-bold uppercase tracking-widest flex items-center space-x-2 transition-all shadow-lg shadow-portal-brand/20"
  >
  {isSubmitting ? (

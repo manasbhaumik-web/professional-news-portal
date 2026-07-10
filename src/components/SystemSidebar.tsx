@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { BookMarked, Trophy, RefreshCw, Clock } from 'lucide-react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { BookMarked, Trophy, RefreshCw, Clock, Tag } from 'lucide-react';
 import { NewsArticle } from '../types';
 
 interface SystemSidebarProps {
@@ -166,7 +166,57 @@ export default React.memo(function SystemSidebar({
         )}
       </div>
 
-      <ProAdCard />
+      {/* #7 — Trending Tag Cloud */}
+      {context === 'news' && (() => {
+        const TAG_COLORS = [
+          'border-blue-500/40 text-blue-400 hover:bg-blue-500/10 hover:border-blue-400',
+          'border-cyan-500/40 text-cyan-400 hover:bg-cyan-500/10 hover:border-cyan-400',
+          'border-violet-500/40 text-violet-400 hover:bg-violet-500/10 hover:border-violet-400',
+          'border-emerald-500/40 text-emerald-400 hover:bg-emerald-500/10 hover:border-emerald-400',
+          'border-amber-500/40 text-amber-400 hover:bg-amber-500/10 hover:border-amber-400',
+          'border-rose-500/40 text-rose-400 hover:bg-rose-500/10 hover:border-rose-400',
+        ];
+        const STOP_WORDS = new Set(['the','and','for','with','from','that','this','have','will','been','more','said','than','over','into','after','they','their','about','also','when','were','what','which','news','says','amid']);
+        // Extract top keywords from all article titles
+        const wordFreq: Record<string, number> = {};
+        ;(relatedArticles.length ? relatedArticles : trendingArticles).slice(0, 60).forEach(art => {
+          art.title.toLowerCase().replace(/[^a-z\s]/g, '').split(/\s+/).forEach(w => {
+            if (w.length > 4 && !STOP_WORDS.has(w)) wordFreq[w] = (wordFreq[w] || 0) + 1;
+          });
+        });
+        const tags = Object.entries(wordFreq)
+          .sort((a, b) => b[1] - a[1])
+          .slice(0, 14)
+          .map(([word, freq]) => ({ word, freq }));
+        if (tags.length < 3) return null;
+        const maxFreq = tags[0]?.freq || 1;
+        return (
+          <div className="border border-portal-border/50 bg-portal-surface p-4">
+            <div className="flex items-center gap-2 mb-3">
+              <div className="w-0.5 h-4 bg-gradient-to-b from-portal-brand to-portal-accent" />
+              <h4 className="text-[10px] font-mono font-bold tracking-widest uppercase text-portal-text-muted">Trending Topics</h4>
+            </div>
+            <div className="flex flex-wrap gap-1.5">
+              {tags.map(({ word, freq }, i) => {
+                const sizeRatio = freq / maxFreq;
+                const sizeClass = sizeRatio > 0.75 ? 'text-sm font-semibold' : sizeRatio > 0.45 ? 'text-xs font-medium' : 'text-[10px]';
+                return (
+                  <button
+                    key={word}
+                    onClick={() => setSearchQuery(word)}
+                    className={`px-2.5 py-1 border rounded-full font-mono transition-all duration-200 cursor-pointer ${TAG_COLORS[i % TAG_COLORS.length]} ${sizeClass}`}
+                    title={`Search: ${word}`}
+                  >
+                    #{word}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        );
+      })()}
+
+
     </aside>
   );
 });
