@@ -64,108 +64,102 @@ export default React.memo(function MainAdBanner({
                     <div className="flex gap-4 items-stretch">
                         {/* Cinematic hero card */}
                         <div
-                            className={`flex-1 relative group overflow-hidden shadow-2xl min-h-[200px] sm:min-h-[260px] cursor-pointer transition-opacity duration-300 ${isTransitioning ? 'opacity-0' : 'opacity-100'}`}
+                            className={`flex-1 flex flex-col sm:flex-row relative group overflow-hidden shadow-xl bg-portal-surface border border-portal-border/60 cursor-pointer transition-opacity duration-300 ${isTransitioning ? 'opacity-0' : 'opacity-100'}`}
                             onClick={() => handleOpenArticle(article)}
                             style={{ minHeight: '220px' }}
                         >
-                            {/* Ken Burns background image */}
-                            {article.imageUrl && (
-                                <div className="absolute inset-0 overflow-hidden">
+                            {/* Left Side: High Res Image */}
+                            <div className="w-full sm:w-1/2 relative overflow-hidden shrink-0 bg-black min-h-[140px] sm:min-h-[220px]">
+                                {article.imageUrl && (
                                     <img
                                         key={article.id}
                                         src={article.imageUrl}
                                         alt={article.title}
-                                        className="w-full h-full object-cover animate-kenburns"
-
+                                        className="absolute inset-0 w-full h-full object-cover animate-kenburns opacity-90"
                                     />
-                                </div>
-                            )}
+                                )}
+                                {/* Cinematic gradient scrim over image */}
+                                <div className="absolute inset-0 bg-gradient-to-r from-black/40 via-transparent to-black/10 z-10 pointer-events-none" />
+                            </div>
 
-                            {/* Cinematic gradient scrim over image */}
-                            <div className="hero-scrim absolute inset-0 z-10" />
+                            {/* Right Side: Content */}
+                            <div className="w-full sm:w-1/2 relative z-20 flex flex-col justify-between px-5 sm:px-8 py-5 sm:py-6">
+                                {/* Minimize button */}
+                                <button
+                                    onClick={(e) => { e.stopPropagation(); setIsAdMinimized(true); }}
+                                    className="absolute top-3 right-3 z-30 p-1.5 bg-portal-surface-hover/80 text-portal-text-muted hover:text-portal-text-main transition-colors backdrop-blur-sm border border-portal-border/50 rounded-md"
+                                    title="Minimize"
+                                >
+                                    <Minus size={14} />
+                                </button>
 
-                            {/* Minimize button */}
-                            <button
-                                onClick={(e) => { e.stopPropagation(); setIsAdMinimized(true); }}
-                                className="absolute top-3 right-3 z-30 p-1.5 bg-black/50 text-white hover:bg-black/75 transition-colors backdrop-blur-sm"
-                                title="Minimize"
-                            >
-                                <Minus size={14} />
-                            </button>
-
-                            {/* Left arrow */}
-                            <button
-                                onClick={(e) => { e.stopPropagation(); prevSlide(); }}
-                                className="absolute left-3 top-1/2 -translate-y-1/2 z-30 p-2 bg-black/40 text-white hover:bg-black/70 transition-colors opacity-0 group-hover:opacity-100 backdrop-blur-sm"
-                            >
-                                <ChevronLeft size={20} />
-                            </button>
-
-                            {/* Right arrow */}
-                            <button
-                                onClick={(e) => { e.stopPropagation(); nextSlide(); }}
-                                className="absolute right-3 top-1/2 -translate-y-1/2 z-30 p-2 bg-black/40 text-white hover:bg-black/70 transition-colors opacity-0 group-hover:opacity-100 backdrop-blur-sm"
-                            >
-                                <ChevronRight size={20} />
-                            </button>
-
-                            {/* Content overlaid on left side */}
-                            <div className="relative z-20 h-full flex flex-col justify-between px-5 sm:px-8 py-5 sm:py-6 max-w-xl">
                                 {/* Category chip */}
-                                <div className="flex items-center gap-2">
-                                    <span className="text-[9px] font-mono font-bold tracking-widest uppercase px-2 py-0.5 border border-cyan-500/60 text-cyan-400 backdrop-blur-sm bg-black/30">
+                                <div className="flex items-center gap-2 mb-2 sm:mb-0">
+                                    <span className="text-[9px] font-mono font-bold tracking-widest uppercase px-2 py-0.5 border border-portal-brand/30 text-portal-brand bg-portal-brand/5">
                                         {article.category}
                                     </span>
-                                    <span className="text-[9px] font-mono text-white/50">{article.readTime}</span>
+                                    <span className="text-[9px] font-mono text-portal-text-muted">{article.readTime}</span>
                                 </div>
 
-                                {/* Headline with soft text glow */}
+                                {/* Headline */}
                                 <div className="flex flex-col gap-3 mt-auto">
-                                    <h2
-                                        className="text-xl sm:text-2xl md:text-3xl font-bold font-serif text-white leading-tight line-clamp-3 pr-4"
-                                        style={{ textShadow: '0 0 40px rgba(59,130,246,0.3), 0 2px 8px rgba(0,0,0,0.8)' }}
-                                    >
+                                    <h2 className="text-xl sm:text-2xl font-bold font-serif text-portal-text-main leading-tight line-clamp-3 pr-4 mt-2 sm:mt-0">
                                         {article.title}
                                     </h2>
 
-                                    {/* Glowing cyan rule separator */}
-                                    <div className="w-12 h-px bg-cyan-400" style={{ boxShadow: '0 0 8px rgba(6,182,212,0.8)' }} />
+                                    {/* Rule separator */}
+                                    <div className="w-12 h-px bg-portal-brand" />
 
                                     {/* Summary */}
                                     {article.summary && (
-                                        <p className="text-[12px] text-white/70 leading-relaxed hidden sm:line-clamp-2">
+                                        <p className="text-[12px] text-portal-text-muted leading-relaxed hidden sm:line-clamp-2">
                                             {article.summary}
                                         </p>
                                     )}
 
                                     {/* Footer row */}
-                                    <div className="flex items-center justify-between pt-1">
+                                    <div className="flex items-center justify-between pt-2">
                                         <div className="flex flex-col gap-0.5">
-                                            <span className="text-[11px] font-bold text-white font-mono">{article.source}</span>
-                                            <span className="text-[10px] text-white/50 font-mono">{formatLocalTime(article.date, article.publishedAt)}</span>
+                                            <span className="text-[11px] font-bold text-portal-text-main font-mono">{article.source}</span>
+                                            <span className="text-[10px] text-portal-text-muted font-mono">{formatLocalTime(article.date, article.publishedAt)}</span>
                                         </div>
-                                        <div className="flex items-center gap-1 text-cyan-400 text-[10px] font-bold font-mono uppercase tracking-wide">
+                                        <div className="hidden sm:flex items-center gap-1 text-portal-brand text-[10px] font-bold font-mono uppercase tracking-wide">
                                             Read Full Story <ArrowRight size={10} className="group-hover:translate-x-1 transition-transform" />
                                         </div>
                                     </div>
                                 </div>
+
+                                {/* Progress dots */}
+                                <div className="absolute bottom-3 right-5 sm:right-8 flex items-center gap-1.5 z-30">
+                                    {topHeadlines.map((_, idx) => (
+                                        <button
+                                            key={idx}
+                                            onClick={(e) => { e.stopPropagation(); goToSlide(idx); }}
+                                            className={`transition-all duration-300 rounded-full ${idx === activeIndex
+                                                ? 'w-6 h-1.5 bg-portal-brand'
+                                                : 'w-1.5 h-1.5 bg-portal-border hover:bg-portal-text-muted'
+                                                }`}
+                                            aria-label={`Headline ${idx + 1}`}
+                                        />
+                                    ))}
+                                </div>
                             </div>
 
-                            {/* Progress dots — glowing bar style */}
-                            <div className="absolute bottom-3 left-5 sm:left-8 flex items-center gap-1.5 z-30">
-                                {topHeadlines.map((_, idx) => (
-                                    <button
-                                        key={idx}
-                                        onClick={(e) => { e.stopPropagation(); goToSlide(idx); }}
-                                        className={`transition-all duration-300 rounded-full ${idx === activeIndex
-                                            ? 'w-6 h-1.5 bg-cyan-400'
-                                            : 'w-1.5 h-1.5 bg-white/30 hover:bg-white/60'
-                                            }`}
-                                        style={idx === activeIndex ? { boxShadow: '0 0 8px rgba(6,182,212,0.9)' } : {}}
-                                        aria-label={`Headline ${idx + 1}`}
-                                    />
-                                ))}
-                            </div>
+                            {/* Left arrow (global over image) */}
+                            <button
+                                onClick={(e) => { e.stopPropagation(); prevSlide(); }}
+                                className="absolute left-3 top-1/2 -translate-y-1/2 z-30 p-2 bg-black/40 text-white hover:bg-black/70 transition-colors opacity-0 group-hover:opacity-100 backdrop-blur-sm rounded-md"
+                            >
+                                <ChevronLeft size={20} />
+                            </button>
+
+                            {/* Right arrow (global over content) */}
+                            <button
+                                onClick={(e) => { e.stopPropagation(); nextSlide(); }}
+                                className="absolute right-3 top-1/2 -translate-y-1/2 z-30 p-2 bg-portal-surface-hover/90 text-portal-text-main hover:bg-portal-border transition-colors opacity-0 group-hover:opacity-100 backdrop-blur-sm border border-portal-border/50 rounded-md"
+                            >
+                                <ChevronRight size={20} />
+                            </button>
                         </div>
 
                         {/* Advertisement panel */}
